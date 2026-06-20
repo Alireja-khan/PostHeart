@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+:root {
+  /* Sophisticated Minimalist Modern Color Palette */
+  --color-warm-bone: #f9f8f6;       /* Clean soft off-white background */
+  --color-card-white: #ffffff;      /* Pure white for layout cards */
+  --color-charcoal-gray: #1a1a1a;   /* Primary dark text */
+  --color-muted-gray: #707070;      /* Muted secondary text */
+  --color-sage-green: #344e41;      /* Accent color (deep forest/sage green) */
+  --color-rust-terracotta: #c2410c; /* Secondary accent color (terracotta) */
+  
+  --background: var(--color-warm-bone);
+  --foreground: var(--color-charcoal-gray);
+  
+  --border-light: #e6e4df;          /* Sleek border dividing lines */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-lora), serif;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Notebook lines utility for minimalist writing pad */
+.bg-notebook-lines {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+  background-size: 100% 3rem;
+}
+
+/* Hide scrollbars utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Modern clean card shadow */
+.card-shadow {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.card-hover-shadow {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-hover-shadow:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+/* Handwriting fallback font class */
+.font-handwriting {
+  font-family: var(--font-caveat), cursive;
+}

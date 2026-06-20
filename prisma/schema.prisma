@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String   @unique
+  name      String?
+  password  String?
+  createdAt DateTime @default(now())
+  letters   Letter[] @relation("SentLetters")
+  received  Letter[] @relation("ReceivedLetters")
+  
+  partnerId String?  @db.ObjectId
+  partner   User?    @relation("PartnerRelation", fields: [partnerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  partnerOf User[]   @relation("PartnerRelation")
+}
+
+model Letter {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  content     String
+  status      String   @default("DRAFT") // DRAFT, SCHEDULED, IN_TRANSIT, DELIVERED
+  delayHours  Int      @default(24)
+  createdAt   DateTime @default(now())
+  deliverAt   DateTime?
+  
+  senderId    String   @db.ObjectId
+  sender      User     @relation("SentLetters", fields: [senderId], references: [id])
+  
+  receiverId  String?  @db.ObjectId
+  receiver    User?    @relation("ReceivedLetters", fields: [receiverId], references: [id])
+}
