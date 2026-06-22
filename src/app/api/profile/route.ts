@@ -24,6 +24,12 @@ export async function GET() {
         showEmail: true,
         createdAt: true,
         partnerId: true,
+        received: {
+          where: { status: 'IN_TRANSIT' },
+          orderBy: { deliverAt: 'asc' },
+          take: 1,
+          select: { id: true, createdAt: true, deliverAt: true, delayHours: true }
+        },
         _count: {
           select: {
             letters: true,

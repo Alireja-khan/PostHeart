@@ -31,7 +31,7 @@ export default function RootLayout({
       lang="en"
       className={`${lora.variable} ${caveat.variable} h-full antialiased`}
     >
-      <body className="h-full flex bg-[#1a120e] overflow-hidden">
+      <body className="h-full flex bg-[#f4f5f7] overflow-hidden">
         <Providers>
           <Sidebar />
           <div className="flex-1 h-full overflow-y-auto relative">
