@@ -74,35 +74,70 @@ export async function PUT(req: Request) {
         data: { status: "ACCEPTED" }
       });
 
-      // Connect users
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { partnerId: request.senderId }
-      });
-      await prisma.user.update({
-        where: { id: request.senderId },
-        data: { partnerId: user.id }
-      });
+      if (request.type === "DISCONNECT") {
+        // Disconnect users
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { partnerId: null }
+        });
+        await prisma.user.update({
+          where: { id: request.senderId },
+          data: { partnerId: null }
+        });
 
-      // Notify sender
-      await prisma.notification.create({
-        data: {
-          userId: request.senderId,
-          title: "Connection Accepted!",
-          message: `${user.name || user.email} has accepted your connection request.`,
-          type: "CONNECTION_ACCEPTED"
-        }
-      });
+        // Notify sender
+        await prisma.notification.create({
+          data: {
+            userId: request.senderId,
+            title: "Disconnected",
+            message: `${user.name || user.email} has accepted your disconnect request. You are no longer partners.`,
+            type: "SYSTEM"
+          }
+        });
 
-      return NextResponse.json({ message: "Connection accepted" }, { status: 200 });
+        return NextResponse.json({ message: "Disconnected successfully" }, { status: 200 });
+      } else {
+        // Connect users
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { partnerId: request.senderId }
+        });
+        await prisma.user.update({
+          where: { id: request.senderId },
+          data: { partnerId: user.id }
+        });
+
+        // Notify sender
+        await prisma.notification.create({
+          data: {
+            userId: request.senderId,
+            title: "Connection Accepted!",
+            message: `${user.name || user.email} has accepted your connection request.`,
+            type: "CONNECTION_ACCEPTED"
+          }
+        });
+
+        return NextResponse.json({ message: "Connection accepted" }, { status: 200 });
+      }
     } else {
       // Decline
       await prisma.connectionRequest.update({
         where: { id: requestId },
         data: { status: "REJECTED" }
       });
+      
+      if (request.type === "DISCONNECT") {
+        await prisma.notification.create({
+          data: {
+            userId: request.senderId,
+            title: "Disconnect Declined",
+            message: `${user.name || user.email} has declined your disconnect request.`,
+            type: "SYSTEM"
+          }
+        });
+      }
 
-      return NextResponse.json({ message: "Connection declined" }, { status: 200 });
+      return NextResponse.json({ message: "Request declined" }, { status: 200 });
     }
   } catch (error) {
     console.error("Update request error:", error);

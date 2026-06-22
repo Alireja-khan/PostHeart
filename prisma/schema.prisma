@@ -102,6 +102,7 @@ model ConnectionRequest {
   senderId    String   @db.ObjectId
   receiverId  String   @db.ObjectId
   status      String   @default("PENDING") // PENDING, ACCEPTED, REJECTED
+  type        String   @default("CONNECT") // CONNECT, DISCONNECT
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next"
 import { authOptions } from "../api/auth/[...nextauth]/route"
 import { Mail, Heart } from "lucide-react"
 import SearchForm from "./SearchForm"
+import DisconnectButton from "./DisconnectButton"
 
 const prisma = new PrismaClient()
 
@@ -53,6 +54,8 @@ export default async function ConnectPartnerPage() {
           <div className="w-full bg-[#fff5f0] text-[#c2410c] rounded-xl py-3 font-medium text-center border border-[#ffd5c2]">
             You are Officially Partners!
           </div>
+
+          <DisconnectButton />
         </div>
       </div>
     )

@@ -4,6 +4,7 @@ import { Bell, Check, X, Loader2, UserPlus, Info } from "lucide-react"
 
 type Request = {
   id: string;
+  type: string;
   sender: {
     id: string;
     name: string | null;
@@ -127,11 +128,11 @@ export default function NotificationsPage() {
           <section className="bg-white rounded-3xl border border-[#e6e4df] p-6 shadow-sm">
             <h2 className="text-xl font-serif font-bold text-[#1a1a1a] mb-6 flex items-center">
               <UserPlus className="w-5 h-5 mr-2 text-[#c2410c]" />
-              Connection Requests
+              Action Requests
             </h2>
             <div className="space-y-4">
               {requests.map(req => (
-                <div key={req.id} className="flex items-center justify-between p-4 bg-[#f9f8f6] rounded-2xl border border-[#e6e4df]">
+                <div key={req.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-[#f9f8f6] rounded-2xl border border-[#e6e4df] gap-4">
                   <div className="flex items-center space-x-4">
                     <img 
                       src={req.sender.avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${req.sender.name || req.sender.email}`} 
@@ -140,10 +141,14 @@ export default function NotificationsPage() {
                     />
                     <div>
                       <p className="font-bold text-[#1a1a1a]">{req.sender.name || "Anonymous User"}</p>
-                      <p className="text-sm text-[#707070]">{req.sender.email}</p>
+                      <p className="text-sm text-[#707070]">
+                        {req.type === "DISCONNECT" 
+                          ? "has requested to disconnect from you." 
+                          : "wants to connect as your partner."}
+                      </p>
                     </div>
                   </div>
-                  <div className="flex space-x-2">
+                  <div className="flex space-x-2 self-end sm:self-auto">
                     <button 
                       onClick={() => handleRequest(req.id, "DECLINE")}
                       disabled={actionLoading === req.id}
@@ -155,7 +160,9 @@ export default function NotificationsPage() {
                     <button 
                       onClick={() => handleRequest(req.id, "ACCEPT")}
                       disabled={actionLoading === req.id}
-                      className="p-2 text-white bg-[#c2410c] hover:bg-[#a3360a] rounded-xl transition-colors disabled:opacity-50"
+                      className={`p-2 text-white rounded-xl transition-colors disabled:opacity-50 ${
+                        req.type === "DISCONNECT" ? "bg-red-600 hover:bg-red-700" : "bg-[#c2410c] hover:bg-[#a3360a]"
+                      }`}
                       title="Accept"
                     >
                       {actionLoading === req.id ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
