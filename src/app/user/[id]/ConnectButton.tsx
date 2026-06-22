@@ -10,6 +10,11 @@ export default function ConnectButton({ partnerId, initialPending = false }: { p
   const [error, setError] = useState("")
   const [isPending, setIsPending] = useState(initialPending)
 
+  // Sync state if props change from a router.refresh()
+  useEffect(() => {
+    setIsPending(initialPending);
+  }, [initialPending]);
+
   // Poll for connection status if pending
   useEffect(() => {
     if (!isPending) return;

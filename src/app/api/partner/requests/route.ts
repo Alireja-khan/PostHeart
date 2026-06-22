@@ -135,6 +135,15 @@ export async function PUT(req: Request) {
             type: "SYSTEM"
           }
         });
+      } else {
+        await prisma.notification.create({
+          data: {
+            userId: request.senderId,
+            title: "Connection Declined",
+            message: `${user.name || user.email} has declined your connection request.`,
+            type: "SYSTEM"
+          }
+        });
       }
 
       return NextResponse.json({ message: "Request declined" }, { status: 200 });

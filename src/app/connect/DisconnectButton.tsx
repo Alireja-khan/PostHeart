@@ -4,11 +4,16 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { UserMinus, Loader2, Clock } from "lucide-react"
 
-export default function DisconnectButton() {
+export default function DisconnectButton({ initialPending = false }: { initialPending?: boolean }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
-  const [isPending, setIsPending] = useState(false)
+  const [isPending, setIsPending] = useState(initialPending)
+
+  // Sync state if props change from a router.refresh()
+  useEffect(() => {
+    setIsPending(initialPending);
+  }, [initialPending]);
 
   // Poll for connection status if pending
   useEffect(() => {

@@ -24,6 +24,16 @@ export default async function ConnectPartnerPage() {
     const partner = currentUser.partner
     const currentAvatar = partner.avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${partner.name || partner.email}`
 
+    const existingDisconnectRequest = await prisma.connectionRequest.findFirst({
+      where: {
+        OR: [
+          { senderId: currentUser.id, receiverId: partner.id, status: "PENDING", type: "DISCONNECT" },
+          { senderId: partner.id, receiverId: currentUser.id, status: "PENDING", type: "DISCONNECT" }
+        ]
+      }
+    });
+    const isPending = !!existingDisconnectRequest;
+
     return (
       <div className="min-h-screen p-8 lg:p-12 font-sans bg-[#f9f8f6] flex flex-col items-center justify-center">
         <div className="w-full max-w-md bg-white border border-[#e6e4df] rounded-3xl p-8 shadow-sm text-center">
@@ -55,7 +65,7 @@ export default async function ConnectPartnerPage() {
             You are Officially Partners!
           </div>
 
-          <DisconnectButton />
+          <DisconnectButton initialPending={isPending} />
         </div>
       </div>
     )
