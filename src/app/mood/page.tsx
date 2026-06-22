@@ -36,24 +36,35 @@ export default function CoupleSpacePage() {
     'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=400&q=80'
   ];
 
-  // Load items from local storage on mount
   useEffect(() => {
-    const saved = localStorage.getItem('dear_you_corkboard_items');
-    if (saved) {
+    const fetchItems = async () => {
       try {
-        setItems(JSON.parse(saved));
-      } catch (e) {
+        const response = await fetch('/api/corkboard');
+        const data = await response.json();
+        if (data.success && data.data && data.data.length > 0) {
+          setItems(data.data);
+        } else {
+          initializeDefaultItems();
+        }
+      } catch (err) {
         initializeDefaultItems();
       }
-    } else {
-      initializeDefaultItems();
-    }
+    };
+    fetchItems();
   }, []);
 
-  // Save to local storage whenever items change
-  const saveItems = (newItems: CorkboardItem[]) => {
+  // Save to database whenever items change structurally
+  const saveItems = async (newItems: CorkboardItem[]) => {
     setItems(newItems);
-    localStorage.setItem('dear_you_corkboard_items', JSON.stringify(newItems));
+    try {
+      await fetch('/api/corkboard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newItems)
+      });
+    } catch(err) {
+      console.error('Failed to sync board', err);
+    }
   };
 
   const initializeDefaultItems = () => {

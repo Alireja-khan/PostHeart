@@ -1,20 +1,21 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { getServerSession } from "next-auth/next";
+import { authOptions } from "../../auth/[...nextauth]/route";
 
 const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     if (!session || !session.user?.email) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { partnerEmail } = await req.json();
+    const { partnerEmail, partnerId } = await req.json();
 
-    if (!partnerEmail) {
-      return NextResponse.json({ message: "Partner email is required" }, { status: 400 });
+    if (!partnerEmail && !partnerId) {
+      return NextResponse.json({ message: "Partner email or ID is required" }, { status: 400 });
     }
 
     if (partnerEmail === session.user.email) {
@@ -22,8 +23,12 @@ export async function POST(req: Request) {
     }
 
     const partner = await prisma.user.findUnique({
-      where: { email: partnerEmail }
+      where: partnerId ? { id: partnerId } : { email: partnerEmail }
     });
+
+    if (partner?.email === session.user.email) {
+      return NextResponse.json({ message: "You cannot connect with yourself" }, { status: 400 });
+    }
 
     if (!partner) {
       return NextResponse.json({ message: "Partner not found" }, { status: 404 });

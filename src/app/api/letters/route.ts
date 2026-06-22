@@ -1,15 +1,39 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "../auth/[...nextauth]/route"
 
 const prisma = new PrismaClient();
 
 export async function GET() {
   try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.email) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+    }
+
+    const currentUser = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    })
+
+    if (!currentUser) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 })
+    }
+
     const letters = await prisma.letter.findMany({
+      where: {
+        OR: [
+          { senderId: currentUser.id },
+          { receiverId: currentUser.id }
+        ]
+      },
       include: {
         sender: true,
         receiver: true,
       },
+      orderBy: {
+        createdAt: 'desc'
+      }
     });
 
     return NextResponse.json({
@@ -18,6 +42,7 @@ export async function GET() {
       data: letters,
     });
   } catch (error) {
+    console.error('Error in GET /api/letters:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch letters' },
       { status: 500 }
@@ -27,8 +52,21 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.email) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+    }
+
+    const sender = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    })
+
+    if (!sender) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 })
+    }
+
     const body = await req.json();
-    const { content, receiverName, delayHours } = body;
+    const { content, delayHours } = body;
 
     if (!content) {
       return NextResponse.json(
@@ -37,36 +75,20 @@ export async function POST(req: Request) {
       );
     }
 
-    // Grab or seed demo sender
-    let sender = await prisma.user.findFirst();
-    if (!sender) {
-      sender = await prisma.user.create({
-        data: {
-          name: 'Sarah',
-          email: 'sarah@example.com'
-        }
-      });
-    }
-
-    // Find or create receiver
-    let receiver = null;
-    if (receiverName) {
-      const trimmedName = receiverName.trim();
-      receiver = await prisma.user.findFirst({
-        where: { name: { equals: trimmedName, mode: 'insensitive' } }
-      });
-      if (!receiver) {
-        receiver = await prisma.user.create({
-          data: {
-            name: trimmedName,
-            email: `${trimmedName.toLowerCase().replace(/[^a-z0-9]/g, '_')}_${Date.now()}@example.com`
-          }
-        });
-      }
-    }
-
     const hours = parseInt(delayHours) || 24;
     const deliverAt = new Date(Date.now() + hours * 3600 * 1000);
+
+    let finalReceiverId = sender.partnerId;
+    
+    // Fallback: If not partnered, try to find a user by name or email if provided
+    if (!finalReceiverId && body.receiverName) {
+      const fallbackReceiver = await prisma.user.findFirst({
+        where: { name: { equals: body.receiverName, mode: 'insensitive' } }
+      });
+      if (fallbackReceiver) {
+        finalReceiverId = fallbackReceiver.id;
+      }
+    }
 
     const letter = await prisma.letter.create({
       data: {
@@ -75,7 +97,7 @@ export async function POST(req: Request) {
         deliverAt,
         status: 'IN_TRANSIT',
         senderId: sender.id,
-        receiverId: receiver ? receiver.id : null,
+        receiverId: finalReceiverId, 
       },
       include: {
         sender: true,
@@ -95,4 +117,3 @@ export async function POST(req: Request) {
     );
   }
 }
-

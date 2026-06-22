@@ -13,13 +13,25 @@ model User {
   name      String?
   password  String?
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  avatarUrl String?
+  bio       String?
+  isPublic  Boolean  @default(true)
+  showEmail Boolean  @default(false)
+
   letters   Letter[] @relation("SentLetters")
   received  Letter[] @relation("ReceivedLetters")
   
   partnerId String?  @db.ObjectId
   partner   User?    @relation("PartnerRelation", fields: [partnerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   partnerOf User[]   @relation("PartnerRelation")
+  
+  milestones     TimelineMilestone[]
+  keepsakes      KeepsakeItem[]
+  corkboardItems CorkboardItem[]
 }
+
 
 model Letter {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -34,4 +46,49 @@ model Letter {
   
   receiverId  String?  @db.ObjectId
   receiver    User?    @relation("ReceivedLetters", fields: [receiverId], references: [id])
+}
+
+model TimelineMilestone {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  date        String
+  location    String
+  description String
+  image       String
+  category    String   // 'trip', 'date', 'milestone'
+  
+  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model KeepsakeItem {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  type        String   // 'polaroid', 'ticket'
+  title       String
+  
+  // Polaroid fields
+  image       String?
+  note        String?
+  
+  // Ticket fields
+  date        String?
+  seat        String?
+  memo        String?
+  
+  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model CorkboardItem {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  type        String   // 'polaroid', 'sticky', 'sticker', 'tape'
+  x           Float
+  y           Float
+  rotation    Float
+  content     String?
+  image       String?
+  color       String?  // for sticky or tape
+  
+  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id])
 }

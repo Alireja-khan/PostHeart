@@ -20,7 +20,8 @@ interface TicketItem {
 }
 
 export default function KeepsakeBoxPage() {
-  const [activeTab, setActiveTab] = useState<'photos' | 'playlist' | 'keepsakes'>('photos');
+  const [activeTab, setActiveTab] = useState<'letters' | 'photos' | 'playlist' | 'keepsakes'>('letters');
+  const [deliveredLetters, setDeliveredLetters] = useState<any[]>([]);
 
   // Keepsake state lists
   const [polaroids, setPolaroids] = useState<PolaroidItem[]>([]);
@@ -98,31 +99,35 @@ export default function KeepsakeBoxPage() {
   ];
 
   useEffect(() => {
-    // Load photos
-    const savedPhotos = localStorage.getItem('dear_you_vault_photos');
-    if (savedPhotos) {
+    const fetchData = async () => {
       try {
-        setPolaroids(JSON.parse(savedPhotos));
-      } catch (e) {
-        setPolaroids(defaultPolaroids);
-      }
-    } else {
-      setPolaroids(defaultPolaroids);
-      localStorage.setItem('dear_you_vault_photos', JSON.stringify(defaultPolaroids));
-    }
+        const keepsakesRes = await fetch('/api/keepsakes');
+        const keepsakesData = await keepsakesRes.json();
+        if (keepsakesData.success && keepsakesData.data) {
+          const fetchedPolaroids = keepsakesData.data.filter((k: any) => k.type === 'polaroid');
+          const fetchedTickets = keepsakesData.data.filter((k: any) => k.type === 'ticket');
+          setPolaroids(fetchedPolaroids.length > 0 ? fetchedPolaroids : defaultPolaroids);
+          setTickets(fetchedTickets.length > 0 ? fetchedTickets : defaultTickets);
+        } else {
+          setPolaroids(defaultPolaroids);
+          setTickets(defaultTickets);
+        }
 
-    // Load tickets
-    const savedTickets = localStorage.getItem('dear_you_vault_tickets');
-    if (savedTickets) {
-      try {
-        setTickets(JSON.parse(savedTickets));
-      } catch (e) {
+        const lettersRes = await fetch('/api/letters');
+        const lettersData = await lettersRes.json();
+        if (lettersData.success && lettersData.data) {
+          const delivered = lettersData.data.filter((l: any) => {
+            const deliverTime = new Date(l.deliverAt || l.createdAt).getTime();
+            return deliverTime <= Date.now();
+          });
+          setDeliveredLetters(delivered);
+        }
+      } catch (err) {
+        setPolaroids(defaultPolaroids);
         setTickets(defaultTickets);
       }
-    } else {
-      setTickets(defaultTickets);
-      localStorage.setItem('dear_you_vault_tickets', JSON.stringify(defaultTickets));
-    }
+    };
+    fetchData();
   }, []);
 
   const savePhotos = (newPhotos: PolaroidItem[]) => {
@@ -135,48 +140,73 @@ export default function KeepsakeBoxPage() {
     localStorage.setItem('dear_you_vault_tickets', JSON.stringify(newTickets));
   };
 
-  const handleAddPhoto = (e: React.FormEvent) => {
+  const handleAddPhoto = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!photoTitle || !photoNote) return;
 
-    const newItem: PolaroidItem = {
-      id: `photo-${Date.now()}`,
+    const payload = {
+      type: 'polaroid',
       image: photoUrl || 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?auto=format&fit=crop&w=600&q=80',
       title: photoTitle,
       note: photoNote
     };
 
-    savePhotos([...polaroids, newItem]);
+    try {
+      const res = await fetch('/api/keepsakes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        setPolaroids([...polaroids, data.data]);
+        setPolaroidIndex(polaroids.length);
+      }
+    } catch(err) {}
+
     setIsPhotoModalOpen(false);
     setPhotoUrl('');
     setPhotoTitle('');
     setPhotoNote('');
-    setPolaroidIndex(polaroids.length); // View new photo
     setIsPolaroidFlipped(false);
   };
 
-  const handleDeletePhoto = (id: string) => {
+  const handleDeletePhoto = async (id: string) => {
     if (confirm('Are you sure you want to delete this Polaroid memory?')) {
+      if (!id.startsWith('default-')) {
+        await fetch(`/api/keepsakes?id=${id}`, { method: 'DELETE' });
+      }
       const updated = polaroids.filter(p => p.id !== id);
-      savePhotos(updated);
+      setPolaroids(updated);
       setPolaroidIndex(0);
       setIsPolaroidFlipped(false);
     }
   };
 
-  const handleAddTicket = (e: React.FormEvent) => {
+  const handleAddTicket = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!ticketTitle || !ticketDate || !ticketSeat || !ticketMemo) return;
 
-    const newItem: TicketItem = {
-      id: `ticket-${Date.now()}`,
+    const payload = {
+      type: 'ticket',
       title: ticketTitle,
       date: ticketDate,
       seat: ticketSeat,
       memo: ticketMemo
     };
 
-    saveTickets([...tickets, newItem]);
+    try {
+      const res = await fetch('/api/keepsakes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        setTickets([...tickets, data.data]);
+      }
+    } catch(err) {}
+
     setIsTicketModalOpen(false);
     setTicketTitle('');
     setTicketDate('');
@@ -184,10 +214,13 @@ export default function KeepsakeBoxPage() {
     setTicketMemo('');
   };
 
-  const handleDeleteTicket = (id: string) => {
+  const handleDeleteTicket = async (id: string) => {
     if (confirm('Are you sure you want to discard this ticket stub?')) {
+      if (!id.startsWith('default-')) {
+        await fetch(`/api/keepsakes?id=${id}`, { method: 'DELETE' });
+      }
       const updated = tickets.filter(t => t.id !== id);
-      saveTickets(updated);
+      setTickets(updated);
     }
   };
 
@@ -254,6 +287,17 @@ export default function KeepsakeBoxPage() {
         {/* Tab Switcher */}
         <div className="flex bg-[#fdfbf7] border border-[#e6e4df] rounded-lg p-1 self-start md:self-auto shadow-xs">
           <button 
+            onClick={() => setActiveTab('letters')}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-md font-serif text-xs transition-all ${
+              activeTab === 'letters' 
+                ? 'bg-white text-[#1a1a1a] shadow-sm font-semibold' 
+                : 'text-[#707070] hover:text-[#1a1a1a]'
+            }`}
+          >
+            <Heart size={13} />
+            <span>Letters</span>
+          </button>
+          <button 
             onClick={() => setActiveTab('photos')}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-md font-serif text-xs transition-all ${
               activeTab === 'photos' 
@@ -293,6 +337,41 @@ export default function KeepsakeBoxPage() {
       <div className="max-w-4xl mx-auto flex flex-col justify-center min-h-[55vh]">
         <AnimatePresence mode="wait">
           
+          {/* TAB 0: DELIVERED LETTERS */}
+          {activeTab === 'letters' && (
+            <motion.div
+              key="letters"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3 }}
+              className="flex flex-col items-center py-6 w-full"
+            >
+              {deliveredLetters.length === 0 ? (
+                <div className="w-full max-w-sm bg-white border border-[#e6e4df] rounded-lg p-12 text-center card-shadow">
+                  <p className="font-serif italic text-[#707070]">No letters have arrived yet.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
+                  {deliveredLetters.map(letter => (
+                    <div key={letter.id} className="bg-white border border-[#e6e4df] rounded-lg p-6 shadow-sm card-shadow relative group">
+                      <div className="absolute top-0 right-10 w-4 h-8 bg-[#c2410c] opacity-10"></div>
+                      <div className="text-[10px] uppercase tracking-widest text-[#707070] mb-4 border-b border-[#e6e4df] pb-2">
+                        From {letter.sender?.name || 'Sender'}
+                      </div>
+                      <p className="font-serif text-[#1a1a1a] text-sm leading-relaxed mb-4 whitespace-pre-wrap">
+                        {letter.content}
+                      </p>
+                      <div className="text-right text-[10px] text-[#707070] font-mono">
+                        Delivered: {new Date(letter.deliverAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+
           {/* TAB 1: PHOTOGRAPH GALLERY */}
           {activeTab === 'photos' && (
             <motion.div

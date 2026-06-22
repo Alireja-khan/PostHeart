@@ -84,31 +84,27 @@ export default function MemoryTimelinePage() {
   ];
 
   useEffect(() => {
-    const saved = localStorage.getItem('dear_you_timeline_milestones');
-    if (saved) {
+    const fetchMilestones = async () => {
       try {
-        setMilestones(JSON.parse(saved));
+        const response = await fetch('/api/timeline');
+        const data = await response.json();
+        if (data.success && data.data) {
+          setMilestones(data.data.length > 0 ? data.data : defaultMilestones);
+        } else {
+          setMilestones(defaultMilestones);
+        }
       } catch (e) {
         setMilestones(defaultMilestones);
-        localStorage.setItem('dear_you_timeline_milestones', JSON.stringify(defaultMilestones));
       }
-    } else {
-      setMilestones(defaultMilestones);
-      localStorage.setItem('dear_you_timeline_milestones', JSON.stringify(defaultMilestones));
-    }
+    };
+    fetchMilestones();
   }, []);
 
-  const saveMilestones = (newMilestones: Milestone[]) => {
-    setMilestones(newMilestones);
-    localStorage.setItem('dear_you_timeline_milestones', JSON.stringify(newMilestones));
-  };
-
-  const handleAddMilestone = (e: React.FormEvent) => {
+  const handleAddMilestone = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !date || !location || !description) return;
 
-    const newMilestone: Milestone = {
-      id: `milestone-${Date.now()}`,
+    const newMilestonePayload = {
       title,
       date,
       location,
@@ -117,7 +113,20 @@ export default function MemoryTimelinePage() {
       category
     };
 
-    saveMilestones([...milestones, newMilestone]);
+    try {
+      const response = await fetch('/api/timeline', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newMilestonePayload)
+      });
+      const data = await response.json();
+      if (data.success) {
+        setMilestones([...milestones, data.data]);
+      }
+    } catch(err) {
+      console.error(err);
+    }
+    
     setIsAddModalOpen(false);
     
     // Clear fields
@@ -129,10 +138,13 @@ export default function MemoryTimelinePage() {
     setCategory('date');
   };
 
-  const handleDeleteMilestone = (id: string) => {
+  const handleDeleteMilestone = async (id: string) => {
     if (confirm('Are you sure you want to delete this memory milestone?')) {
+      if (!id.startsWith('default-')) {
+        await fetch(`/api/timeline?id=${id}`, { method: 'DELETE' });
+      }
       const updated = milestones.filter(m => m.id !== id);
-      saveMilestones(updated);
+      setMilestones(updated);
       setSelectedMilestone(null);
     }
   };
