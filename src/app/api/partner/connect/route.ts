@@ -42,6 +42,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
+    // Check if user has a partner
+    if (currentUser.partnerId) {
+      return NextResponse.json({ message: "You already have a partner" }, { status: 400 });
+    }
+
+    if (partner.partnerId) {
+      return NextResponse.json({ message: "This user already has a partner" }, { status: 400 });
+    }
+
     // Check if a request already exists
     const existingRequest = await prisma.connectionRequest.findFirst({
       where: {
