@@ -21,7 +21,17 @@ export async function GET() {
         avatarUrl: true,
         bio: true,
         isPublic: true,
-        showEmail: true
+        showEmail: true,
+        createdAt: true,
+        partnerId: true,
+        _count: {
+          select: {
+            letters: true,
+            received: true,
+            milestones: true,
+            keepsakes: true
+          }
+        }
       }
     })
 
