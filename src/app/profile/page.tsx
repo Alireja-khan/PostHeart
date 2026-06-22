@@ -1,8 +1,8 @@
 "use client"
 import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { Mail, Save, Loader2, Image as ImageIcon, CheckCircle2, Calendar, Send, Inbox, Archive, Heart, User, Quote } from "lucide-react"
 
 type ProfileStats = {
@@ -15,6 +15,8 @@ type ProfileStats = {
 export default function Profile() {
   const { data: session, status, update } = useSession()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const isEditing = searchParams.get("edit") === "true"
   
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -96,16 +98,16 @@ export default function Profile() {
   const currentAvatar = avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${name || session?.user?.email}`
 
   return (
-    <div className="min-h-screen bg-[#f9f8f6] py-16 px-8 md:px-16 xl:px-32">
+    <div className="min-h-screen bg-[#f9f8f6] py-16 px-8 md:px-16 xl:px-32 overflow-x-hidden">
       <div className="max-w-[1600px] mx-auto">
-        <div className="flex flex-col lg:flex-row justify-between gap-16 xl:gap-32">
+        <div className={`flex flex-col lg:flex-row transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isEditing ? 'justify-between gap-16 xl:gap-32' : 'justify-center'}`}>
           
-          {/* LEFT COLUMN: IDENTITY (Pinned to left side) */}
+          {/* LEFT COLUMN: IDENTITY */}
           <motion.div 
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className="w-full lg:w-[45%] max-w-xl shrink-0"
+            layout
+            initial={false}
+            animate={{ x: 0 }}
+            className={`w-full max-w-xl shrink-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isEditing ? 'lg:w-[45%]' : 'lg:w-full max-w-2xl'}`}
           >
             <div className="sticky top-16 space-y-12">
               
@@ -182,112 +184,115 @@ export default function Profile() {
             </div>
           </motion.div>
 
-          {/* SPACE IN THE MIDDLE (Auto-created by justify-between and max-widths) */}
-
-          {/* RIGHT COLUMN: SETTINGS (Pinned to right side) */}
-          <motion.div 
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
-            className="w-full lg:w-[45%] max-w-2xl"
-          >
-            <div className="bg-white rounded-[2rem] p-8 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[#f0eee9]">
-              
-              <div className="mb-10">
-                <h2 className="text-2xl font-serif font-bold text-[#1a1a1a]">Profile Settings</h2>
-                <p className="text-[#707070] mt-2">Adjust your presentation and privacy preferences.</p>
-              </div>
-
-              <div className="space-y-10">
-                {/* Inputs Section */}
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-xs font-bold text-[#a0a0a0] mb-2 uppercase tracking-widest">Display Name</label>
-                    <input 
-                      type="text" 
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="Your Name"
-                      className="w-full bg-transparent border-b-2 border-[#e6e4df] py-3 text-xl font-serif focus:outline-none focus:border-[#c2410c] transition-colors text-[#1a1a1a] placeholder:text-[#d0d0d0]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-[#a0a0a0] mb-2 uppercase tracking-widest">Avatar Image URL</label>
-                    <input 
-                      type="text" 
-                      value={avatarUrl}
-                      onChange={(e) => setAvatarUrl(e.target.value)}
-                      placeholder="https://example.com/photo.jpg"
-                      className="w-full bg-transparent border-b-2 border-[#e6e4df] py-3 text-lg focus:outline-none focus:border-[#c2410c] transition-colors text-[#1a1a1a] placeholder:text-[#d0d0d0]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-[#a0a0a0] mb-3 uppercase tracking-widest">Biography</label>
-                    <textarea 
-                      value={bio}
-                      onChange={(e) => setBio(e.target.value)}
-                      placeholder="Share a little about yourself..."
-                      rows={4}
-                      className="w-full bg-[#f9f8f6] border border-[#e6e4df] rounded-2xl p-5 text-lg font-serif focus:outline-none focus:ring-1 focus:ring-[#c2410c] focus:border-[#c2410c] transition-all text-[#1a1a1a] resize-none"
-                    />
-                  </div>
-                </div>
-
-                {/* Privacy Section */}
-                <div className="pt-8 border-t border-[#f0eee9] space-y-8">
-                  <h3 className="text-lg font-serif font-bold text-[#1a1a1a]">Privacy Controls</h3>
+          {/* RIGHT COLUMN: SETTINGS (Animates in when isEditing is true) */}
+          <AnimatePresence>
+            {isEditing && (
+              <motion.div 
+                layout
+                initial={{ opacity: 0, x: 50, scale: 0.95 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: 50, scale: 0.95, transition: { duration: 0.4, ease: "easeIn" } }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                className="w-full lg:w-[45%] max-w-2xl origin-right"
+              >
+                <div className="bg-white rounded-[2rem] p-8 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[#f0eee9]">
                   
-                  <label className="flex items-center justify-between cursor-pointer group">
-                    <div className="pr-8">
-                      <div className="font-medium text-[#1a1a1a] text-lg">Public Visibility</div>
-                      <div className="text-sm text-[#707070] mt-1 leading-relaxed">
-                        Allow others to search for you by email. Turn off to remain completely hidden.
+                  <div className="mb-10">
+                    <h2 className="text-2xl font-serif font-bold text-[#1a1a1a]">Profile Settings</h2>
+                    <p className="text-[#707070] mt-2">Adjust your presentation and privacy preferences.</p>
+                  </div>
+
+                  <div className="space-y-10">
+                    {/* Inputs Section */}
+                    <div className="space-y-6">
+                      <div>
+                        <label className="block text-xs font-bold text-[#a0a0a0] mb-2 uppercase tracking-widest">Display Name</label>
+                        <input 
+                          type="text" 
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          placeholder="Your Name"
+                          className="w-full bg-transparent border-b-2 border-[#e6e4df] py-3 text-xl font-serif focus:outline-none focus:border-[#c2410c] transition-colors text-[#1a1a1a] placeholder:text-[#d0d0d0]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-[#a0a0a0] mb-2 uppercase tracking-widest">Avatar Image URL</label>
+                        <input 
+                          type="text" 
+                          value={avatarUrl}
+                          onChange={(e) => setAvatarUrl(e.target.value)}
+                          placeholder="https://example.com/photo.jpg"
+                          className="w-full bg-transparent border-b-2 border-[#e6e4df] py-3 text-lg focus:outline-none focus:border-[#c2410c] transition-colors text-[#1a1a1a] placeholder:text-[#d0d0d0]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-[#a0a0a0] mb-3 uppercase tracking-widest">Biography</label>
+                        <textarea 
+                          value={bio}
+                          onChange={(e) => setBio(e.target.value)}
+                          placeholder="Share a little about yourself..."
+                          rows={4}
+                          className="w-full bg-[#f9f8f6] border border-[#e6e4df] rounded-2xl p-5 text-lg font-serif focus:outline-none focus:ring-1 focus:ring-[#c2410c] focus:border-[#c2410c] transition-all text-[#1a1a1a] resize-none"
+                        />
                       </div>
                     </div>
-                    <div className="relative shrink-0">
-                      <input type="checkbox" className="sr-only" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} />
-                      <div className={`block w-14 h-8 rounded-full transition-colors ${isPublic ? 'bg-[#c2410c]' : 'bg-[#e6e4df]'}`}></div>
-                      <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${isPublic ? 'transform translate-x-6' : ''} shadow-sm`}></div>
-                    </div>
-                  </label>
 
-                  <label className="flex items-center justify-between cursor-pointer group">
-                    <div className="pr-8">
-                      <div className={`font-medium text-lg ${!isPublic ? 'text-[#a0a0a0]' : 'text-[#1a1a1a]'}`}>Display Email</div>
-                      <div className={`text-sm mt-1 leading-relaxed ${!isPublic ? 'text-[#a0a0a0]' : 'text-[#707070]'}`}>
-                        Show your email address on your public profile. Disabled if profile is hidden.
-                      </div>
+                    {/* Privacy Section */}
+                    <div className="pt-8 border-t border-[#f0eee9] space-y-8">
+                      <h3 className="text-lg font-serif font-bold text-[#1a1a1a]">Privacy Controls</h3>
+                      
+                      <label className="flex items-center justify-between cursor-pointer group">
+                        <div className="pr-8">
+                          <div className="font-medium text-[#1a1a1a] text-lg">Public Visibility</div>
+                          <div className="text-sm text-[#707070] mt-1 leading-relaxed">
+                            Allow others to search for you by email. Turn off to remain completely hidden.
+                          </div>
+                        </div>
+                        <div className="relative shrink-0">
+                          <input type="checkbox" className="sr-only" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} />
+                          <div className={`block w-14 h-8 rounded-full transition-colors ${isPublic ? 'bg-[#c2410c]' : 'bg-[#e6e4df]'}`}></div>
+                          <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${isPublic ? 'transform translate-x-6' : ''} shadow-sm`}></div>
+                        </div>
+                      </label>
+
+                      <label className="flex items-center justify-between cursor-pointer group">
+                        <div className="pr-8">
+                          <div className={`font-medium text-lg ${!isPublic ? 'text-[#a0a0a0]' : 'text-[#1a1a1a]'}`}>Display Email</div>
+                          <div className={`text-sm mt-1 leading-relaxed ${!isPublic ? 'text-[#a0a0a0]' : 'text-[#707070]'}`}>
+                            Show your email address on your public profile. Disabled if profile is hidden.
+                          </div>
+                        </div>
+                        <div className="relative shrink-0">
+                          <input type="checkbox" className="sr-only" checked={showEmail} onChange={(e) => setShowEmail(e.target.checked)} disabled={!isPublic} />
+                          <div className={`block w-14 h-8 rounded-full transition-colors ${showEmail ? 'bg-[#c2410c]' : 'bg-[#e6e4df]'} ${!isPublic && 'opacity-50'}`}></div>
+                          <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${showEmail ? 'transform translate-x-6' : ''} shadow-sm`}></div>
+                        </div>
+                      </label>
                     </div>
-                    <div className="relative shrink-0">
-                      <input type="checkbox" className="sr-only" checked={showEmail} onChange={(e) => setShowEmail(e.target.checked)} disabled={!isPublic} />
-                      <div className={`block w-14 h-8 rounded-full transition-colors ${showEmail ? 'bg-[#c2410c]' : 'bg-[#e6e4df]'} ${!isPublic && 'opacity-50'}`}></div>
-                      <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${showEmail ? 'transform translate-x-6' : ''} shadow-sm`}></div>
+
+                    {/* Save Button */}
+                    <div className="pt-8">
+                      <button 
+                        onClick={handleSave}
+                        disabled={saving}
+                        className={`w-full flex items-center justify-center px-8 py-5 rounded-2xl font-bold text-lg transition-all ${
+                          saved 
+                            ? "bg-[#2e7d32] text-white shadow-lg shadow-green-900/10" 
+                            : "bg-[#1a1a1a] text-white hover:bg-black hover:-translate-y-1 shadow-xl shadow-black/10"
+                        } disabled:opacity-50 disabled:hover:translate-y-0`}
+                      >
+                        {saving ? <Loader2 className="w-6 h-6 animate-spin mr-3" /> : (saved ? <CheckCircle2 className="w-6 h-6 mr-3" /> : <Save className="w-6 h-6 mr-3" />)}
+                        {saved ? "Saved Successfully" : "Update Profile"}
+                      </button>
                     </div>
-                  </label>
+
+                  </div>
                 </div>
-
-                {/* Save Button */}
-                <div className="pt-8">
-                  <button 
-                    onClick={handleSave}
-                    disabled={saving}
-                    className={`w-full flex items-center justify-center px-8 py-5 rounded-2xl font-bold text-lg transition-all ${
-                      saved 
-                        ? "bg-[#2e7d32] text-white shadow-lg shadow-green-900/10" 
-                        : "bg-[#1a1a1a] text-white hover:bg-black hover:-translate-y-1 shadow-xl shadow-black/10"
-                    } disabled:opacity-50 disabled:hover:translate-y-0`}
-                  >
-                    {saving ? <Loader2 className="w-6 h-6 animate-spin mr-3" /> : (saved ? <CheckCircle2 className="w-6 h-6 mr-3" /> : <Save className="w-6 h-6 mr-3" />)}
-                    {saved ? "Saved Successfully" : "Update Profile"}
-                  </button>
-                </div>
-
-              </div>
-            </div>
-          </motion.div>
-
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>
