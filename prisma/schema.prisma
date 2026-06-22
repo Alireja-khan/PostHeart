@@ -16,6 +16,7 @@ model User {
   updatedAt DateTime? @updatedAt
   
   avatarUrl String?
+  coverUrl  String?
   bio       String?
   isPublic  Boolean  @default(true)
   showEmail Boolean  @default(false)

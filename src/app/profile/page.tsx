@@ -1,9 +1,9 @@
 "use client"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Save, Loader2, Image as ImageIcon, CheckCircle2, Calendar, Send, Inbox, Archive, Heart, User, Shield, LayoutDashboard } from "lucide-react"
+import { Save, Loader2, Image as ImageIcon, CheckCircle2, Calendar, Send, Inbox, Archive, Heart, User, Shield, LayoutDashboard, Camera } from "lucide-react"
 
 type ProfileStats = {
   letters: number;
@@ -25,11 +25,14 @@ export default function Profile() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [uploadingCover, setUploadingCover] = useState(false)
   
   const [activeTab, setActiveTab] = useState("overview")
   
   const [name, setName] = useState("")
   const [avatarUrl, setAvatarUrl] = useState("")
+  const [coverUrl, setCoverUrl] = useState("")
   const [bio, setBio] = useState("")
   const [isPublic, setIsPublic] = useState(true)
   const [showEmail, setShowEmail] = useState(false)
@@ -41,6 +44,9 @@ export default function Profile() {
   
   // Real-time tracker progress
   const [progressPercent, setProgressPercent] = useState(0)
+
+  const avatarInputRef = useRef<HTMLInputElement>(null)
+  const coverInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -55,6 +61,7 @@ export default function Profile() {
         .then(data => {
           setName(data.name || session?.user?.name || "")
           setAvatarUrl(data.avatarUrl || "")
+          setCoverUrl(data.coverUrl || "")
           setBio(data.bio || "")
           setIsPublic(data.isPublic ?? true)
           setShowEmail(data.showEmail ?? false)
@@ -104,14 +111,23 @@ export default function Profile() {
     }
   }, [inTransitLetter])
 
-  const handleSave = async () => {
+  const handleSave = async (customCoverUrl?: string, customAvatarUrl?: string) => {
     setSaving(true)
     setSaved(false)
     try {
+      const payload = {
+        name,
+        avatarUrl: customAvatarUrl !== undefined ? customAvatarUrl : avatarUrl,
+        coverUrl: customCoverUrl !== undefined ? customCoverUrl : coverUrl,
+        bio,
+        isPublic,
+        showEmail
+      }
+
       const res = await fetch("/api/profile/update", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, avatarUrl, bio, isPublic, showEmail })
+        body: JSON.stringify(payload)
       })
       if (res.ok) {
         setSaved(true)
@@ -127,6 +143,40 @@ export default function Profile() {
     }
   }
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'cover') => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (type === 'avatar') setUploadingAvatar(true)
+    if (type === 'cover') setUploadingCover(true)
+
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData
+      })
+      
+      if (res.ok) {
+        const data = await res.json()
+        if (type === 'avatar') {
+          setAvatarUrl(data.url)
+          await handleSave(undefined, data.url)
+        } else {
+          setCoverUrl(data.url)
+          await handleSave(data.url, undefined)
+        }
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      if (type === 'avatar') setUploadingAvatar(false)
+      if (type === 'cover') setUploadingCover(false)
+    }
+  }
+
   if (status === "loading" || loading) {
     return <div className="min-h-screen p-8 flex items-center justify-center bg-[#f4f5f7]">
       <Loader2 className="animate-spin text-[#1a1a1a] w-8 h-8" />
@@ -134,6 +184,7 @@ export default function Profile() {
   }
 
   const currentAvatar = avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${name || session?.user?.email}`
+  const currentCover = coverUrl || "https://images.unsplash.com/photo-1518621736915-f3b1c41bfd00?q=80&w=2000&auto=format&fit=crop"
 
   const tabs = [
     { id: "overview", label: "Overview" },
@@ -151,27 +202,37 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-[#f4f5f7] relative">
       
+      {/* Hidden File Inputs */}
+      <input type="file" ref={avatarInputRef} onChange={(e) => handleFileUpload(e, 'avatar')} className="hidden" accept="image/*" />
+      <input type="file" ref={coverInputRef} onChange={(e) => handleFileUpload(e, 'cover')} className="hidden" accept="image/*" />
+
       {/* IN-TRANSIT BIRD TRACKER */}
       {inTransitLetter && (
-        <div className="absolute top-0 left-0 right-0 h-12 z-10 pointer-events-none overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-16 z-10 pointer-events-none overflow-hidden">
           {/* Tracking Line */}
           <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-black/10 border-dashed border-b border-[#c2410c]/30"></div>
           
           {/* The Bird */}
           <motion.div 
-            className="absolute top-1/2 -translate-y-1/2 w-8 h-8"
+            className="absolute top-1/2 -translate-y-1/2 w-12 h-12"
             initial={{ left: `${progressPercent}%` }}
             animate={{ left: `${progressPercent}%` }}
             transition={{ ease: "linear", duration: 1 }}
           >
-            {/* SVG Bird Abstract */}
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-[#111111]">
-              <path d="M2.3 12C2.3 12 7.1 8.5 12 8.5C16.9 8.5 21.7 12 21.7 12C21.7 12 18.2 16.2 12 16.2C5.8 16.2 2.3 12 2.3 12Z" fill="currentColor"/>
-              <path d="M12 8.5C12 8.5 10 3 12 3C14 3 12 8.5 12 8.5Z" fill="currentColor">
-                {/* Flapping Animation */}
-                <animate attributeName="d" 
-                  values="M12 8.5C12 8.5 10 3 12 3C14 3 12 8.5 12 8.5Z; M12 8.5C12 8.5 6 12 12 12C18 12 12 8.5 12 8.5Z; M12 8.5C12 8.5 10 3 12 3C14 3 12 8.5 12 8.5Z" 
-                  dur="0.6s" repeatCount="indefinite" 
+            {/* Realistic Bird Silhouette Animation */}
+            <svg viewBox="0 0 100 100" className="w-full h-full text-[#111111]" style={{ transform: "scaleX(-1)" }}>
+              <path fill="currentColor">
+                <animate 
+                  attributeName="d"
+                  dur="0.4s"
+                  repeatCount="indefinite"
+                  values="
+                    M 30,50 Q 50,20 70,10 Q 60,30 50,40 Q 70,40 90,45 Q 70,50 50,50 Q 30,55 10,60 Q 20,50 30,50 Z;
+                    M 30,50 Q 50,40 70,30 Q 60,40 50,50 Q 70,45 90,40 Q 70,50 50,60 Q 30,55 10,60 Q 20,50 30,50 Z;
+                    M 30,50 Q 50,60 70,70 Q 60,60 50,50 Q 70,45 90,40 Q 70,50 50,60 Q 30,55 10,60 Q 20,50 30,50 Z;
+                    M 30,50 Q 50,40 70,30 Q 60,40 50,50 Q 70,45 90,40 Q 70,50 50,60 Q 30,55 10,60 Q 20,50 30,50 Z;
+                    M 30,50 Q 50,20 70,10 Q 60,30 50,40 Q 70,40 90,45 Q 70,50 50,50 Q 30,55 10,60 Q 20,50 30,50 Z
+                  "
                 />
               </path>
             </svg>
@@ -181,22 +242,46 @@ export default function Profile() {
 
       {/* Global Header with Cover Photo */}
       <div className="bg-white border-b border-[#eaeaea]">
-        <div className="relative h-64 lg:h-72 w-full overflow-hidden">
-          {/* Cover Image Placeholder (Can be dynamic later, using a beautiful default for now) */}
+        <div className="relative h-64 lg:h-72 w-full overflow-hidden group">
+          {/* Cover Image */}
           <div className="absolute inset-0 bg-[#111111] overflow-hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="https://images.unsplash.com/photo-1518621736915-f3b1c41bfd00?q=80&w=2000&auto=format&fit=crop" alt="Cover" className="w-full h-full object-cover opacity-60" />
+            <img src={currentCover} alt="Cover" className="w-full h-full object-cover opacity-60 transition-transform duration-700 group-hover:scale-105" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#111111] to-transparent opacity-80"></div>
           </div>
+          
+          {/* Cover Upload Button */}
+          <button 
+            onClick={() => coverInputRef.current?.click()}
+            disabled={uploadingCover}
+            className="absolute top-6 right-6 z-20 bg-black/40 hover:bg-black/60 backdrop-blur-md text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center transition-colors border border-white/20 shadow-lg"
+          >
+            {uploadingCover ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Camera className="w-4 h-4 mr-2" />}
+            Change Cover
+          </button>
           
           {/* Header Content */}
           <div className="absolute bottom-0 left-0 right-0">
             <div className="max-w-7xl mx-auto px-6 lg:px-8 pb-8">
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div className="flex items-end gap-6 relative z-10">
-                  <div className="h-24 w-24 bg-white rounded-full flex items-center justify-center border-4 border-[#111111] overflow-hidden shrink-0 shadow-xl">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={currentAvatar} alt="Profile" className="w-full h-full object-cover" />
+                  <div className="relative group/avatar">
+                    <div className="h-24 w-24 bg-white rounded-full flex items-center justify-center border-4 border-[#111111] overflow-hidden shrink-0 shadow-xl relative">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={currentAvatar} alt="Profile" className="w-full h-full object-cover" />
+                      
+                      {uploadingAvatar && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                          <Loader2 className="w-6 h-6 animate-spin text-white" />
+                        </div>
+                      )}
+                    </div>
+                    <button 
+                      onClick={() => avatarInputRef.current?.click()}
+                      className="absolute bottom-0 right-0 bg-[#111111] text-white p-2 rounded-full border-2 border-white shadow-lg hover:bg-black transition-colors"
+                    >
+                      <Camera className="w-4 h-4" />
+                    </button>
                   </div>
                   <div className="mb-2">
                     <h1 className="text-3xl md:text-4xl font-semibold text-white tracking-tight">{name || "Anonymous User"}</h1>
