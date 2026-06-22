@@ -3,6 +3,8 @@ import { Lora, Caveat } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import { Providers } from "@/components/Providers";
+import TopBar from "@/components/TopBar";
+import NotificationSidebar from "@/components/NotificationSidebar";
 
 const lora = Lora({
   variable: "--font-lora",
@@ -33,8 +35,10 @@ export default function RootLayout({
         <Providers>
           <Sidebar />
           <div className="flex-1 h-full overflow-y-auto relative">
+            <TopBar />
             {children}
           </div>
+          <NotificationSidebar />
         </Providers>
       </body>
     </html>

@@ -9,27 +9,6 @@ import { PenLine, Mailbox, Clock, Vault, Heart, Map, Settings, User, LogIn, User
 export default function Sidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
-  const [unreadCount, setUnreadCount] = useState(0);
-
-  useEffect(() => {
-    if (!session) return;
-
-    const fetchUnread = async () => {
-      try {
-        const res = await fetch('/api/notifications/unread');
-        if (res.ok) {
-          const data = await res.json();
-          setUnreadCount(data.unread);
-        }
-      } catch (e) {
-        // silently ignore
-      }
-    };
-
-    fetchUnread();
-    const interval = setInterval(fetchUnread, 15000); // 15 seconds
-    return () => clearInterval(interval);
-  }, [session]);
 
   return (
     <aside className="w-64 h-full flex flex-col bg-white border-r border-[#e6e4df] z-20">
@@ -59,19 +38,6 @@ export default function Sidebar() {
             <NavItem href="/vault" icon={<Vault size={18} />} label="Keepsake Box" active={pathname === '/vault'} />
             <NavItem href="/mood" icon={<Heart size={18} />} label="Couple Board" active={pathname === '/mood'} />
             <NavItem href="/connect" icon={<Users size={18} />} label="Partner" active={pathname === '/connect'} />
-            <NavItem 
-              href="/notifications" 
-              icon={
-                <div className="relative">
-                  <Bell size={18} />
-                  {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
-                  )}
-                </div>
-              } 
-              label="Notifications" 
-              active={pathname === '/notifications'} 
-            />
             
             <div className="my-6 border-t border-[#e6e4df] mx-6"></div>
           </>
