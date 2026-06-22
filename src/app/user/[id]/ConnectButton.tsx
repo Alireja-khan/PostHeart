@@ -2,12 +2,13 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Users, ArrowRight, Loader2 } from "lucide-react"
+import { Users, ArrowRight, Loader2, Clock } from "lucide-react"
 
-export default function ConnectButton({ partnerId }: { partnerId: string }) {
+export default function ConnectButton({ partnerId, initialPending = false }: { partnerId: string, initialPending?: boolean }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [isPending, setIsPending] = useState(initialPending)
 
   const handleConnect = async () => {
     setLoading(true)
@@ -23,7 +24,7 @@ export default function ConnectButton({ partnerId }: { partnerId: string }) {
       const data = await res.json()
 
       if (res.ok) {
-        router.push("/")
+        setIsPending(true)
         router.refresh()
       } else {
         setError(data.message || "Failed to connect")
@@ -33,6 +34,14 @@ export default function ConnectButton({ partnerId }: { partnerId: string }) {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (isPending) {
+    return (
+      <div className="w-full bg-[#f9f8f6] text-[#707070] rounded-xl py-3 font-medium flex items-center justify-center gap-2 border border-[#e6e4df]">
+        <Clock className="w-5 h-5" /> Request Pending...
+      </div>
+    )
   }
 
   return (

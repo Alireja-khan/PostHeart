@@ -27,6 +27,10 @@ model User {
   partner   User?    @relation("PartnerRelation", fields: [partnerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   partnerOf User[]   @relation("PartnerRelation")
   
+  sentRequests     ConnectionRequest[] @relation("SentRequests")
+  receivedRequests ConnectionRequest[] @relation("ReceivedRequests")
+  notifications    Notification[]
+  
   milestones     TimelineMilestone[]
   keepsakes      KeepsakeItem[]
   corkboardItems CorkboardItem[]
@@ -90,5 +94,29 @@ model CorkboardItem {
   color       String?  // for sticky or tape
   
   userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model ConnectionRequest {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  senderId    String   @db.ObjectId
+  receiverId  String   @db.ObjectId
+  status      String   @default("PENDING") // PENDING, ACCEPTED, REJECTED
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  sender      User     @relation("SentRequests", fields: [senderId], references: [id])
+  receiver    User     @relation("ReceivedRequests", fields: [receiverId], references: [id])
+}
+
+model Notification {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  title       String
+  message     String
+  read        Boolean  @default(false)
+  type        String   @default("SYSTEM") // CONNECTION_REQUEST, CONNECTION_ACCEPTED, SYSTEM
+  createdAt   DateTime @default(now())
+  
   user        User     @relation(fields: [userId], references: [id])
 }

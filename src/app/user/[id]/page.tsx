@@ -4,10 +4,20 @@ import { User, Mail, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import ConnectButton from "./ConnectButton"
 
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "../../api/auth/[...nextauth]/route"
+
 const prisma = new PrismaClient()
 
 export default async function PublicProfile({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const session = await getServerSession(authOptions);
+  
+  let currentUser = null;
+  if (session?.user?.email) {
+    currentUser = await prisma.user.findUnique({ where: { email: session.user.email } });
+  }
+
   const user = await prisma.user.findUnique({
     where: { id },
     select: {
@@ -23,6 +33,28 @@ export default async function PublicProfile({ params }: { params: Promise<{ id: 
 
   if (!user || !user.isPublic) {
     notFound()
+  }
+
+  // Check connection status
+  let isPending = false;
+  let isPartner = false;
+
+  if (currentUser) {
+    if (currentUser.partnerId === user.id) {
+      isPartner = true;
+    } else {
+      const existingRequest = await prisma.connectionRequest.findFirst({
+        where: {
+          OR: [
+            { senderId: currentUser.id, receiverId: user.id, status: "PENDING" },
+            { senderId: user.id, receiverId: currentUser.id, status: "PENDING" }
+          ]
+        }
+      });
+      if (existingRequest) {
+        isPending = true;
+      }
+    }
   }
 
   const currentAvatar = user.avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${user.name || user.email}`
@@ -58,7 +90,15 @@ export default async function PublicProfile({ params }: { params: Promise<{ id: 
             </div>
           )}
 
-          <ConnectButton partnerId={user.id} />
+          {currentUser && currentUser.id !== user.id && !isPartner && (
+            <ConnectButton partnerId={user.id} initialPending={isPending} />
+          )}
+          
+          {isPartner && (
+            <div className="w-full bg-[#e8f5e9] text-[#2e7d32] rounded-xl py-3 font-medium text-center border border-[#c8e6c9]">
+              You are Partners
+            </div>
+          )}
         </div>
       </div>
     </div>

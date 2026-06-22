@@ -42,18 +42,40 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    // Connect both users to each other
-    await prisma.user.update({
-      where: { id: currentUser.id },
-      data: { partnerId: partner.id }
+    // Check if a request already exists
+    const existingRequest = await prisma.connectionRequest.findFirst({
+      where: {
+        OR: [
+          { senderId: currentUser.id, receiverId: partner.id, status: "PENDING" },
+          { senderId: partner.id, receiverId: currentUser.id, status: "PENDING" }
+        ]
+      }
     });
 
-    await prisma.user.update({
-      where: { id: partner.id },
-      data: { partnerId: currentUser.id }
+    if (existingRequest) {
+      return NextResponse.json({ message: "A connection request is already pending between you two" }, { status: 400 });
+    }
+
+    // Create a pending connection request
+    await prisma.connectionRequest.create({
+      data: {
+        senderId: currentUser.id,
+        receiverId: partner.id,
+        status: "PENDING"
+      }
     });
 
-    return NextResponse.json({ message: "Successfully connected with partner" }, { status: 200 });
+    // Notify the partner
+    await prisma.notification.create({
+      data: {
+        userId: partner.id,
+        title: "New Connection Request",
+        message: `${currentUser.name || currentUser.email} wants to connect with you!`,
+        type: "CONNECTION_REQUEST"
+      }
+    });
+
+    return NextResponse.json({ message: "Connection request sent successfully" }, { status: 200 });
   } catch (error) {
     console.error("Partner connect error:", error);
     return NextResponse.json({ message: "Internal server error" }, { status: 500 });
