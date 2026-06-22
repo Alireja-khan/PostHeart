@@ -33,6 +33,7 @@ export default function NotificationSidebar() {
   useEffect(() => {
     if (isSidebarOpen) {
       fetchData()
+      markAllRead()
     }
   }, [isSidebarOpen])
 
@@ -90,7 +91,7 @@ export default function NotificationSidebar() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({})
       })
-      setNotifications(notifications.map(n => ({ ...n, read: true })))
+      // We don't map notifications here because fetchData will fetch the updated ones
       clearUnread() // Clear the red dot instantly
     } catch (error) {
       console.error("Failed to mark as read", error)
@@ -126,17 +127,6 @@ export default function NotificationSidebar() {
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-8">
-          
-          <div className="flex justify-end">
-            {notifications.some(n => !n.read) && (
-              <button 
-                onClick={markAllRead}
-                className="text-sm font-medium text-[#c2410c] hover:underline"
-              >
-                Mark all as read
-              </button>
-            )}
-          </div>
 
           {loading ? (
             <div className="flex justify-center py-12">
