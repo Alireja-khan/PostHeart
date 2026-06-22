@@ -1,9 +1,9 @@
 "use client"
 import { useSession } from "next-auth/react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Mail, Save, Loader2, Image as ImageIcon, CheckCircle2, Calendar, Send, Inbox, Archive, Heart, User, Quote } from "lucide-react"
+import { Save, Loader2, Image as ImageIcon, CheckCircle2, Calendar, Send, Inbox, Archive, Heart, User, Shield, LayoutDashboard } from "lucide-react"
 
 type ProfileStats = {
   letters: number;
@@ -15,12 +15,12 @@ type ProfileStats = {
 export default function Profile() {
   const { data: session, status, update } = useSession()
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const isEditing = searchParams.get("edit") === "true"
   
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  
+  const [activeTab, setActiveTab] = useState("overview")
   
   const [name, setName] = useState("")
   const [avatarUrl, setAvatarUrl] = useState("")
@@ -91,210 +91,334 @@ export default function Profile() {
 
   if (status === "loading" || loading) {
     return <div className="min-h-screen p-8 flex items-center justify-center bg-[#f9f8f6]">
-      <Loader2 className="animate-spin text-[#c2410c] w-8 h-8" />
+      <Loader2 className="animate-spin text-[#1a1a1a] w-8 h-8" />
     </div>
   }
 
   const currentAvatar = avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${name || session?.user?.email}`
 
+  const tabs = [
+    { id: "overview", label: "Overview" },
+    { id: "settings", label: "Settings" },
+    { id: "privacy", label: "Privacy" },
+    { id: "partner", label: "Partner Hub" },
+  ]
+
+  const tabContentVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+    exit: { opacity: 0, y: -10, transition: { duration: 0.2 } }
+  }
+
   return (
-    <div className="min-h-screen bg-[#f9f8f6] py-16 px-8 md:px-16 xl:px-32 overflow-x-hidden">
-      <div className="max-w-[1600px] mx-auto">
-        <div className={`flex flex-col lg:flex-row transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isEditing ? 'justify-between gap-16 xl:gap-32' : 'justify-center'}`}>
-          
-          {/* LEFT COLUMN: IDENTITY */}
-          <motion.div 
-            layout
-            initial={false}
-            animate={{ x: 0 }}
-            className={`w-full max-w-xl shrink-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isEditing ? 'lg:w-[45%]' : 'lg:w-full max-w-2xl'}`}
-          >
-            <div className="sticky top-16 space-y-12">
-              
-              {/* Header Profile Identity */}
+    <div className="min-h-screen bg-[#fafafa]">
+      
+      {/* Global Header */}
+      <div className="bg-white border-b border-[#eaeaea]">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 pt-16 pb-12">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="flex items-center gap-6">
+              <div className="h-20 w-20 bg-white rounded-full flex items-center justify-center border border-[#eaeaea] overflow-hidden shrink-0 shadow-sm">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={currentAvatar} alt="Profile" className="w-full h-full object-cover" />
+              </div>
               <div>
-                <div className="h-48 w-48 mb-8 relative">
-                  <div className="absolute inset-0 bg-[#e6e4df] rounded-full translate-x-3 translate-y-3"></div>
-                  <div className="relative h-48 w-48 bg-white rounded-full border border-[#e6e4df] overflow-hidden flex items-center justify-center shadow-sm z-10">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={currentAvatar} alt="Profile" className="w-full h-full object-cover" />
+                <h1 className="text-3xl font-semibold text-[#111]">{name || "Anonymous User"}</h1>
+                <p className="text-[#666] text-sm mt-1">{session?.user?.email}</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              {partnerId ? (
+                <span className="inline-flex items-center px-3 py-1 bg-[#fff0f0] text-[#e00] text-xs font-semibold rounded-full border border-[#ffe0e0]">
+                  <Heart className="w-3 h-3 mr-1.5" /> Partnered
+                </span>
+              ) : (
+                <span className="inline-flex items-center px-3 py-1 bg-[#f5f5f5] text-[#666] text-xs font-semibold rounded-full border border-[#eaeaea]">
+                  Solo Account
+                </span>
+              )}
+              {memberSince && (
+                <span className="inline-flex items-center px-3 py-1 bg-[#f5f5f5] text-[#666] text-xs font-semibold rounded-full border border-[#eaeaea]">
+                  <Calendar className="w-3 h-3 mr-1.5" /> {memberSince}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <nav className="flex space-x-8">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`pb-4 text-sm font-medium transition-colors relative ${
+                  activeTab === tab.id 
+                    ? "text-[#111]" 
+                    : "text-[#666] hover:text-[#111]"
+                }`}
+              >
+                {tab.label}
+                {activeTab === tab.id && (
+                  <motion.div 
+                    layoutId="activeTabIndicator"
+                    className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#111]"
+                  />
+                )}
+              </button>
+            ))}
+          </nav>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <main className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
+        <AnimatePresence mode="wait">
+          
+          {/* OVERVIEW TAB */}
+          {activeTab === "overview" && (
+            <motion.div 
+              key="overview"
+              variants={tabContentVariants}
+              initial="hidden" animate="visible" exit="exit"
+              className="space-y-8"
+            >
+              <h2 className="text-xl font-semibold text-[#111]">Activity Ledger</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="bg-white border border-[#eaeaea] rounded-xl p-6 shadow-sm flex flex-col">
+                  <div className="w-10 h-10 bg-[#fafafa] border border-[#eaeaea] rounded-full flex items-center justify-center mb-4">
+                    <Send className="w-5 h-5 text-[#111]" />
                   </div>
+                  <h3 className="text-3xl font-semibold text-[#111]">{stats.letters}</h3>
+                  <p className="text-sm text-[#666] mt-1">Total Sent Letters</p>
+                </div>
+                
+                <div className="bg-white border border-[#eaeaea] rounded-xl p-6 shadow-sm flex flex-col">
+                  <div className="w-10 h-10 bg-[#fafafa] border border-[#eaeaea] rounded-full flex items-center justify-center mb-4">
+                    <Inbox className="w-5 h-5 text-[#111]" />
+                  </div>
+                  <h3 className="text-3xl font-semibold text-[#111]">{stats.received}</h3>
+                  <p className="text-sm text-[#666] mt-1">Total Received</p>
+                </div>
+                
+                <div className="bg-white border border-[#eaeaea] rounded-xl p-6 shadow-sm flex flex-col">
+                  <div className="w-10 h-10 bg-[#fafafa] border border-[#eaeaea] rounded-full flex items-center justify-center mb-4">
+                    <Archive className="w-5 h-5 text-[#111]" />
+                  </div>
+                  <h3 className="text-3xl font-semibold text-[#111]">{stats.keepsakes}</h3>
+                  <p className="text-sm text-[#666] mt-1">Items in Keepsake Box</p>
                 </div>
 
-                <h1 className="text-5xl md:text-6xl font-serif font-bold text-[#1a1a1a] leading-tight mb-2">
-                  {name || "Anonymous"}
-                </h1>
-                
-                <div className="flex flex-col gap-2 mt-4 text-[#707070] font-serif text-lg">
-                  <span className="flex items-center"><Mail className="w-5 h-5 mr-3 text-[#c2410c]" /> {session?.user?.email}</span>
-                  {memberSince && (
-                    <span className="flex items-center"><Calendar className="w-5 h-5 mr-3 text-[#c2410c]" /> Joined {memberSince}</span>
-                  )}
-                  {partnerId && (
-                    <span className="flex items-center"><Heart className="w-5 h-5 mr-3 text-[#c2410c]" /> Partnered</span>
-                  )}
+                <div className="bg-white border border-[#eaeaea] rounded-xl p-6 shadow-sm flex flex-col">
+                  <div className="w-10 h-10 bg-[#fafafa] border border-[#eaeaea] rounded-full flex items-center justify-center mb-4">
+                    <LayoutDashboard className="w-5 h-5 text-[#111]" />
+                  </div>
+                  <h3 className="text-3xl font-semibold text-[#111]">{stats.milestones}</h3>
+                  <p className="text-sm text-[#666] mt-1">Milestones Recorded</p>
                 </div>
               </div>
 
-              {/* Bio Quote Style */}
               {bio && (
-                <div className="relative">
-                  <Quote className="absolute -left-6 -top-4 w-10 h-10 text-[#e6e4df] opacity-50 transform -scale-x-100" />
-                  <p className="text-xl font-serif italic text-[#4a4a4a] leading-relaxed relative z-10 pl-2">
+                <div className="bg-white border border-[#eaeaea] rounded-xl p-8 shadow-sm max-w-3xl">
+                  <h2 className="text-sm font-semibold text-[#666] uppercase tracking-wider mb-4">Biography</h2>
+                  <p className="text-lg text-[#111] leading-relaxed">
                     {bio}
                   </p>
                 </div>
               )}
+            </motion.div>
+          )}
 
-              {/* Minimal Stats */}
-              <div className="pt-8 border-t border-[#e6e4df]">
-                <h3 className="text-sm font-bold text-[#a0a0a0] uppercase tracking-widest mb-6">Activity Ledger</h3>
-                <div className="grid grid-cols-2 gap-y-8 gap-x-12">
-                  <div>
-                    <div className="flex items-center mb-1">
-                      <Send className="w-4 h-4 text-[#c2410c] mr-2" />
-                      <span className="text-xs text-[#707070] uppercase tracking-wider">Sent</span>
-                    </div>
-                    <span className="text-3xl font-serif text-[#1a1a1a]">{stats.letters}</span>
-                  </div>
-                  <div>
-                    <div className="flex items-center mb-1">
-                      <Inbox className="w-4 h-4 text-[#c2410c] mr-2" />
-                      <span className="text-xs text-[#707070] uppercase tracking-wider">Received</span>
-                    </div>
-                    <span className="text-3xl font-serif text-[#1a1a1a]">{stats.received}</span>
-                  </div>
-                  <div>
-                    <div className="flex items-center mb-1">
-                      <Archive className="w-4 h-4 text-[#c2410c] mr-2" />
-                      <span className="text-xs text-[#707070] uppercase tracking-wider">Keepsakes</span>
-                    </div>
-                    <span className="text-3xl font-serif text-[#1a1a1a]">{stats.keepsakes}</span>
-                  </div>
-                  <div>
-                    <div className="flex items-center mb-1">
-                      <Heart className="w-4 h-4 text-[#c2410c] mr-2" />
-                      <span className="text-xs text-[#707070] uppercase tracking-wider">Milestones</span>
-                    </div>
-                    <span className="text-3xl font-serif text-[#1a1a1a]">{stats.milestones}</span>
-                  </div>
-                </div>
+          {/* SETTINGS TAB */}
+          {activeTab === "settings" && (
+            <motion.div 
+              key="settings"
+              variants={tabContentVariants}
+              initial="hidden" animate="visible" exit="exit"
+              className="max-w-3xl space-y-8"
+            >
+              <div>
+                <h2 className="text-xl font-semibold text-[#111]">Personal Information</h2>
+                <p className="text-[#666] text-sm mt-1">Update your personal details and how others see you on the platform.</p>
               </div>
 
-            </div>
-          </motion.div>
-
-          {/* RIGHT COLUMN: SETTINGS (Animates in when isEditing is true) */}
-          <AnimatePresence>
-            {isEditing && (
-              <motion.div 
-                layout
-                initial={{ opacity: 0, x: 50, scale: 0.95 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                exit={{ opacity: 0, x: 50, scale: 0.95, transition: { duration: 0.4, ease: "easeIn" } }}
-                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                className="w-full lg:w-[45%] max-w-2xl origin-right"
-              >
-                <div className="bg-white rounded-[2rem] p-8 md:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[#f0eee9]">
-                  
-                  <div className="mb-10">
-                    <h2 className="text-2xl font-serif font-bold text-[#1a1a1a]">Profile Settings</h2>
-                    <p className="text-[#707070] mt-2">Adjust your presentation and privacy preferences.</p>
+              <div className="bg-white border border-[#eaeaea] rounded-xl shadow-sm overflow-hidden">
+                <div className="p-6 md:p-8 space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-[#111] mb-2">Display Name</label>
+                    <input 
+                      type="text" 
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Your Name"
+                      className="w-full bg-[#fafafa] border border-[#eaeaea] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#111] focus:border-[#111] transition-all text-[#111]"
+                    />
+                    <p className="text-xs text-[#666] mt-2">This is the name your partner and friends will see.</p>
                   </div>
 
-                  <div className="space-y-10">
-                    {/* Inputs Section */}
-                    <div className="space-y-6">
-                      <div>
-                        <label className="block text-xs font-bold text-[#a0a0a0] mb-2 uppercase tracking-widest">Display Name</label>
-                        <input 
-                          type="text" 
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
-                          placeholder="Your Name"
-                          className="w-full bg-transparent border-b-2 border-[#e6e4df] py-3 text-xl font-serif focus:outline-none focus:border-[#c2410c] transition-colors text-[#1a1a1a] placeholder:text-[#d0d0d0]"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-[#a0a0a0] mb-2 uppercase tracking-widest">Avatar Image URL</label>
-                        <input 
-                          type="text" 
-                          value={avatarUrl}
-                          onChange={(e) => setAvatarUrl(e.target.value)}
-                          placeholder="https://example.com/photo.jpg"
-                          className="w-full bg-transparent border-b-2 border-[#e6e4df] py-3 text-lg focus:outline-none focus:border-[#c2410c] transition-colors text-[#1a1a1a] placeholder:text-[#d0d0d0]"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-[#a0a0a0] mb-3 uppercase tracking-widest">Biography</label>
-                        <textarea 
-                          value={bio}
-                          onChange={(e) => setBio(e.target.value)}
-                          placeholder="Share a little about yourself..."
-                          rows={4}
-                          className="w-full bg-[#f9f8f6] border border-[#e6e4df] rounded-2xl p-5 text-lg font-serif focus:outline-none focus:ring-1 focus:ring-[#c2410c] focus:border-[#c2410c] transition-all text-[#1a1a1a] resize-none"
-                        />
-                      </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[#111] mb-2">Avatar URL</label>
+                    <div className="relative">
+                      <ImageIcon className="absolute left-3 top-2.5 h-4 w-4 text-[#666]" />
+                      <input 
+                        type="text" 
+                        value={avatarUrl}
+                        onChange={(e) => setAvatarUrl(e.target.value)}
+                        placeholder="https://example.com/avatar.jpg"
+                        className="w-full bg-[#fafafa] border border-[#eaeaea] rounded-lg pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#111] focus:border-[#111] transition-all text-[#111]"
+                      />
                     </div>
+                    <p className="text-xs text-[#666] mt-2">Leave blank to use an auto-generated minimal avatar.</p>
+                  </div>
 
-                    {/* Privacy Section */}
-                    <div className="pt-8 border-t border-[#f0eee9] space-y-8">
-                      <h3 className="text-lg font-serif font-bold text-[#1a1a1a]">Privacy Controls</h3>
-                      
-                      <label className="flex items-center justify-between cursor-pointer group">
-                        <div className="pr-8">
-                          <div className="font-medium text-[#1a1a1a] text-lg">Public Visibility</div>
-                          <div className="text-sm text-[#707070] mt-1 leading-relaxed">
-                            Allow others to search for you by email. Turn off to remain completely hidden.
-                          </div>
-                        </div>
-                        <div className="relative shrink-0">
-                          <input type="checkbox" className="sr-only" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} />
-                          <div className={`block w-14 h-8 rounded-full transition-colors ${isPublic ? 'bg-[#c2410c]' : 'bg-[#e6e4df]'}`}></div>
-                          <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${isPublic ? 'transform translate-x-6' : ''} shadow-sm`}></div>
-                        </div>
-                      </label>
-
-                      <label className="flex items-center justify-between cursor-pointer group">
-                        <div className="pr-8">
-                          <div className={`font-medium text-lg ${!isPublic ? 'text-[#a0a0a0]' : 'text-[#1a1a1a]'}`}>Display Email</div>
-                          <div className={`text-sm mt-1 leading-relaxed ${!isPublic ? 'text-[#a0a0a0]' : 'text-[#707070]'}`}>
-                            Show your email address on your public profile. Disabled if profile is hidden.
-                          </div>
-                        </div>
-                        <div className="relative shrink-0">
-                          <input type="checkbox" className="sr-only" checked={showEmail} onChange={(e) => setShowEmail(e.target.checked)} disabled={!isPublic} />
-                          <div className={`block w-14 h-8 rounded-full transition-colors ${showEmail ? 'bg-[#c2410c]' : 'bg-[#e6e4df]'} ${!isPublic && 'opacity-50'}`}></div>
-                          <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${showEmail ? 'transform translate-x-6' : ''} shadow-sm`}></div>
-                        </div>
-                      </label>
-                    </div>
-
-                    {/* Save Button */}
-                    <div className="pt-8">
-                      <button 
-                        onClick={handleSave}
-                        disabled={saving}
-                        className={`w-full flex items-center justify-center px-8 py-5 rounded-2xl font-bold text-lg transition-all ${
-                          saved 
-                            ? "bg-[#2e7d32] text-white shadow-lg shadow-green-900/10" 
-                            : "bg-[#1a1a1a] text-white hover:bg-black hover:-translate-y-1 shadow-xl shadow-black/10"
-                        } disabled:opacity-50 disabled:hover:translate-y-0`}
-                      >
-                        {saving ? <Loader2 className="w-6 h-6 animate-spin mr-3" /> : (saved ? <CheckCircle2 className="w-6 h-6 mr-3" /> : <Save className="w-6 h-6 mr-3" />)}
-                        {saved ? "Saved Successfully" : "Update Profile"}
-                      </button>
-                    </div>
-
+                  <div>
+                    <label className="block text-sm font-medium text-[#111] mb-2">Biography</label>
+                    <textarea 
+                      value={bio}
+                      onChange={(e) => setBio(e.target.value)}
+                      placeholder="Tell your partner a little about yourself..."
+                      rows={4}
+                      className="w-full bg-[#fafafa] border border-[#eaeaea] rounded-lg p-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#111] focus:border-[#111] transition-all text-[#111] resize-none"
+                    />
                   </div>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </div>
+                
+                <div className="bg-[#fafafa] border-t border-[#eaeaea] px-6 py-4 flex items-center justify-between">
+                  <p className="text-xs text-[#666]">Please save your changes to apply them.</p>
+                  <button 
+                    onClick={handleSave}
+                    disabled={saving}
+                    className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                      saved 
+                        ? "bg-green-600 text-white" 
+                        : "bg-[#111] text-white hover:bg-[#333]"
+                    } disabled:opacity-50`}
+                  >
+                    {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : (saved ? <CheckCircle2 className="w-4 h-4 mr-2" /> : <Save className="w-4 h-4 mr-2" />)}
+                    {saved ? "Saved" : "Save"}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* PRIVACY TAB */}
+          {activeTab === "privacy" && (
+            <motion.div 
+              key="privacy"
+              variants={tabContentVariants}
+              initial="hidden" animate="visible" exit="exit"
+              className="max-w-3xl space-y-8"
+            >
+              <div>
+                <h2 className="text-xl font-semibold text-[#111]">Privacy Controls</h2>
+                <p className="text-[#666] text-sm mt-1">Manage who can see your profile and contact information.</p>
+              </div>
+
+              <div className="bg-white border border-[#eaeaea] rounded-xl shadow-sm overflow-hidden">
+                <div className="p-6 md:p-8 space-y-8">
+                  <label className="flex items-start justify-between cursor-pointer group">
+                    <div className="pr-8">
+                      <div className="font-medium text-[#111] text-sm">Public Profile Visibility</div>
+                      <div className="text-[#666] text-sm mt-1 leading-relaxed">
+                        Allow others to search for you by email and view your public profile. Turning this off means no one can send you connection requests.
+                      </div>
+                    </div>
+                    <div className="relative mt-1 shrink-0">
+                      <input type="checkbox" className="sr-only" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} />
+                      <div className={`block w-10 h-6 rounded-full transition-colors ${isPublic ? 'bg-[#111]' : 'bg-[#eaeaea]'}`}></div>
+                      <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${isPublic ? 'transform translate-x-4' : ''}`}></div>
+                    </div>
+                  </label>
+
+                  <div className="border-t border-[#eaeaea]"></div>
+
+                  <label className="flex items-start justify-between cursor-pointer group">
+                    <div className="pr-8">
+                      <div className={`font-medium text-sm ${!isPublic ? 'text-[#999]' : 'text-[#111]'}`}>Show Email Publicly</div>
+                      <div className={`text-sm mt-1 leading-relaxed ${!isPublic ? 'text-[#999]' : 'text-[#666]'}`}>
+                        Display your email address directly on your public profile page. If your profile is hidden, this setting is disabled.
+                      </div>
+                    </div>
+                    <div className="relative mt-1 shrink-0">
+                      <input type="checkbox" className="sr-only" checked={showEmail} onChange={(e) => setShowEmail(e.target.checked)} disabled={!isPublic} />
+                      <div className={`block w-10 h-6 rounded-full transition-colors ${showEmail ? 'bg-[#111]' : 'bg-[#eaeaea]'} ${!isPublic && 'opacity-50'}`}></div>
+                      <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${showEmail ? 'transform translate-x-4' : ''}`}></div>
+                    </div>
+                  </label>
+                </div>
+
+                <div className="bg-[#fafafa] border-t border-[#eaeaea] px-6 py-4 flex items-center justify-between">
+                  <p className="text-xs text-[#666]">Please save your changes to apply them.</p>
+                  <button 
+                    onClick={handleSave}
+                    disabled={saving}
+                    className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                      saved 
+                        ? "bg-green-600 text-white" 
+                        : "bg-[#111] text-white hover:bg-[#333]"
+                    } disabled:opacity-50`}
+                  >
+                    {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : (saved ? <CheckCircle2 className="w-4 h-4 mr-2" /> : <Save className="w-4 h-4 mr-2" />)}
+                    {saved ? "Saved" : "Save"}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* PARTNER HUB TAB */}
+          {activeTab === "partner" && (
+            <motion.div 
+              key="partner"
+              variants={tabContentVariants}
+              initial="hidden" animate="visible" exit="exit"
+              className="max-w-3xl space-y-8"
+            >
+              <div>
+                <h2 className="text-xl font-semibold text-[#111]">Partner Hub</h2>
+                <p className="text-[#666] text-sm mt-1">Manage your connection and shared spaces.</p>
+              </div>
+
+              <div className="bg-white border border-[#eaeaea] rounded-xl p-8 md:p-12 shadow-sm flex flex-col items-center text-center">
+                <div className="w-16 h-16 bg-[#fafafa] border border-[#eaeaea] rounded-full flex items-center justify-center mb-6">
+                  <Heart className="w-8 h-8 text-[#111]" />
+                </div>
+                
+                {partnerId ? (
+                  <>
+                    <h2 className="text-lg font-semibold text-[#111] mb-2">You are connected!</h2>
+                    <p className="text-[#666] text-sm max-w-md mx-auto mb-8">
+                      You and your partner are officially connected on PostHeart. You can write letters, build your timeline, and manage your keepsake box together.
+                    </p>
+                    <div className="flex justify-center gap-4">
+                      <button onClick={() => router.push("/board")} className="px-5 py-2.5 bg-[#111] text-white rounded-lg text-sm font-medium hover:bg-[#333] transition-colors">
+                        Go to Couple Board
+                      </button>
+                      <button onClick={() => router.push("/connect")} className="px-5 py-2.5 bg-white text-[#111] border border-[#eaeaea] rounded-lg text-sm font-medium hover:bg-[#fafafa] transition-colors">
+                        Manage Connection
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-lg font-semibold text-[#111] mb-2">Not Partnered Yet</h2>
+                    <p className="text-[#666] text-sm max-w-md mx-auto mb-8">
+                      You are currently flying solo. Send a connection request to your significant other to unlock the Couple Board and Timeline!
+                    </p>
+                    <button onClick={() => router.push("/connect")} className="px-5 py-2.5 bg-[#111] text-white rounded-lg text-sm font-medium hover:bg-[#333] transition-colors">
+                      Find Partner
+                    </button>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
     </div>
   )
 }
