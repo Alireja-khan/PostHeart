@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Users, ArrowRight, Loader2, Clock } from "lucide-react"
 
@@ -9,6 +9,25 @@ export default function ConnectButton({ partnerId, initialPending = false }: { p
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [isPending, setIsPending] = useState(initialPending)
+
+  // Poll for connection status if pending
+  useEffect(() => {
+    if (!isPending) return;
+    
+    const checkStatus = async () => {
+      try {
+        const res = await fetch("/api/auth/session");
+        if (res.ok) {
+          router.refresh();
+        }
+      } catch (e) {
+        // ignore
+      }
+    };
+
+    const interval = setInterval(checkStatus, 5000);
+    return () => clearInterval(interval);
+  }, [isPending, router]);
 
   const handleConnect = async () => {
     setLoading(true)

@@ -46,16 +46,6 @@ export async function POST(req: Request) {
       }
     });
 
-    // Notify the partner
-    await prisma.notification.create({
-      data: {
-        userId: partnerId,
-        title: "Disconnect Request",
-        message: `${currentUser.name || currentUser.email} has requested to disconnect. Please review in your notifications.`,
-        type: "SYSTEM"
-      }
-    });
-
     return NextResponse.json({ message: "Disconnect request sent successfully." }, { status: 200 });
   } catch (error) {
     console.error("Disconnect request error:", error);

@@ -1,12 +1,33 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { UserMinus, Loader2, Clock } from "lucide-react"
 
 export default function DisconnectButton() {
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [isPending, setIsPending] = useState(false)
+
+  // Poll for connection status if pending
+  useEffect(() => {
+    if (!isPending) return;
+    
+    const checkStatus = async () => {
+      try {
+        const res = await fetch("/api/auth/session");
+        if (res.ok) {
+          router.refresh();
+        }
+      } catch (e) {
+        // ignore
+      }
+    };
+
+    const interval = setInterval(checkStatus, 5000);
+    return () => clearInterval(interval);
+  }, [isPending, router]);
 
   const handleDisconnect = async () => {
     if (!confirm("Are you sure you want to request a disconnect? Your partner will have to approve this request.")) return;

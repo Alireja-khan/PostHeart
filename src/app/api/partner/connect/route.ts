@@ -74,16 +74,6 @@ export async function POST(req: Request) {
       }
     });
 
-    // Notify the partner
-    await prisma.notification.create({
-      data: {
-        userId: partner.id,
-        title: "New Connection Request",
-        message: `${currentUser.name || currentUser.email} wants to connect with you!`,
-        type: "CONNECTION_REQUEST"
-      }
-    });
-
     return NextResponse.json({ message: "Connection request sent successfully" }, { status: 200 });
   } catch (error) {
     console.error("Partner connect error:", error);
