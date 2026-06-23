@@ -10,8 +10,11 @@ export default function GirlSvg(props: any) {
         alt="Girl Torso"
         className="absolute w-[90%] h-[90%] top-[10%] left-[5%] object-contain pointer-events-none drop-shadow-[0_0_2px_rgba(255,255,255,0.4)]"
         style={{ 
-          clipPath: 'polygon(0 32%, 100% 32%, 100% 65%, 0 65%)'
+          clipPath: 'polygon(0 32%, 100% 32%, 100% 65%, 0 65%)',
+          transformOrigin: '50% 65%'
         }}
+        animate={{ skewX: [0, 4, 0, -4, 0], scaleY: [1, 1.02, 1, 0.98, 1] }}
+        transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
       />
 
       {/* Head - moving on a loop */}
