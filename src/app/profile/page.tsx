@@ -210,7 +210,7 @@ export default function Profile() {
       {inTransitLetter && (
         <div className="absolute top-0 left-0 right-0 h-16 z-10 pointer-events-none overflow-hidden">
           {/* Tracking Line */}
-          <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-black/10 border-dashed border-b border-[#c2410c]/30"></div>
+          <div className="absolute top-1/2 left-0 right-0 h-[1px] border-dashed border-b-2 border-white/40 drop-shadow-md"></div>
           
           {/* The Bird */}
           <motion.div 
@@ -220,7 +220,7 @@ export default function Profile() {
             transition={{ ease: "linear", duration: 1 }}
           >
             {/* Realistic Bird Silhouette Animation */}
-            <svg viewBox="0 0 100 100" className="w-full h-full text-[#111111]" style={{ transform: "scaleX(-1)" }}>
+            <svg viewBox="0 0 100 100" className="w-full h-full text-white drop-shadow-[0_0_4px_rgba(255,255,255,0.8)]" style={{ transform: "scaleX(-1)" }}>
               <path fill="currentColor">
                 <animate 
                   attributeName="d"
