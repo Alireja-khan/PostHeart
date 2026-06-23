@@ -3,37 +3,15 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const WindowSilhouette = ({ gender, facing }: { gender: string | null, facing: 'left' | 'right' }) => {
+const WaitingFigure = ({ gender, facing }: { gender: string | null, facing: 'left' | 'right' }) => {
   const isGirl = gender === 'female';
+  const imageSrc = isGirl ? '/girl_waiting.png' : '/boy_waiting.png';
   
   return (
-    <svg viewBox="0 0 100 120" className="w-12 h-16 drop-shadow-md pointer-events-none">
-      {/* Solid background to hide bird behind it */}
-      <rect x="10" y="10" width="80" height="100" rx="4" fill="#111111" stroke="#333333" strokeWidth="4" />
-      {/* Sill */}
-      <line x1="2" y1="110" x2="98" y2="110" stroke="#f9f8f6" strokeWidth="4" strokeLinecap="round" />
-      
-      {/* Person Silhouette */}
-      <g transform={facing === 'left' ? 'translate(100, 0) scale(-1, 1)' : ''}>
-        {/* Head */}
-        <circle cx="45" cy="80" r="12" fill="#f9f8f6" />
-        {/* Body */}
-        <path d="M30 110 Q40 95 45 95 Q50 95 65 110 Z" fill="#f9f8f6" />
-        {/* Hair */}
-        {isGirl && (
-          <path d="M33 80 Q30 95 38 105 Q45 105 45 95 Q40 80 33 80 Z" fill="#f9f8f6" />
-        )}
-      </g>
-      
-      {/* Stars/Moon if facing right, just to add that night sky vibe */}
-      {facing === 'right' && (
-        <g stroke="#a0a0a0" fill="none" strokeWidth="1.5">
-          <path d="M75 25 Q85 30 80 40 Q70 35 75 25 Z" fill="#f9f8f6" stroke="none" opacity="0.8" />
-          <circle cx="25" cy="30" r="1" fill="#f9f8f6" />
-          <circle cx="85" cy="15" r="1" fill="#f9f8f6" />
-        </g>
-      )}
-    </svg>
+    <div className={`w-24 h-24 md:w-32 md:h-32 pointer-events-none drop-shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-transform duration-500 ${facing === 'left' ? 'scale-x-[-1]' : ''}`}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={imageSrc} alt="waiting" className="w-full h-full object-contain mix-blend-lighten opacity-90" />
+    </div>
   );
 };
 
@@ -94,14 +72,14 @@ export default function GlobalBirdTracker() {
 
   return (
     <div className="absolute top-0 left-0 right-0 h-16 z-50 pointer-events-none">
-      {/* Sender Window (Left) */}
-      <div className="absolute left-4 top-1/2 -translate-y-1/2 z-30">
-        <WindowSilhouette gender={inTransitLetter.senderGender} facing="right" />
+      {/* Sender Figure (Left) */}
+      <div className="absolute left-2 md:left-8 top-1 z-30">
+        <WaitingFigure gender={inTransitLetter.senderGender} facing="right" />
       </div>
 
-      {/* Receiver Window (Right) */}
-      <div className="absolute right-4 top-1/2 -translate-y-1/2 z-30">
-        <WindowSilhouette gender={inTransitLetter.receiverGender} facing="left" />
+      {/* Receiver Figure (Right) */}
+      <div className="absolute right-2 md:right-8 top-1 z-30">
+        <WaitingFigure gender={inTransitLetter.receiverGender} facing="left" />
       </div>
       {/* The Bird */}
       <motion.div 
