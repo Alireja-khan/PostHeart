@@ -10,8 +10,8 @@ const WaitingFigure = ({ gender, facing }: { gender: string | null, facing: 'lef
   const SvgComponent = isGirl ? GirlSvg : BoySvg;
   
   return (
-    <div className={`w-16 h-20 md:w-20 md:h-24 text-white/90 pointer-events-none transition-transform duration-500 ${facing === 'left' ? 'scale-x-[-1]' : ''}`}>
-      <SvgComponent className="w-full h-full overflow-visible" />
+    <div className={`w-20 h-28 md:w-24 md:h-32 text-white pointer-events-none transition-transform duration-500 ${facing === 'left' ? 'scale-x-[-1]' : ''}`}>
+      <SvgComponent className="w-full h-full" />
     </div>
   );
 };
