@@ -209,33 +209,64 @@ export default function Profile() {
       {/* IN-TRANSIT BIRD TRACKER */}
       {inTransitLetter && (
         <div className="absolute top-0 left-0 right-0 h-16 z-10 pointer-events-none overflow-hidden">
-          {/* Tracking Line */}
-          <div className="absolute top-1/2 left-0 right-0 h-[1px] border-dashed border-b-2 border-white/40 drop-shadow-md"></div>
+          {/* Glowing Magic Dust Tracking Trail */}
+          <div className="absolute top-1/2 left-0 right-0 h-[2px] bg-white/10 -translate-y-1/2">
+            <motion.div 
+              className="h-full bg-gradient-to-r from-transparent via-white/80 to-white shadow-[0_0_10px_rgba(255,255,255,0.9)] relative"
+              initial={{ width: `${progressPercent}%` }}
+              animate={{ width: `${progressPercent}%` }}
+              transition={{ ease: "linear", duration: 1 }}
+            >
+              {/* Little sparkle at the tip of the trail */}
+              <div className="absolute top-1/2 right-0 w-2 h-2 bg-white rounded-full shadow-[0_0_8px_4px_rgba(255,255,255,0.8)] -translate-y-1/2 translate-x-1/2"></div>
+            </motion.div>
+          </div>
           
           {/* The Bird */}
           <motion.div 
-            className="absolute top-1/2 -translate-y-1/2 w-12 h-12"
-            initial={{ left: `${progressPercent}%` }}
-            animate={{ left: `${progressPercent}%` }}
+            className="absolute top-1/2 -translate-y-1/2 w-14 h-14 z-20"
+            initial={{ left: `calc(${progressPercent}% - 28px)` }}
+            animate={{ left: `calc(${progressPercent}% - 28px)` }}
             transition={{ ease: "linear", duration: 1 }}
           >
-            {/* Realistic Bird Silhouette Animation */}
-            <svg viewBox="0 0 100 100" className="w-full h-full text-white drop-shadow-[0_0_4px_rgba(255,255,255,0.8)]" style={{ transform: "scaleX(-1)" }}>
-              <path fill="currentColor">
-                <animate 
-                  attributeName="d"
-                  dur="0.4s"
-                  repeatCount="indefinite"
-                  values="
-                    M 30,50 Q 50,20 70,10 Q 60,30 50,40 Q 70,40 90,45 Q 70,50 50,50 Q 30,55 10,60 Q 20,50 30,50 Z;
-                    M 30,50 Q 50,40 70,30 Q 60,40 50,50 Q 70,45 90,40 Q 70,50 50,60 Q 30,55 10,60 Q 20,50 30,50 Z;
-                    M 30,50 Q 50,60 70,70 Q 60,60 50,50 Q 70,45 90,40 Q 70,50 50,60 Q 30,55 10,60 Q 20,50 30,50 Z;
-                    M 30,50 Q 50,40 70,30 Q 60,40 50,50 Q 70,45 90,40 Q 70,50 50,60 Q 30,55 10,60 Q 20,50 30,50 Z;
-                    M 30,50 Q 50,20 70,10 Q 60,30 50,40 Q 70,40 90,45 Q 70,50 50,50 Q 30,55 10,60 Q 20,50 30,50 Z
-                  "
-                />
-              </path>
-            </svg>
+            {/* Bobbing Motion */}
+            <motion.div
+              animate={{ y: [-3, 3, -3] }}
+              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+              className="w-full h-full relative"
+            >
+              {/* Realistic Bird Silhouette Animation */}
+              <svg viewBox="0 0 100 100" className="w-full h-full text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.9)]" style={{ transform: "scaleX(-1)" }}>
+                <path fill="currentColor">
+                  <animate 
+                    attributeName="d"
+                    dur="0.4s"
+                    repeatCount="indefinite"
+                    values="
+                      M 30,50 Q 50,20 70,10 Q 60,30 50,40 Q 70,40 90,45 Q 70,50 50,50 Q 30,55 10,60 Q 20,50 30,50 Z;
+                      M 30,50 Q 50,40 70,30 Q 60,40 50,50 Q 70,45 90,40 Q 70,50 50,60 Q 30,55 10,60 Q 20,50 30,50 Z;
+                      M 30,50 Q 50,60 70,70 Q 60,60 50,50 Q 70,45 90,40 Q 70,50 50,60 Q 30,55 10,60 Q 20,50 30,50 Z;
+                      M 30,50 Q 50,40 70,30 Q 60,40 50,50 Q 70,45 90,40 Q 70,50 50,60 Q 30,55 10,60 Q 20,50 30,50 Z;
+                      M 30,50 Q 50,20 70,10 Q 60,30 50,40 Q 70,40 90,45 Q 70,50 50,50 Q 30,55 10,60 Q 20,50 30,50 Z
+                    "
+                  />
+                </path>
+              </svg>
+
+              {/* Dangling Letter Envelope */}
+              <motion.div 
+                className="absolute bottom-2 right-[18px] w-[14px] h-[10px] bg-white rounded-sm shadow-md flex flex-col overflow-hidden"
+                animate={{ rotate: [-8, 8, -8], transformOrigin: "top center" }}
+                transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+              >
+                {/* Envelope flap detail */}
+                <div className="w-full h-[4px] border-b border-gray-300 relative">
+                  <div className="absolute top-0 left-0 right-0 h-full bg-red-400/20" style={{ clipPath: "polygon(0 0, 50% 100%, 100% 0)" }}></div>
+                </div>
+                {/* Envelope seal */}
+                <div className="absolute top-[2px] left-1/2 -translate-x-1/2 w-[4px] h-[4px] bg-red-500 rounded-full shadow-sm"></div>
+              </motion.div>
+            </motion.div>
           </motion.div>
         </div>
       )}
