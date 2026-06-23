@@ -452,7 +452,7 @@ export default function Profile() {
                 <div className="bg-[#fafafa] border-t border-[#eaeaea] px-6 py-4 flex items-center justify-between">
                   <p className="text-xs text-[#888888]">Please save your changes to apply them.</p>
                   <button 
-                    onClick={handleSave}
+                    onClick={() => handleSave()}
                     disabled={saving}
                     className={`flex items-center px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
                       saved 
@@ -517,7 +517,7 @@ export default function Profile() {
                 <div className="bg-[#fafafa] border-t border-[#eaeaea] px-6 py-4 flex items-center justify-between">
                   <p className="text-xs text-[#888888]">Please save your changes to apply them.</p>
                   <button 
-                    onClick={handleSave}
+                    onClick={() => handleSave()}
                     disabled={saving}
                     className={`flex items-center px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
                       saved 
