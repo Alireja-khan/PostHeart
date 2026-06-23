@@ -5,12 +5,38 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const WaitingFigure = ({ gender, facing }: { gender: string | null, facing: 'left' | 'right' }) => {
   const isGirl = gender === 'female';
-  const imageSrc = isGirl ? '/girl_waiting.png' : '/boy_waiting.png';
   
   return (
-    <div className={`w-24 h-24 md:w-32 md:h-32 pointer-events-none drop-shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-transform duration-500 ${facing === 'left' ? 'scale-x-[-1]' : ''}`}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={imageSrc} alt="waiting" className="w-full h-full object-contain mix-blend-lighten opacity-90" />
+    <div className={`w-8 h-8 md:w-10 md:h-10 text-[#f9f8f6] drop-shadow-[0_0_6px_rgba(255,255,255,0.8)] pointer-events-none transition-transform duration-500 ${facing === 'left' ? 'scale-x-[-1]' : ''}`}>
+      <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
+        {isGirl ? (
+          /* Girl Silhouette: Flowing hair, looking up slightly, hugging knees */
+          <g stroke="currentColor" fill="none" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round">
+            {/* Head */}
+            <circle cx="45" cy="30" r="10" />
+            {/* Long flowing hair */}
+            <path d="M 38 22 C 20 30 25 55 35 65" />
+            {/* Curved back */}
+            <path d="M 40 40 C 25 60 35 85 35 85" />
+            {/* Legs folded up */}
+            <path d="M 35 85 L 75 85 L 65 55 C 60 45 50 45 40 50" />
+            {/* Arms resting on knees */}
+            <path d="M 40 50 L 65 60" />
+          </g>
+        ) : (
+          /* Boy Silhouette: Leaning back casually, legs stretched slightly */
+          <g stroke="currentColor" fill="none" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round">
+            {/* Head */}
+            <circle cx="45" cy="30" r="10" />
+            {/* Back leaning slightly */ }
+            <path d="M 40 40 Q 30 65 40 85" />
+            {/* One leg bent, one stretched */}
+            <path d="M 40 85 L 85 85 M 40 85 L 65 65 L 50 55" />
+            {/* Arms supporting leaning back */}
+            <path d="M 40 45 L 25 70 L 30 85" />
+          </g>
+        )}
+      </svg>
     </div>
   );
 };
@@ -73,12 +99,12 @@ export default function GlobalBirdTracker() {
   return (
     <div className="absolute top-0 left-0 right-0 h-16 z-50 pointer-events-none">
       {/* Sender Figure (Left) */}
-      <div className="absolute left-2 md:left-8 top-1 z-30">
+      <div className="absolute left-6 md:left-12 top-1/2 -translate-y-1/2 z-30">
         <WaitingFigure gender={inTransitLetter.senderGender} facing="right" />
       </div>
 
       {/* Receiver Figure (Right) */}
-      <div className="absolute right-2 md:right-8 top-1 z-30">
+      <div className="absolute right-6 md:right-12 top-1/2 -translate-y-1/2 z-30">
         <WaitingFigure gender={inTransitLetter.receiverGender} facing="left" />
       </div>
       {/* The Bird */}
