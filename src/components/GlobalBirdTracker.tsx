@@ -2,41 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import BoySvg from './BoySvg';
+import GirlSvg from './GirlSvg';
 
 const WaitingFigure = ({ gender, facing }: { gender: string | null, facing: 'left' | 'right' }) => {
   const isGirl = gender === 'female';
+  const SvgComponent = isGirl ? GirlSvg : BoySvg;
   
   return (
-    <div className={`w-8 h-8 md:w-10 md:h-10 text-[#f9f8f6] drop-shadow-[0_0_6px_rgba(255,255,255,0.8)] pointer-events-none transition-transform duration-500 ${facing === 'left' ? 'scale-x-[-1]' : ''}`}>
-      <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible">
-        {isGirl ? (
-          /* Girl Silhouette: Flowing hair, looking up slightly, hugging knees */
-          <g stroke="currentColor" fill="none" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round">
-            {/* Head */}
-            <circle cx="45" cy="30" r="10" />
-            {/* Long flowing hair */}
-            <path d="M 38 22 C 20 30 25 55 35 65" />
-            {/* Curved back */}
-            <path d="M 40 40 C 25 60 35 85 35 85" />
-            {/* Legs folded up */}
-            <path d="M 35 85 L 75 85 L 65 55 C 60 45 50 45 40 50" />
-            {/* Arms resting on knees */}
-            <path d="M 40 50 L 65 60" />
-          </g>
-        ) : (
-          /* Boy Silhouette: Leaning back casually, legs stretched slightly */
-          <g stroke="currentColor" fill="none" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round">
-            {/* Head */}
-            <circle cx="45" cy="30" r="10" />
-            {/* Back leaning slightly */ }
-            <path d="M 40 40 Q 30 65 40 85" />
-            {/* One leg bent, one stretched */}
-            <path d="M 40 85 L 85 85 M 40 85 L 65 65 L 50 55" />
-            {/* Arms supporting leaning back */}
-            <path d="M 40 45 L 25 70 L 30 85" />
-          </g>
-        )}
-      </svg>
+    <div className={`w-10 h-10 md:w-14 md:h-14 text-[#f9f8f6] drop-shadow-[0_0_8px_rgba(255,255,255,0.9)] pointer-events-none transition-transform duration-500 ${facing === 'left' ? 'scale-x-[-1]' : ''}`}>
+      <SvgComponent className="w-full h-full overflow-visible" />
     </div>
   );
 };
