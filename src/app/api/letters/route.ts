@@ -90,6 +90,21 @@ export async function POST(req: Request) {
       }
     }
 
+    // Check if the sender already has a letter in transit
+    const activeLetter = await prisma.letter.findFirst({
+      where: {
+        senderId: sender.id,
+        status: 'IN_TRANSIT'
+      }
+    });
+
+    if (activeLetter) {
+      return NextResponse.json(
+        { success: false, error: 'You already have a letter in transit. Please wait for it to be delivered before sending another one.' },
+        { status: 400 }
+      );
+    }
+
     const letter = await prisma.letter.create({
       data: {
         content,

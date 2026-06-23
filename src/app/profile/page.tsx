@@ -40,10 +40,6 @@ export default function Profile() {
   const [memberSince, setMemberSince] = useState("")
   const [partnerId, setPartnerId] = useState<string | null>(null)
   const [stats, setStats] = useState<ProfileStats>({ letters: 0, received: 0, milestones: 0, keepsakes: 0 })
-  const [inTransitLetter, setInTransitLetter] = useState<InTransitLetter | null>(null)
-  
-  // Real-time tracker progress
-  const [progressPercent, setProgressPercent] = useState(0)
 
   const avatarInputRef = useRef<HTMLInputElement>(null)
   const coverInputRef = useRef<HTMLInputElement>(null)
@@ -73,10 +69,6 @@ export default function Profile() {
           if (data._count) {
             setStats(data._count)
           }
-          if (data.received && data.received.length > 0) {
-            setInTransitLetter(data.received[0])
-          }
-          
           setLoading(false)
         })
         .catch(err => {
@@ -85,31 +77,6 @@ export default function Profile() {
         })
     }
   }, [status, session])
-
-  useEffect(() => {
-    // Bird Tracker logic
-    if (inTransitLetter && inTransitLetter.deliverAt) {
-      const updateProgress = () => {
-        const start = new Date(inTransitLetter.createdAt).getTime()
-        const end = new Date(inTransitLetter.deliverAt).getTime()
-        const now = Date.now()
-        
-        if (now >= end) {
-          setProgressPercent(100)
-        } else if (now <= start) {
-          setProgressPercent(0)
-        } else {
-          const total = end - start
-          const current = now - start
-          setProgressPercent((current / total) * 100)
-        }
-      }
-      
-      updateProgress()
-      const interval = setInterval(updateProgress, 1000) // Update every second
-      return () => clearInterval(interval)
-    }
-  }, [inTransitLetter])
 
   const handleSave = async (customCoverUrl?: string, customAvatarUrl?: string) => {
     setSaving(true)
@@ -205,58 +172,6 @@ export default function Profile() {
       {/* Hidden File Inputs */}
       <input type="file" ref={avatarInputRef} onChange={(e) => handleFileUpload(e, 'avatar')} className="hidden" accept="image/*" />
       <input type="file" ref={coverInputRef} onChange={(e) => handleFileUpload(e, 'cover')} className="hidden" accept="image/*" />
-
-      {/* IN-TRANSIT BIRD TRACKER */}
-      {inTransitLetter && (
-        <div className="absolute top-0 left-0 right-0 h-16 z-10 pointer-events-none overflow-hidden">
-          {/* The Bird */}
-          <motion.div 
-            className="absolute top-1/2 -translate-y-1/2 w-14 h-14 z-20"
-            initial={{ left: `calc(${progressPercent}% - 28px)` }}
-            animate={{ left: `calc(${progressPercent}% - 28px)` }}
-            transition={{ ease: "linear", duration: 1 }}
-          >
-            {/* Bobbing Motion */}
-            <motion.div
-              animate={{ y: [-3, 3, -3] }}
-              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-              className="w-full h-full relative"
-            >
-              {/* Realistic Bird Silhouette Animation */}
-              <svg viewBox="0 0 100 100" className="w-full h-full text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.9)]" style={{ transform: "scaleX(-1)" }}>
-                <path fill="currentColor">
-                  <animate 
-                    attributeName="d"
-                    dur="0.4s"
-                    repeatCount="indefinite"
-                    values="
-                      M 30,50 Q 50,20 70,10 Q 60,30 50,40 Q 70,40 90,45 Q 70,50 50,50 Q 30,55 10,60 Q 20,50 30,50 Z;
-                      M 30,50 Q 50,40 70,30 Q 60,40 50,50 Q 70,45 90,40 Q 70,50 50,60 Q 30,55 10,60 Q 20,50 30,50 Z;
-                      M 30,50 Q 50,60 70,70 Q 60,60 50,50 Q 70,45 90,40 Q 70,50 50,60 Q 30,55 10,60 Q 20,50 30,50 Z;
-                      M 30,50 Q 50,40 70,30 Q 60,40 50,50 Q 70,45 90,40 Q 70,50 50,60 Q 30,55 10,60 Q 20,50 30,50 Z;
-                      M 30,50 Q 50,20 70,10 Q 60,30 50,40 Q 70,40 90,45 Q 70,50 50,50 Q 30,55 10,60 Q 20,50 30,50 Z
-                    "
-                  />
-                </path>
-              </svg>
-
-              {/* Dangling Letter Envelope */}
-              <motion.div 
-                className="absolute bottom-2 right-[18px] w-[14px] h-[10px] bg-white rounded-sm shadow-md flex flex-col overflow-hidden"
-                animate={{ rotate: [-8, 8, -8], transformOrigin: "top center" }}
-                transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-              >
-                {/* Envelope flap detail */}
-                <div className="w-full h-[4px] border-b border-gray-300 relative">
-                  <div className="absolute top-0 left-0 right-0 h-full bg-red-400/20" style={{ clipPath: "polygon(0 0, 50% 100%, 100% 0)" }}></div>
-                </div>
-                {/* Envelope seal */}
-                <div className="absolute top-[2px] left-1/2 -translate-x-1/2 w-[4px] h-[4px] bg-red-500 rounded-full shadow-sm"></div>
-              </motion.div>
-            </motion.div>
-          </motion.div>
-        </div>
-      )}
 
       {/* Global Header with Cover Photo */}
       <div className="bg-white border-b border-[#eaeaea]">

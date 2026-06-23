@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, Image as ImageIcon, Send, Music, Mic, X } from 'lucide-react';
+import { Clock, Image as ImageIcon, Send, Music, Mic, X, AlertCircle } from 'lucide-react';
 
 export default function WriteLetterPage() {
   const router = useRouter();
@@ -12,6 +12,27 @@ export default function WriteLetterPage() {
   const [delay, setDelay] = useState('24h');
   const [isMemoryPanelOpen, setIsMemoryPanelOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasInTransitLetter, setHasInTransitLetter] = useState(false);
+  const [isLoadingState, setIsLoadingState] = useState(true);
+
+  useEffect(() => {
+    const checkActiveLetter = async () => {
+      try {
+        const res = await fetch('/api/letters/in-transit');
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.data && json.data.isSender) {
+            setHasInTransitLetter(true);
+          }
+        }
+      } catch (err) {
+        console.error("Error checking in-transit letters:", err);
+      } finally {
+        setIsLoadingState(false);
+      }
+    };
+    checkActiveLetter();
+  }, []);
 
   const handleSubmit = async () => {
     if (!content.trim()) {
@@ -92,20 +113,34 @@ export default function WriteLetterPage() {
           </div>
 
           {/* Clean editor text area */}
-          <div className="p-8 lg:p-10 flex-1 flex flex-col bg-notebook-lines rounded-b-lg">
+          <div className="p-8 lg:p-10 flex-1 flex flex-col bg-notebook-lines rounded-b-lg relative">
+            {hasInTransitLetter && (
+              <div className="absolute inset-0 z-10 bg-white/70 backdrop-blur-[2px] flex flex-col items-center justify-center p-8 text-center rounded-b-lg">
+                <div className="bg-white p-6 rounded-xl shadow-lg border border-[#e6e4df] max-w-sm flex flex-col items-center">
+                  <AlertCircle className="text-[#c2410c] mb-4" size={32} />
+                  <h3 className="font-serif text-[#1a1a1a] text-lg font-bold mb-2">Letter in Transit</h3>
+                  <p className="text-sm text-[#707070] font-serif leading-relaxed">
+                    You already have a letter on its way. Please wait for it to be delivered before sending another one.
+                  </p>
+                </div>
+              </div>
+            )}
+            
             <input 
               type="text" 
               placeholder="To my love..." 
               value={receiver}
               onChange={(e) => setReceiver(e.target.value)}
-              className="w-full bg-transparent border-none text-2xl text-[#1a1a1a] font-serif focus:outline-none mb-6 placeholder-[#1a1a1a]/25 border-b border-[#e6e4df]/40 pb-2 font-bold"
+              disabled={hasInTransitLetter}
+              className="w-full bg-transparent border-none text-2xl text-[#1a1a1a] font-serif focus:outline-none mb-6 placeholder-[#1a1a1a]/25 border-b border-[#e6e4df]/40 pb-2 font-bold disabled:opacity-50"
             />
             
             <textarea 
               placeholder="Write your heart out here..." 
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="w-full flex-1 bg-transparent border-none text-lg text-[#1a1a1a] font-serif leading-[3rem] focus:outline-none resize-none placeholder-[#1a1a1a]/20"
+              disabled={hasInTransitLetter}
+              className="w-full flex-1 bg-transparent border-none text-lg text-[#1a1a1a] font-serif leading-[3rem] focus:outline-none resize-none placeholder-[#1a1a1a]/20 disabled:opacity-50"
             />
           </div>
 
@@ -113,7 +148,7 @@ export default function WriteLetterPage() {
           <div className="p-6 border-t border-[#e6e4df] flex justify-end bg-stone-50/20 rounded-b-lg">
             <button 
               onClick={handleSubmit}
-              disabled={isSubmitting}
+              disabled={isSubmitting || hasInTransitLetter}
               className="flex items-center space-x-2 bg-[#c2410c] hover:bg-[#a5360a] text-white px-8 py-3 rounded-lg shadow-md transition-all text-xs font-serif uppercase tracking-widest font-bold disabled:opacity-50"
             >
               <span>{isSubmitting ? 'Posting...' : 'Post Letter'}</span>

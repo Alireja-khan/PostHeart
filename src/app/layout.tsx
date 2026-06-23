@@ -5,6 +5,7 @@ import Sidebar from "@/components/Sidebar";
 import { Providers } from "@/components/Providers";
 import TopBar from "@/components/TopBar";
 import NotificationSidebar from "@/components/NotificationSidebar";
+import GlobalBirdTracker from "@/components/GlobalBirdTracker";
 
 const lora = Lora({
   variable: "--font-lora",
@@ -36,6 +37,7 @@ export default function RootLayout({
           <Sidebar />
           <div className="flex-1 h-full overflow-y-auto relative">
             <TopBar />
+            <GlobalBirdTracker />
             {children}
           </div>
           <NotificationSidebar />
