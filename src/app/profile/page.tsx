@@ -209,19 +209,6 @@ export default function Profile() {
       {/* IN-TRANSIT BIRD TRACKER */}
       {inTransitLetter && (
         <div className="absolute top-0 left-0 right-0 h-16 z-10 pointer-events-none overflow-hidden">
-          {/* Glowing Magic Dust Tracking Trail */}
-          <div className="absolute top-1/2 left-0 right-0 h-[2px] bg-white/10 -translate-y-1/2">
-            <motion.div 
-              className="h-full bg-gradient-to-r from-transparent via-white/80 to-white shadow-[0_0_10px_rgba(255,255,255,0.9)] relative"
-              initial={{ width: `${progressPercent}%` }}
-              animate={{ width: `${progressPercent}%` }}
-              transition={{ ease: "linear", duration: 1 }}
-            >
-              {/* Little sparkle at the tip of the trail */}
-              <div className="absolute top-1/2 right-0 w-2 h-2 bg-white rounded-full shadow-[0_0_8px_4px_rgba(255,255,255,0.8)] -translate-y-1/2 translate-x-1/2"></div>
-            </motion.div>
-          </div>
-          
           {/* The Bird */}
           <motion.div 
             className="absolute top-1/2 -translate-y-1/2 w-14 h-14 z-20"
