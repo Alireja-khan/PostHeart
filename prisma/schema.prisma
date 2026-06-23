@@ -18,6 +18,7 @@ model User {
   avatarUrl String?
   coverUrl  String?
   bio       String?
+  gender    String?
   isPublic  Boolean  @default(true)
   showEmail Boolean  @default(false)
 

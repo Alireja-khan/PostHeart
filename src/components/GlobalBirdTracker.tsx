@@ -3,6 +3,40 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const WindowSilhouette = ({ gender, facing }: { gender: string | null, facing: 'left' | 'right' }) => {
+  const isGirl = gender === 'female';
+  
+  return (
+    <svg viewBox="0 0 100 120" className="w-12 h-16 drop-shadow-md pointer-events-none">
+      {/* Solid background to hide bird behind it */}
+      <rect x="10" y="10" width="80" height="100" rx="4" fill="#111111" stroke="#333333" strokeWidth="4" />
+      {/* Sill */}
+      <line x1="2" y1="110" x2="98" y2="110" stroke="#f9f8f6" strokeWidth="4" strokeLinecap="round" />
+      
+      {/* Person Silhouette */}
+      <g transform={facing === 'left' ? 'translate(100, 0) scale(-1, 1)' : ''}>
+        {/* Head */}
+        <circle cx="45" cy="80" r="12" fill="#f9f8f6" />
+        {/* Body */}
+        <path d="M30 110 Q40 95 45 95 Q50 95 65 110 Z" fill="#f9f8f6" />
+        {/* Hair */}
+        {isGirl && (
+          <path d="M33 80 Q30 95 38 105 Q45 105 45 95 Q40 80 33 80 Z" fill="#f9f8f6" />
+        )}
+      </g>
+      
+      {/* Stars/Moon if facing right, just to add that night sky vibe */}
+      {facing === 'right' && (
+        <g stroke="#a0a0a0" fill="none" strokeWidth="1.5">
+          <path d="M75 25 Q85 30 80 40 Q70 35 75 25 Z" fill="#f9f8f6" stroke="none" opacity="0.8" />
+          <circle cx="25" cy="30" r="1" fill="#f9f8f6" />
+          <circle cx="85" cy="15" r="1" fill="#f9f8f6" />
+        </g>
+      )}
+    </svg>
+  );
+};
+
 export default function GlobalBirdTracker() {
   const [inTransitLetter, setInTransitLetter] = useState<any>(null);
   const [progressPercent, setProgressPercent] = useState(0);
@@ -59,7 +93,16 @@ export default function GlobalBirdTracker() {
   if (!inTransitLetter) return null;
 
   return (
-    <div className="absolute top-0 left-0 right-0 h-16 z-50 pointer-events-none overflow-hidden">
+    <div className="absolute top-0 left-0 right-0 h-16 z-50 pointer-events-none">
+      {/* Sender Window (Left) */}
+      <div className="absolute left-4 top-1/2 -translate-y-1/2 z-30">
+        <WindowSilhouette gender={inTransitLetter.senderGender} facing="right" />
+      </div>
+
+      {/* Receiver Window (Right) */}
+      <div className="absolute right-4 top-1/2 -translate-y-1/2 z-30">
+        <WindowSilhouette gender={inTransitLetter.receiverGender} facing="left" />
+      </div>
       {/* The Bird */}
       <motion.div 
         className="absolute top-1/2 -translate-y-1/2 w-14 h-14 z-20"

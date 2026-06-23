@@ -34,6 +34,7 @@ export default function Profile() {
   const [avatarUrl, setAvatarUrl] = useState("")
   const [coverUrl, setCoverUrl] = useState("")
   const [bio, setBio] = useState("")
+  const [gender, setGender] = useState("")
   const [isPublic, setIsPublic] = useState(true)
   const [showEmail, setShowEmail] = useState(false)
   
@@ -59,6 +60,7 @@ export default function Profile() {
           setAvatarUrl(data.avatarUrl || "")
           setCoverUrl(data.coverUrl || "")
           setBio(data.bio || "")
+          setGender(data.gender || "")
           setIsPublic(data.isPublic ?? true)
           setShowEmail(data.showEmail ?? false)
           
@@ -94,7 +96,7 @@ export default function Profile() {
       const res = await fetch("/api/profile/update", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({ name, avatarUrl: customAvatarUrl !== undefined ? customAvatarUrl : avatarUrl, coverUrl: customCoverUrl !== undefined ? customCoverUrl : coverUrl, bio, gender, isPublic, showEmail })
       })
       if (res.ok) {
         setSaved(true)
@@ -379,6 +381,20 @@ export default function Profile() {
                       rows={4}
                       className="w-full bg-[#111111] border-none rounded-xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#111111] transition-all text-[#f9f8f6] resize-none"
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-[#f9f8f6] mb-2">Gender</label>
+                    <select 
+                      value={gender}
+                      onChange={(e) => setGender(e.target.value)}
+                      className="w-full bg-[#111111] border-none rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#111111] transition-all text-[#f9f8f6] cursor-pointer"
+                    >
+                      <option value="">Prefer not to say</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                    </select>
+                    <p className="text-xs text-[#a0a0a0] mt-2">Used for the letter tracking bird animation silhouettes.</p>
                   </div>
                 </div>
                 

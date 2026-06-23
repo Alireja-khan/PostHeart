@@ -14,7 +14,7 @@ export async function PUT(req: Request) {
     }
 
     const body = await req.json()
-    const { name, avatarUrl, coverUrl, bio, isPublic, showEmail } = body
+    const { name, avatarUrl, coverUrl, bio, gender, isPublic, showEmail } = body
 
     const user = await prisma.user.update({
       where: { email: session.user.email },
@@ -23,6 +23,7 @@ export async function PUT(req: Request) {
         avatarUrl,
         coverUrl,
         bio,
+        gender,
         isPublic,
         showEmail
       }

@@ -21,6 +21,7 @@ export async function GET() {
         avatarUrl: true,
         coverUrl: true,
         bio: true,
+        gender: true,
         isPublic: true,
         showEmail: true,
         createdAt: true,

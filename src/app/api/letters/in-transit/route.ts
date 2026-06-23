@@ -39,14 +39,23 @@ export async function GET() {
         delayHours: true,
         senderId: true,
         receiverId: true,
+        sender: { select: { gender: true } },
+        receiver: { select: { gender: true } }
       }
     });
 
     return NextResponse.json({
       success: true,
       data: inTransitLetter ? {
-        ...inTransitLetter,
-        isSender: inTransitLetter.senderId === currentUser.id
+        id: inTransitLetter.id,
+        createdAt: inTransitLetter.createdAt,
+        deliverAt: inTransitLetter.deliverAt,
+        delayHours: inTransitLetter.delayHours,
+        senderId: inTransitLetter.senderId,
+        receiverId: inTransitLetter.receiverId,
+        isSender: inTransitLetter.senderId === currentUser.id,
+        senderGender: inTransitLetter.sender?.gender,
+        receiverGender: inTransitLetter.receiver?.gender
       } : null,
     });
   } catch (error) {
