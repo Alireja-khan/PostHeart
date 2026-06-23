@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]/route";
-import fs from "fs/promises";
-import path from "path";
+import { v2 as cloudinary } from 'cloudinary';
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function POST(req: Request) {
   try {
@@ -21,19 +27,17 @@ export async function POST(req: Request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Create unique filename
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const filename = file.name.replace(/\.[^/.]+$/, "") + '-' + uniqueSuffix + path.extname(file.name);
-    
-    const uploadDir = path.join(process.cwd(), "public/uploads");
-    const filepath = path.join(uploadDir, filename);
+    // Convert buffer to Base64 string for Cloudinary
+    const base64Image = `data:${file.type};base64,${buffer.toString('base64')}`;
 
-    // Write file
-    await fs.writeFile(filepath, buffer);
+    // Upload to Cloudinary
+    const uploadResponse = await cloudinary.uploader.upload(base64Image, {
+      folder: 'postheart_uploads',
+    });
 
     return NextResponse.json({ 
       success: true, 
-      url: `/uploads/${filename}` 
+      url: uploadResponse.secure_url 
     });
 
   } catch (error) {
