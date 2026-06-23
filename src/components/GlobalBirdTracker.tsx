@@ -74,7 +74,7 @@ export default function GlobalBirdTracker() {
           className="w-full h-full relative"
         >
           {/* Realistic Bird Silhouette Animation */}
-          <svg viewBox="0 0 100 100" className="w-full h-full text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.9)]" style={{ transform: "scaleX(-1)" }}>
+          <svg viewBox="0 0 100 100" className="w-full h-full text-[#c2410c] drop-shadow-[0_0_4px_rgba(255,255,255,0.8)]" style={{ transform: "scaleX(-1)" }}>
             <path fill="currentColor">
               <animate 
                 attributeName="d"
