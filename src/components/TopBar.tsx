@@ -14,11 +14,11 @@ export default function TopBar() {
     <div className="absolute top-8 right-8 z-30 flex items-center space-x-4">
       <button 
         onClick={() => setSidebarOpen(true)}
-        className="relative p-3 bg-white border border-[#e6e4df] rounded-full shadow-sm hover:bg-[#f9f8f6] transition-colors"
+        className="relative p-3 bg-[#1a1a1a] border border-[#333333] rounded-full shadow-sm hover:bg-[#222222] transition-colors"
       >
-        <Bell className="w-6 h-6 text-[#1a1a1a]" />
+        <Bell className="w-6 h-6 text-[#f9f8f6]" />
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 border-2 border-white rounded-full">
+          <span className="absolute top-0 right-0 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 border-2 border-[#1a1a1a] rounded-full">
             {unreadCount}
           </span>
         )}

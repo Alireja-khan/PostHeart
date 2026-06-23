@@ -32,10 +32,10 @@ export default function RootLayout({
       lang="en"
       className={`${lora.variable} ${caveat.variable} h-full antialiased`}
     >
-      <body className="h-full flex bg-[#f4f5f7] overflow-hidden">
+      <body className="h-full flex bg-[#111111] text-[#f9f8f6] overflow-hidden">
         <Providers>
           <Sidebar />
-          <div className="flex-1 h-full overflow-y-auto relative">
+          <div className="flex-1 h-full overflow-y-auto relative bg-[#111111]">
             <TopBar />
             <GlobalBirdTracker />
             {children}
