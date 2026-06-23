@@ -71,22 +71,26 @@ export default function GlobalBirdTracker() {
 
   if (!inTransitLetter) return null;
 
+  const { isSender, senderGender, receiverGender } = inTransitLetter;
+  const currentUserGender = isSender ? senderGender : receiverGender;
+  const partnerGender = isSender ? receiverGender : senderGender;
+
   return (
     <div className="absolute top-0 left-0 right-0 h-16 z-50 pointer-events-none">
-      {/* Sender Figure (Left) */}
+      {/* Current User Figure (Always Left) */}
       <div className="absolute left-6 md:left-12 top-1/2 -translate-y-1/2 z-30">
-        <WaitingFigure gender={inTransitLetter.senderGender} facing="right" />
+        <WaitingFigure gender={currentUserGender} facing="right" />
       </div>
 
-      {/* Receiver Figure (Right) */}
+      {/* Partner Figure (Always Right) */}
       <div className="absolute right-6 md:right-12 top-1/2 -translate-y-1/2 z-30">
-        <WaitingFigure gender={inTransitLetter.receiverGender} facing="left" />
+        <WaitingFigure gender={partnerGender} facing="left" />
       </div>
       {/* The Bird */}
       <motion.div 
         className="absolute top-1/2 -translate-y-1/2 w-14 h-14 z-20"
-        initial={{ left: `calc(${progressPercent}% - 28px)` }}
-        animate={{ left: `calc(${progressPercent}% - 28px)` }}
+        initial={{ left: isSender ? `calc(${progressPercent}% - 28px)` : `calc(${100 - progressPercent}% - 28px)` }}
+        animate={{ left: isSender ? `calc(${progressPercent}% - 28px)` : `calc(${100 - progressPercent}% - 28px)` }}
         transition={{ ease: "linear", duration: 1 }}
       >
         {/* Bobbing Motion */}
@@ -96,7 +100,7 @@ export default function GlobalBirdTracker() {
           className="w-full h-full relative"
         >
           {/* Realistic Bird Silhouette Animation */}
-          <svg viewBox="0 0 100 100" className="w-full h-full text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.9)]" style={{ transform: "scaleX(-1)" }}>
+          <svg viewBox="0 0 100 100" className="w-full h-full text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.9)]" style={{ transform: isSender ? "scaleX(-1)" : "none" }}>
             <path fill="currentColor">
               <animate 
                 attributeName="d"
