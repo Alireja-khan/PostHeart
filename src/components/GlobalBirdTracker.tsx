@@ -93,7 +93,7 @@ export default function GlobalBirdTracker() {
 
           {/* Dangling Letter Envelope */}
           <motion.div 
-            className="absolute bottom-2 right-[18px] w-[14px] h-[10px] bg-white rounded-sm shadow-md flex flex-col overflow-hidden"
+            className="absolute bottom-2 right-[18px] w-[14px] h-[10px] bg-[#1a1a1a] rounded-sm shadow-md flex flex-col overflow-hidden"
             animate={{ rotate: [-8, 8, -8], transformOrigin: "top center" }}
             transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
           >

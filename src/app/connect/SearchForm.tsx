@@ -36,16 +36,16 @@ export default function SearchForm() {
     <motion.div 
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="w-full max-w-md bg-white border border-[#e6e4df] rounded-3xl p-8 shadow-sm"
+      className="w-full max-w-md bg-[#1a1a1a] border border-[#333333] rounded-3xl p-8 shadow-sm"
     >
       <div className="flex justify-center mb-6">
-        <div className="h-16 w-16 bg-[#f9f8f6] rounded-full border border-[#e6e4df] flex items-center justify-center shadow-sm">
+        <div className="h-16 w-16 bg-[#111111] rounded-full border border-[#333333] flex items-center justify-center shadow-sm">
           <Search className="text-[#c2410c] h-8 w-8" />
         </div>
       </div>
       
-      <h1 className="text-3xl font-serif font-bold text-center text-[#1a1a1a] mb-2">Search Partner</h1>
-      <p className="text-[#707070] text-center mb-8">Enter an email address to search for your partner's public profile.</p>
+      <h1 className="text-3xl font-serif font-bold text-center text-[#f9f8f6] mb-2">Search Partner</h1>
+      <p className="text-[#a0a0a0] text-center mb-8">Enter an email address to search for your partner's public profile.</p>
 
       {error && (
         <div className="bg-red-50 text-red-600 text-sm p-4 rounded-xl mb-6 text-center border border-red-100">
@@ -57,14 +57,14 @@ export default function SearchForm() {
         <div>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <Mail className="h-5 w-5 text-[#707070]" />
+              <Mail className="h-5 w-5 text-[#a0a0a0]" />
             </div>
             <input 
               type="email" 
               required
               value={partnerEmail}
               onChange={(e) => setPartnerEmail(e.target.value)}
-              className="w-full bg-[#f9f8f6] border border-[#e6e4df] rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:border-[#c2410c] focus:ring-1 focus:ring-[#c2410c] transition-colors text-[#1a1a1a]"
+              className="w-full bg-[#111111] border border-[#333333] rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:border-[#c2410c] focus:ring-1 focus:ring-[#c2410c] transition-colors text-[#f9f8f6]"
               placeholder="Partner's Email"
             />
           </div>

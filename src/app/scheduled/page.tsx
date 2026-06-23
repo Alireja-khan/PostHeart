@@ -79,13 +79,13 @@ export default function ScheduledLettersPage() {
   };
 
   return (
-    <div className="w-full h-full bg-[#f9f8f6] p-8 lg:p-12 overflow-y-auto no-scrollbar">
+    <div className="w-full h-full bg-[#111111] p-8 lg:p-12 overflow-y-auto no-scrollbar">
       
       {/* Header */}
       <div className="mb-10 max-w-4xl mx-auto">
-        <span className="text-[10px] tracking-widest text-[#707070] uppercase font-semibold">Active Logistics</span>
-        <h1 className="font-serif text-4xl font-bold text-[#1a1a1a] mt-1">In Transit</h1>
-        <p className="text-sm text-[#707070] mt-2">
+        <span className="text-[10px] tracking-widest text-[#a0a0a0] uppercase font-semibold">Active Logistics</span>
+        <h1 className="font-serif text-4xl font-bold text-[#f9f8f6] mt-1">In Transit</h1>
+        <p className="text-sm text-[#a0a0a0] mt-2">
           Letters currently traveling through the postal system.
         </p>
       </div>
@@ -96,7 +96,7 @@ export default function ScheduledLettersPage() {
           return (
             <div 
               key={letter.id} 
-              className="bg-white border border-[#e6e4df] p-6 rounded-lg shadow-sm flex flex-col justify-between h-64 card-shadow"
+              className="bg-[#1a1a1a] border border-[#333333] p-6 rounded-lg shadow-sm flex flex-col justify-between h-64 card-shadow"
             >
               <div>
                 <div className="flex justify-between items-center mb-4">
@@ -104,23 +104,23 @@ export default function ScheduledLettersPage() {
                     <Clock size={14} />
                     <span className="text-[10px] tracking-wider uppercase font-semibold">{getRemainingTime(letter)}</span>
                   </div>
-                  <span className="bg-stone-50 border border-[#e6e4df] text-[#707070] text-[9px] px-2 py-0.5 rounded uppercase tracking-wider font-semibold">
+                  <span className="bg-[#1a1a1a] border border-[#333333] text-[#a0a0a0] text-[9px] px-2 py-0.5 rounded uppercase tracking-wider font-semibold">
                     {progress}% Complete
                   </span>
                 </div>
 
-                <h3 className="font-serif text-xl font-bold text-[#1a1a1a] mb-1">
+                <h3 className="font-serif text-xl font-bold text-[#f9f8f6] mb-1">
                   To {letter.receiver}
                 </h3>
-                <span className="text-[10px] text-[#707070] font-medium">From {letter.sender}</span>
+                <span className="text-[10px] text-[#a0a0a0] font-medium">From {letter.sender}</span>
                 
-                <p className="text-xs text-[#707070]/80 italic mt-4 line-clamp-2">
+                <p className="text-xs text-[#a0a0a0]/80 italic mt-4 line-clamp-2">
                   "{letter.content}"
                 </p>
               </div>
 
               {/* Progress Slider */}
-              <div className="mt-6 border-t border-[#e6e4df]/60 pt-4 flex justify-between items-center">
+              <div className="mt-6 border-t border-[#333333]/60 pt-4 flex justify-between items-center">
                 <div className="w-2/3 h-1 bg-stone-100 rounded-full overflow-hidden">
                   <div className="h-full bg-[#344e41]" style={{ width: `${progress}%` }}></div>
                 </div>
@@ -183,22 +183,22 @@ function TransitTrackerModal({
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className="bg-white rounded-lg w-full max-w-xl shadow-2xl p-8 relative overflow-hidden"
+        className="bg-[#1a1a1a] rounded-lg w-full max-w-xl shadow-2xl p-8 relative overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 text-[#707070] hover:text-[#1a1a1a] p-1.5 rounded-full hover:bg-stone-50 transition-colors"
+          className="absolute top-4 right-4 text-[#a0a0a0] hover:text-[#f9f8f6] p-1.5 rounded-full hover:bg-[#1a1a1a] transition-colors"
         >
           <X size={18} />
         </button>
 
-        <div className="border-b border-[#e6e4df] pb-4 mb-8">
-          <span className="text-[10px] tracking-widest text-[#707070] uppercase font-semibold">Delivery Logistics</span>
-          <h2 className="font-serif text-2xl font-bold text-[#1a1a1a] mt-1">
+        <div className="border-b border-[#333333] pb-4 mb-8">
+          <span className="text-[10px] tracking-widest text-[#a0a0a0] uppercase font-semibold">Delivery Logistics</span>
+          <h2 className="font-serif text-2xl font-bold text-[#f9f8f6] mt-1">
             Tracking to {letter.receiver}
           </h2>
-          <p className="text-xs text-[#707070] mt-1 font-sans">
+          <p className="text-xs text-[#a0a0a0] mt-1 font-sans">
             From {letter.sender} • Posted {new Date(letter.createdAt).toLocaleDateString()}
           </p>
         </div>
@@ -224,11 +224,11 @@ function TransitTrackerModal({
                   className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors duration-300 border-2 ${
                     isCompleted 
                       ? 'bg-[#344e41] border-[#344e41]' 
-                      : 'bg-white border-[#e6e4df]'
+                      : 'bg-[#1a1a1a] border-[#333333]'
                   }`}
                 >
                   {isCurrent && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#1a1a1a] animate-ping"></span>
                   )}
                   {isCompleted && !isCurrent && (
                     <CheckCircle size={10} className="text-white" />
@@ -237,10 +237,10 @@ function TransitTrackerModal({
                 
                 {/* Checkpoint labels absolute positioning below */}
                 <div className="absolute top-7 flex flex-col items-center w-28 text-center pointer-events-none">
-                  <span className={`text-[10px] font-serif font-bold ${isCompleted ? 'text-[#1a1a1a]' : 'text-[#707070]/60'}`}>
+                  <span className={`text-[10px] font-serif font-bold ${isCompleted ? 'text-[#f9f8f6]' : 'text-[#a0a0a0]/60'}`}>
                     {cp.label}
                   </span>
-                  <span className="text-[8px] text-[#707070]/50 font-sans mt-0.5 leading-none">
+                  <span className="text-[8px] text-[#a0a0a0]/50 font-sans mt-0.5 leading-none">
                     {cp.desc}
                   </span>
                 </div>
@@ -250,10 +250,10 @@ function TransitTrackerModal({
         </div>
 
         {/* Detailed status status section */}
-        <div className="mt-12 pt-6 border-t border-[#e6e4df]/60 flex items-center justify-between text-xs text-[#707070] font-sans">
+        <div className="mt-12 pt-6 border-t border-[#333333]/60 flex items-center justify-between text-xs text-[#a0a0a0] font-sans">
           <div className="flex items-center gap-1.5">
             <MapPin size={14} className="text-[#c2410c]" />
-            <span className="font-serif font-bold text-[#1a1a1a]">Transit Node</span>
+            <span className="font-serif font-bold text-[#f9f8f6]">Transit Node</span>
           </div>
           <span>{progress}% Traveled • {Math.round((letter.durationHours * (100 - progress)) / 100)} hours remaining</span>
         </div>

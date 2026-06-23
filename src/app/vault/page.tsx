@@ -265,7 +265,7 @@ export default function KeepsakeBoxPage() {
   };
 
   return (
-    <div className="w-full min-h-full bg-[#f9f8f6] p-8 lg:p-12 overflow-y-auto no-scrollbar">
+    <div className="w-full min-h-full bg-[#111111] p-8 lg:p-12 overflow-y-auto no-scrollbar">
       
       {/* Hidden audio element for cassette player */}
       <audio 
@@ -275,23 +275,23 @@ export default function KeepsakeBoxPage() {
       />
 
       {/* Editorial Header */}
-      <div className="mb-12 max-w-4xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[#e6e4df] pb-6">
+      <div className="mb-12 max-w-4xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[#333333] pb-6">
         <div>
-          <span className="text-[10px] tracking-widest text-[#707070] uppercase font-semibold">Private Archive</span>
-          <h1 className="font-serif text-4xl font-bold text-[#1a1a1a] mt-1">Keepsake Box</h1>
-          <p className="text-sm text-[#707070] mt-2">
+          <span className="text-[10px] tracking-widest text-[#a0a0a0] uppercase font-semibold">Private Archive</span>
+          <h1 className="font-serif text-4xl font-bold text-[#f9f8f6] mt-1">Keepsake Box</h1>
+          <p className="text-sm text-[#a0a0a0] mt-2">
             A minimalist digital chest enclosing physical stubs, favorite photographs, and private mixtapes.
           </p>
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex bg-[#fdfbf7] border border-[#e6e4df] rounded-lg p-1 self-start md:self-auto shadow-xs">
+        <div className="flex bg-[#fdfbf7] border border-[#333333] rounded-lg p-1 self-start md:self-auto shadow-xs">
           <button 
             onClick={() => setActiveTab('letters')}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-md font-serif text-xs transition-all ${
               activeTab === 'letters' 
-                ? 'bg-white text-[#1a1a1a] shadow-sm font-semibold' 
-                : 'text-[#707070] hover:text-[#1a1a1a]'
+                ? 'bg-[#1a1a1a] text-[#f9f8f6] shadow-sm font-semibold' 
+                : 'text-[#a0a0a0] hover:text-[#f9f8f6]'
             }`}
           >
             <Heart size={13} />
@@ -301,8 +301,8 @@ export default function KeepsakeBoxPage() {
             onClick={() => setActiveTab('photos')}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-md font-serif text-xs transition-all ${
               activeTab === 'photos' 
-                ? 'bg-white text-[#1a1a1a] shadow-sm font-semibold' 
-                : 'text-[#707070] hover:text-[#1a1a1a]'
+                ? 'bg-[#1a1a1a] text-[#f9f8f6] shadow-sm font-semibold' 
+                : 'text-[#a0a0a0] hover:text-[#f9f8f6]'
             }`}
           >
             <Layers size={13} />
@@ -312,8 +312,8 @@ export default function KeepsakeBoxPage() {
             onClick={() => setActiveTab('playlist')}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-md font-serif text-xs transition-all ${
               activeTab === 'playlist' 
-                ? 'bg-white text-[#1a1a1a] shadow-sm font-semibold' 
-                : 'text-[#707070] hover:text-[#1a1a1a]'
+                ? 'bg-[#1a1a1a] text-[#f9f8f6] shadow-sm font-semibold' 
+                : 'text-[#a0a0a0] hover:text-[#f9f8f6]'
             }`}
           >
             <Music size={13} />
@@ -323,8 +323,8 @@ export default function KeepsakeBoxPage() {
             onClick={() => setActiveTab('keepsakes')}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-md font-serif text-xs transition-all ${
               activeTab === 'keepsakes' 
-                ? 'bg-white text-[#1a1a1a] shadow-sm font-semibold' 
-                : 'text-[#707070] hover:text-[#1a1a1a]'
+                ? 'bg-[#1a1a1a] text-[#f9f8f6] shadow-sm font-semibold' 
+                : 'text-[#a0a0a0] hover:text-[#f9f8f6]'
             }`}
           >
             <Lock size={13} />
@@ -348,21 +348,21 @@ export default function KeepsakeBoxPage() {
               className="flex flex-col items-center py-6 w-full"
             >
               {deliveredLetters.length === 0 ? (
-                <div className="w-full max-w-sm bg-white border border-[#e6e4df] rounded-lg p-12 text-center card-shadow">
-                  <p className="font-serif italic text-[#707070]">No letters have arrived yet.</p>
+                <div className="w-full max-w-sm bg-[#1a1a1a] border border-[#333333] rounded-lg p-12 text-center card-shadow">
+                  <p className="font-serif italic text-[#a0a0a0]">No letters have arrived yet.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
                   {deliveredLetters.map(letter => (
-                    <div key={letter.id} className="bg-white border border-[#e6e4df] rounded-lg p-6 shadow-sm card-shadow relative group">
+                    <div key={letter.id} className="bg-[#1a1a1a] border border-[#333333] rounded-lg p-6 shadow-sm card-shadow relative group">
                       <div className="absolute top-0 right-10 w-4 h-8 bg-[#c2410c] opacity-10"></div>
-                      <div className="text-[10px] uppercase tracking-widest text-[#707070] mb-4 border-b border-[#e6e4df] pb-2">
+                      <div className="text-[10px] uppercase tracking-widest text-[#a0a0a0] mb-4 border-b border-[#333333] pb-2">
                         From {letter.sender?.name || 'Sender'}
                       </div>
-                      <p className="font-serif text-[#1a1a1a] text-sm leading-relaxed mb-4 whitespace-pre-wrap">
+                      <p className="font-serif text-[#f9f8f6] text-sm leading-relaxed mb-4 whitespace-pre-wrap">
                         {letter.content}
                       </p>
-                      <div className="text-right text-[10px] text-[#707070] font-mono">
+                      <div className="text-right text-[10px] text-[#a0a0a0] font-mono">
                         Delivered: {new Date(letter.deliverAt).toLocaleDateString()}
                       </div>
                     </div>
@@ -385,11 +385,11 @@ export default function KeepsakeBoxPage() {
               <div className="w-full max-w-sm flex flex-col items-center">
                 
                 {polaroids.length === 0 ? (
-                  <div className="w-full bg-white border border-[#e6e4df] rounded-lg p-12 text-center card-shadow">
-                    <p className="font-serif italic text-[#707070] mb-4">No photograph memories saved.</p>
+                  <div className="w-full bg-[#1a1a1a] border border-[#333333] rounded-lg p-12 text-center card-shadow">
+                    <p className="font-serif italic text-[#a0a0a0] mb-4">No photograph memories saved.</p>
                     <button 
                       onClick={() => setIsPhotoModalOpen(true)}
-                      className="border border-[#e6e4df] hover:border-[#1a1a1a] px-4 py-2 rounded-lg font-serif text-xs text-[#1a1a1a] bg-white transition-colors shadow-xs font-bold"
+                      className="border border-[#333333] hover:border-[#1a1a1a] px-4 py-2 rounded-lg font-serif text-xs text-[#f9f8f6] bg-[#1a1a1a] transition-colors shadow-xs font-bold"
                     >
                       Add Photo Memory
                     </button>
@@ -411,10 +411,10 @@ export default function KeepsakeBoxPage() {
                         
                         {/* Front of Polaroid */}
                         <div 
-                          className="absolute inset-0 bg-white p-5 pb-16 border border-[#e6e4df] rounded-lg flex flex-col justify-between card-shadow"
+                          className="absolute inset-0 bg-[#1a1a1a] p-5 pb-16 border border-[#333333] rounded-lg flex flex-col justify-between card-shadow"
                           style={{ backfaceVisibility: 'hidden' }}
                         >
-                          <div className="w-full h-full bg-stone-50 overflow-hidden border border-[#e6e4df]/60 rounded-md relative group">
+                          <div className="w-full h-full bg-[#1a1a1a] overflow-hidden border border-[#333333]/60 rounded-md relative group">
                             <img 
                               src={polaroids[polaroidIndex]?.image} 
                               alt="Polaroid Memory" 
@@ -422,22 +422,22 @@ export default function KeepsakeBoxPage() {
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-stone-900/10 via-transparent pointer-events-none" />
                           </div>
-                          <div className="text-center font-serif text-lg font-bold text-[#1a1a1a] mt-4 leading-none truncate">
+                          <div className="text-center font-serif text-lg font-bold text-[#f9f8f6] mt-4 leading-none truncate">
                             {polaroids[polaroidIndex]?.title}
                           </div>
                         </div>
 
                         {/* Back of Polaroid (Handwritten text) */}
                         <div 
-                          className="absolute inset-0 bg-white p-8 border border-[#e6e4df] rounded-lg flex flex-col justify-between card-shadow"
+                          className="absolute inset-0 bg-[#1a1a1a] p-8 border border-[#333333] rounded-lg flex flex-col justify-between card-shadow"
                           style={{ 
                             backfaceVisibility: 'hidden',
                             transform: 'rotateY(180deg)'
                           }}
                         >
-                          <div className="flex-1 flex flex-col items-center justify-center border border-dashed border-[#e6e4df] p-6 rounded-md bg-[#fdfbf7]">
-                            <span className="text-[9px] tracking-widest text-[#707070] uppercase font-semibold mb-3">Written Memory</span>
-                            <p className="font-serif italic text-base text-[#1a1a1a] text-center leading-relaxed">
+                          <div className="flex-1 flex flex-col items-center justify-center border border-dashed border-[#333333] p-6 rounded-md bg-[#fdfbf7]">
+                            <span className="text-[9px] tracking-widest text-[#a0a0a0] uppercase font-semibold mb-3">Written Memory</span>
+                            <p className="font-serif italic text-base text-[#f9f8f6] text-center leading-relaxed">
                               "{polaroids[polaroidIndex]?.note}"
                             </p>
                           </div>
@@ -453,7 +453,7 @@ export default function KeepsakeBoxPage() {
                               <Trash2 size={12} />
                               <span>Discard</span>
                             </button>
-                            <span className="font-serif text-[10px] text-[#707070]/60 tracking-wider text-right uppercase">
+                            <span className="font-serif text-[10px] text-[#a0a0a0]/60 tracking-wider text-right uppercase">
                               Dear You Archive • Vol.{polaroidIndex + 1}
                             </span>
                           </div>
@@ -469,7 +469,7 @@ export default function KeepsakeBoxPage() {
                           e.stopPropagation();
                           setIsPolaroidFlipped(!isPolaroidFlipped);
                         }}
-                        className="flex items-center gap-1.5 border border-[#e6e4df] hover:border-[#1a1a1a] px-4 py-2 rounded-lg font-serif text-xs text-[#1a1a1a] bg-white transition-colors card-shadow"
+                        className="flex items-center gap-1.5 border border-[#333333] hover:border-[#1a1a1a] px-4 py-2 rounded-lg font-serif text-xs text-[#f9f8f6] bg-[#1a1a1a] transition-colors card-shadow"
                       >
                         <RefreshCw size={13} className="text-[#c2410c]" />
                         <span>Flip Photo</span>
@@ -481,7 +481,7 @@ export default function KeepsakeBoxPage() {
                             e.stopPropagation();
                             nextPolaroid();
                           }}
-                          className="flex items-center gap-1.5 border border-[#e6e4df] hover:border-[#1a1a1a] px-4 py-2 rounded-lg font-serif text-xs text-[#1a1a1a] bg-white transition-colors card-shadow"
+                          className="flex items-center gap-1.5 border border-[#333333] hover:border-[#1a1a1a] px-4 py-2 rounded-lg font-serif text-xs text-[#f9f8f6] bg-[#1a1a1a] transition-colors card-shadow"
                         >
                           <span>Next Slide</span>
                           <ArrowRight size={13} />
@@ -493,7 +493,7 @@ export default function KeepsakeBoxPage() {
                           e.stopPropagation();
                           setIsPhotoModalOpen(true);
                         }}
-                        className="flex items-center gap-1.5 border border-[#e6e4df] hover:border-[#1a1a1a] px-4 py-2 rounded-lg font-serif text-xs text-[#1a1a1a] bg-[#1a1a1a] hover:bg-[#333] text-white transition-colors card-shadow font-bold"
+                        className="flex items-center gap-1.5 border border-[#333333] hover:border-[#1a1a1a] px-4 py-2 rounded-lg font-serif text-xs text-[#f9f8f6] bg-[#1a1a1a] hover:bg-[#333] text-white transition-colors card-shadow font-bold"
                       >
                         <Plus size={13} />
                         <span>New Photo</span>
@@ -515,7 +515,7 @@ export default function KeepsakeBoxPage() {
               transition={{ duration: 0.3 }}
               className="flex flex-col items-center py-6"
             >
-              <div className="w-full max-w-md bg-white border border-[#e6e4df] p-8 rounded-lg card-shadow flex flex-col md:flex-row items-center gap-8">
+              <div className="w-full max-w-md bg-[#1a1a1a] border border-[#333333] p-8 rounded-lg card-shadow flex flex-col md:flex-row items-center gap-8">
                 
                 {/* Cassette Tape (Clean Vector Card) */}
                 <div className="flex flex-col items-center">
@@ -532,44 +532,44 @@ export default function KeepsakeBoxPage() {
                       opacity: 1 
                     }}
                     transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                    className="w-48 h-32 bg-stone-50 border border-[#e6e4df] rounded-lg p-3 flex flex-col justify-between card-shadow cursor-pointer hover:border-[#1a1a1a] transition-all group"
+                    className="w-48 h-32 bg-[#1a1a1a] border border-[#333333] rounded-lg p-3 flex flex-col justify-between card-shadow cursor-pointer hover:border-[#1a1a1a] transition-all group"
                   >
-                    <div className="flex-1 bg-white border border-[#e6e4df]/60 rounded-md flex flex-col justify-between p-2 shadow-xs">
-                      <div className="flex justify-between items-center text-[9px] font-mono text-[#707070]">
+                    <div className="flex-1 bg-[#1a1a1a] border border-[#333333]/60 rounded-md flex flex-col justify-between p-2 shadow-xs">
+                      <div className="flex justify-between items-center text-[9px] font-mono text-[#a0a0a0]">
                         <span>A-Side</span>
                         <span>L-45</span>
                       </div>
                       
                       <div className="flex justify-around items-center my-1">
-                        <div className="w-6 h-6 rounded-full bg-stone-100 border border-[#e6e4df] flex items-center justify-center shadow-inner">
+                        <div className="w-6 h-6 rounded-full bg-stone-100 border border-[#333333] flex items-center justify-center shadow-inner">
                           <div className="w-2 h-2 bg-stone-400 rounded-full"></div>
                         </div>
-                        <div className="w-6 h-6 rounded-full bg-stone-100 border border-[#e6e4df] flex items-center justify-center shadow-inner">
+                        <div className="w-6 h-6 rounded-full bg-stone-100 border border-[#333333] flex items-center justify-center shadow-inner">
                           <div className="w-2 h-2 bg-stone-400 rounded-full"></div>
                         </div>
                       </div>
 
-                      <div className="text-center font-serif text-xs font-bold text-[#1a1a1a] py-0.5 truncate border-t border-[#e6e4df]/60">
+                      <div className="text-center font-serif text-xs font-bold text-[#f9f8f6] py-0.5 truncate border-t border-[#333333]/60">
                         ♥ Shared Acoustic Playlist ♥
                       </div>
                     </div>
                   </motion.div>
                   {!isCassetteInserted && (
-                    <span className="text-[9px] tracking-widest text-[#707070] uppercase font-semibold mt-3 animate-pulse">
+                    <span className="text-[9px] tracking-widest text-[#a0a0a0] uppercase font-semibold mt-3 animate-pulse">
                       Click cassette to insert
                     </span>
                   )}
                 </div>
 
                 {/* Cassette Tape Deck Player */}
-                <div className="w-56 flex-1 flex flex-col justify-between min-h-48 border-l border-[#e6e4df]/60 pl-0 md:pl-8 mt-6 md:mt-0">
+                <div className="w-56 flex-1 flex flex-col justify-between min-h-48 border-l border-[#333333]/60 pl-0 md:pl-8 mt-6 md:mt-0">
                   <div>
-                    <span className="text-[9px] font-mono text-[#707070] tracking-widest block uppercase">Acoustic Player</span>
-                    <h3 className="font-serif text-lg font-bold text-[#1a1a1a] mt-1">Our Mixtape</h3>
+                    <span className="text-[9px] font-mono text-[#a0a0a0] tracking-widest block uppercase">Acoustic Player</span>
+                    <h3 className="font-serif text-lg font-bold text-[#f9f8f6] mt-1">Our Mixtape</h3>
                   </div>
 
                   {/* Tape slot window */}
-                  <div className="bg-stone-50 border border-[#e6e4df] rounded-md h-24 my-4 flex items-center justify-center overflow-hidden relative shadow-inner">
+                  <div className="bg-[#1a1a1a] border border-[#333333] rounded-md h-24 my-4 flex items-center justify-center overflow-hidden relative shadow-inner">
                     {isCassetteInserted ? (
                       <div className="w-full h-full flex flex-col justify-center items-center p-3">
                         <div className="flex justify-around items-center w-full px-4 mb-2">
@@ -602,7 +602,7 @@ export default function KeepsakeBoxPage() {
                         </div>
                       </div>
                     ) : (
-                      <span className="font-serif text-[10px] text-[#707070]/60 italic uppercase tracking-wider">
+                      <span className="font-serif text-[10px] text-[#a0a0a0]/60 italic uppercase tracking-wider">
                         Insert Tape Above
                       </span>
                     )}
@@ -613,21 +613,21 @@ export default function KeepsakeBoxPage() {
                     <button 
                       onClick={() => handleCassetteControl('play')}
                       disabled={!isCassetteInserted || isPlaying}
-                      className="flex-1 flex justify-center py-2 rounded-lg bg-white border border-[#e6e4df] text-[#707070] hover:text-[#1a1a1a] hover:border-[#1a1a1a] disabled:opacity-30 transition-colors shadow-xs"
+                      className="flex-1 flex justify-center py-2 rounded-lg bg-[#1a1a1a] border border-[#333333] text-[#a0a0a0] hover:text-[#f9f8f6] hover:border-[#1a1a1a] disabled:opacity-30 transition-colors shadow-xs"
                     >
                       <Play size={12} className="fill-current" />
                     </button>
                     <button 
                       onClick={() => handleCassetteControl('pause')}
                       disabled={!isCassetteInserted || !isPlaying}
-                      className="flex-1 flex justify-center py-2 rounded-lg bg-white border border-[#e6e4df] text-[#707070] hover:text-[#1a1a1a] hover:border-[#1a1a1a] disabled:opacity-30 transition-colors shadow-xs"
+                      className="flex-1 flex justify-center py-2 rounded-lg bg-[#1a1a1a] border border-[#333333] text-[#a0a0a0] hover:text-[#f9f8f6] hover:border-[#1a1a1a] disabled:opacity-30 transition-colors shadow-xs"
                     >
                       <Pause size={12} className="fill-current" />
                     </button>
                     <button 
                       onClick={() => handleCassetteControl('eject')}
                       disabled={!isCassetteInserted}
-                      className="px-3 py-2 rounded-lg bg-white border border-[#e6e4df] text-[9px] font-serif text-[#707070] hover:text-[#1a1a1a] hover:border-[#1a1a1a] disabled:opacity-30 transition-colors shadow-xs uppercase tracking-wider font-semibold"
+                      className="px-3 py-2 rounded-lg bg-[#1a1a1a] border border-[#333333] text-[9px] font-serif text-[#a0a0a0] hover:text-[#f9f8f6] hover:border-[#1a1a1a] disabled:opacity-30 transition-colors shadow-xs uppercase tracking-wider font-semibold"
                     >
                       Eject
                     </button>
@@ -649,7 +649,7 @@ export default function KeepsakeBoxPage() {
             >
               {/* Modern Minimal Locket */}
               <div className="flex flex-col items-center">
-                <span className="text-[10px] tracking-widest text-[#707070] uppercase font-semibold mb-4">
+                <span className="text-[10px] tracking-widest text-[#a0a0a0] uppercase font-semibold mb-4">
                   Interactive Keepsake
                 </span>
                 
@@ -667,7 +667,7 @@ export default function KeepsakeBoxPage() {
                         x: isLocketOpen ? -40 : 0
                       }}
                       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                      className="absolute left-6 w-16 h-28 bg-[#fdfbf7] border-2 border-r-0 border-[#e6e4df] origin-right shadow-md flex items-center justify-end overflow-hidden"
+                      className="absolute left-6 w-16 h-28 bg-[#fdfbf7] border-2 border-r-0 border-[#333333] origin-right shadow-md flex items-center justify-end overflow-hidden"
                       style={{ 
                         borderRadius: '100px 0 0 100px', 
                         transformStyle: 'preserve-3d', 
@@ -675,7 +675,7 @@ export default function KeepsakeBoxPage() {
                         zIndex: 10
                       }}
                     >
-                      <div className="w-10 h-10 rounded-full border border-[#e6e4df] flex items-center justify-center bg-white mr-1.5">
+                      <div className="w-10 h-10 rounded-full border border-[#333333] flex items-center justify-center bg-[#1a1a1a] mr-1.5">
                         <Heart size={14} className="text-[#c2410c] fill-[#c2410c]/20" />
                       </div>
                     </motion.div>
@@ -687,7 +687,7 @@ export default function KeepsakeBoxPage() {
                         x: isLocketOpen ? 40 : 0
                       }}
                       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                      className="absolute right-6 w-16 h-28 bg-[#fdfbf7] border-2 border-l-0 border-[#e6e4df] origin-left shadow-md flex items-center justify-start overflow-hidden"
+                      className="absolute right-6 w-16 h-28 bg-[#fdfbf7] border-2 border-l-0 border-[#333333] origin-left shadow-md flex items-center justify-start overflow-hidden"
                       style={{ 
                         borderRadius: '0 100px 100px 0', 
                         transformStyle: 'preserve-3d', 
@@ -695,21 +695,21 @@ export default function KeepsakeBoxPage() {
                         zIndex: 10
                       }}
                     >
-                      <div className="w-10 h-10 rounded-full border border-[#e6e4df] flex items-center justify-center bg-white ml-1.5">
+                      <div className="w-10 h-10 rounded-full border border-[#333333] flex items-center justify-center bg-[#1a1a1a] ml-1.5">
                         <Heart size={14} className="text-[#c2410c] fill-[#c2410c]/20" />
                       </div>
                     </motion.div>
 
                     {/* Inside Photos */}
                     <div className="absolute inset-0 flex justify-center items-center space-x-1.5 z-0">
-                      <div className="w-16 h-24 bg-stone-100 rounded-l-full overflow-hidden border border-[#e6e4df] shadow-inner">
+                      <div className="w-16 h-24 bg-stone-100 rounded-l-full overflow-hidden border border-[#333333] shadow-inner">
                         <img 
                           src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80" 
                           alt="Partner 1" 
                           className="w-full h-full object-cover grayscale opacity-90" 
                         />
                       </div>
-                      <div className="w-16 h-24 bg-stone-100 rounded-r-full overflow-hidden border border-[#e6e4df] shadow-inner">
+                      <div className="w-16 h-24 bg-stone-100 rounded-r-full overflow-hidden border border-[#333333] shadow-inner">
                         <img 
                           src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80" 
                           alt="Partner 2" 
@@ -720,15 +720,15 @@ export default function KeepsakeBoxPage() {
 
                   </div>
                 </div>
-                <span className="text-[9px] tracking-widest text-[#707070]/60 uppercase font-semibold mt-2">
+                <span className="text-[9px] tracking-widest text-[#a0a0a0]/60 uppercase font-semibold mt-2">
                   {isLocketOpen ? 'Click to close' : 'Click to open locket'}
                 </span>
               </div>
 
               {/* Minimal Ticket Stubs Grid */}
               <div className="w-full flex flex-col space-y-4">
-                <div className="flex justify-between items-center border-b border-[#e6e4df]/60 pb-3">
-                  <span className="text-[10px] tracking-widest text-[#707070] uppercase font-semibold">
+                <div className="flex justify-between items-center border-b border-[#333333]/60 pb-3">
+                  <span className="text-[10px] tracking-widest text-[#a0a0a0] uppercase font-semibold">
                     Ticket Stubs Archive
                   </span>
                   
@@ -742,37 +742,37 @@ export default function KeepsakeBoxPage() {
                 </div>
                 
                 {tickets.length === 0 ? (
-                  <div className="bg-white border border-[#e6e4df] rounded-lg p-10 text-center card-shadow">
-                    <p className="font-serif italic text-xs text-[#707070]">No ticket stubs recorded yet.</p>
+                  <div className="bg-[#1a1a1a] border border-[#333333] rounded-lg p-10 text-center card-shadow">
+                    <p className="font-serif italic text-xs text-[#a0a0a0]">No ticket stubs recorded yet.</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
                     {tickets.map((t) => (
                       <div 
                         key={t.id}
-                        className="bg-white border border-[#e6e4df] rounded-lg p-5 flex flex-col justify-between relative overflow-hidden card-shadow group hover:border-[#1a1a1a] transition-all"
+                        className="bg-[#1a1a1a] border border-[#333333] rounded-lg p-5 flex flex-col justify-between relative overflow-hidden card-shadow group hover:border-[#1a1a1a] transition-all"
                       >
                         {/* Clean ticket dashed dividers */}
-                        <div className="absolute right-14 top-0 bottom-0 border-l border-dashed border-[#e6e4df]"></div>
-                        <div className="absolute right-[50px] -top-2 w-3.5 h-3.5 bg-[#f9f8f6] rounded-full border border-[#e6e4df]"></div>
-                        <div className="absolute right-[50px] -bottom-2 w-3.5 h-3.5 bg-[#f9f8f6] rounded-full border border-[#e6e4df]"></div>
+                        <div className="absolute right-14 top-0 bottom-0 border-l border-dashed border-[#333333]"></div>
+                        <div className="absolute right-[50px] -top-2 w-3.5 h-3.5 bg-[#111111] rounded-full border border-[#333333]"></div>
+                        <div className="absolute right-[50px] -bottom-2 w-3.5 h-3.5 bg-[#111111] rounded-full border border-[#333333]"></div>
 
                         {/* Delete/Discard ticket */}
                         <button
                           onClick={() => handleDeleteTicket(t.id)}
-                          className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-stone-100 border border-[#e6e4df] text-red-600 hover:bg-red-50 p-1 rounded-full"
+                          className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-stone-100 border border-[#333333] text-red-600 hover:bg-red-50 p-1 rounded-full"
                           title="Tear ticket stub"
                         >
                           <X size={10} />
                         </button>
 
                         <div className="pr-16">
-                          <span className="font-serif text-[9px] text-[#707070] tracking-wider block uppercase mb-1">{t.date}</span>
-                          <h4 className="font-serif text-base font-bold text-[#1a1a1a] mb-2 pr-2">{t.title}</h4>
-                          <p className="font-serif text-xs text-[#707070] italic">"{t.memo}"</p>
+                          <span className="font-serif text-[9px] text-[#a0a0a0] tracking-wider block uppercase mb-1">{t.date}</span>
+                          <h4 className="font-serif text-base font-bold text-[#f9f8f6] mb-2 pr-2">{t.title}</h4>
+                          <p className="font-serif text-xs text-[#a0a0a0] italic">"{t.memo}"</p>
                         </div>
 
-                        <div className="absolute right-0 top-0 bottom-0 w-14 flex flex-col justify-center items-center font-mono text-[9px] text-[#707070]/50 rotate-90 tracking-widest uppercase font-semibold">
+                        <div className="absolute right-0 top-0 bottom-0 w-14 flex flex-col justify-center items-center font-mono text-[9px] text-[#a0a0a0]/50 rotate-90 tracking-widest uppercase font-semibold">
                           {t.seat}
                         </div>
                       </div>
@@ -799,47 +799,47 @@ export default function KeepsakeBoxPage() {
               initial={{ scale: 0.95, y: 15 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 15 }}
-              className="bg-white border border-[#e6e4df] p-6 rounded-lg w-full max-w-md shadow-2xl relative"
+              className="bg-[#1a1a1a] border border-[#333333] p-6 rounded-lg w-full max-w-md shadow-2xl relative"
             >
               <button 
                 onClick={() => setIsPhotoModalOpen(false)}
-                className="absolute top-4 right-4 text-[#707070] hover:text-[#1a1a1a]"
+                className="absolute top-4 right-4 text-[#a0a0a0] hover:text-[#f9f8f6]"
               >
                 <X size={20} />
               </button>
 
               <div className="flex items-center gap-2 mb-6">
                 <Plus className="text-[#c2410c] w-5 h-5" />
-                <h3 className="font-serif text-[#1a1a1a] text-xl font-bold">Add Photo Memory</h3>
+                <h3 className="font-serif text-[#f9f8f6] text-xl font-bold">Add Photo Memory</h3>
               </div>
 
               <form onSubmit={handleAddPhoto} className="space-y-4">
                 <div>
-                  <label className="block font-serif text-xs text-[#707070] font-semibold uppercase tracking-wider mb-1.5">Photo Title</label>
+                  <label className="block font-serif text-xs text-[#a0a0a0] font-semibold uppercase tracking-wider mb-1.5">Photo Title</label>
                   <input
                     type="text"
                     placeholder="e.g. Walking in Central Park"
                     value={photoTitle}
                     onChange={(e) => setPhotoTitle(e.target.value)}
                     required
-                    className="w-full bg-[#fdfbf7] border border-[#e6e4df] rounded-lg p-2.5 text-[#1a1a1a] font-serif text-sm focus:outline-none focus:border-[#1a1a1a]"
+                    className="w-full bg-[#fdfbf7] border border-[#333333] rounded-lg p-2.5 text-[#f9f8f6] font-serif text-sm focus:outline-none focus:border-[#1a1a1a]"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-serif text-xs text-[#707070] font-semibold uppercase tracking-wider mb-1.5">Image URL</label>
+                  <label className="block font-serif text-xs text-[#a0a0a0] font-semibold uppercase tracking-wider mb-1.5">Image URL</label>
                   <input
                     type="text"
                     placeholder="Paste image link here..."
                     value={photoUrl}
                     onChange={(e) => setPhotoUrl(e.target.value)}
-                    className="w-full bg-[#fdfbf7] border border-[#e6e4df] rounded-lg p-2.5 text-[#1a1a1a] font-serif text-sm focus:outline-none focus:border-[#1a1a1a]"
+                    className="w-full bg-[#fdfbf7] border border-[#333333] rounded-lg p-2.5 text-[#f9f8f6] font-serif text-sm focus:outline-none focus:border-[#1a1a1a]"
                   />
                 </div>
 
                 {/* presets */}
                 <div>
-                  <label className="block font-serif text-[10px] text-[#707070] font-semibold uppercase tracking-wider mb-1.5">Or Choose preset</label>
+                  <label className="block font-serif text-[10px] text-[#a0a0a0] font-semibold uppercase tracking-wider mb-1.5">Or Choose preset</label>
                   <div className="flex gap-2">
                     {photoPresets.map((preset, idx) => (
                       <button
@@ -855,14 +855,14 @@ export default function KeepsakeBoxPage() {
                 </div>
 
                 <div>
-                  <label className="block font-serif text-xs text-[#707070] font-semibold uppercase tracking-wider mb-1.5">Memory Description</label>
+                  <label className="block font-serif text-xs text-[#a0a0a0] font-semibold uppercase tracking-wider mb-1.5">Memory Description</label>
                   <textarea
                     placeholder="Write a private note describing this memory..."
                     value={photoNote}
                     onChange={(e) => setPhotoNote(e.target.value)}
                     required
                     rows={3}
-                    className="w-full bg-[#fdfbf7] border border-[#e6e4df] rounded-lg p-2.5 text-[#1a1a1a] font-serif text-sm focus:outline-none focus:border-[#1a1a1a] resize-none"
+                    className="w-full bg-[#fdfbf7] border border-[#333333] rounded-lg p-2.5 text-[#f9f8f6] font-serif text-sm focus:outline-none focus:border-[#1a1a1a] resize-none"
                   />
                 </div>
 
@@ -891,68 +891,68 @@ export default function KeepsakeBoxPage() {
               initial={{ scale: 0.95, y: 15 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 15 }}
-              className="bg-white border border-[#e6e4df] p-6 rounded-lg w-full max-w-md shadow-2xl relative"
+              className="bg-[#1a1a1a] border border-[#333333] p-6 rounded-lg w-full max-w-md shadow-2xl relative"
             >
               <button 
                 onClick={() => setIsTicketModalOpen(false)}
-                className="absolute top-4 right-4 text-[#707070] hover:text-[#1a1a1a]"
+                className="absolute top-4 right-4 text-[#a0a0a0] hover:text-[#f9f8f6]"
               >
                 <X size={20} />
               </button>
 
               <div className="flex items-center gap-2 mb-6">
                 <Plus className="text-[#c2410c] w-5 h-5" />
-                <h3 className="font-serif text-[#1a1a1a] text-xl font-bold">Add Ticket Stub</h3>
+                <h3 className="font-serif text-[#f9f8f6] text-xl font-bold">Add Ticket Stub</h3>
               </div>
 
               <form onSubmit={handleAddTicket} className="space-y-4">
                 <div>
-                  <label className="block font-serif text-xs text-[#707070] font-semibold uppercase tracking-wider mb-1.5">Event/Movie Title</label>
+                  <label className="block font-serif text-xs text-[#a0a0a0] font-semibold uppercase tracking-wider mb-1.5">Event/Movie Title</label>
                   <input
                     type="text"
                     placeholder="e.g. Coldplay Live Concert"
                     value={ticketTitle}
                     onChange={(e) => setTicketTitle(e.target.value)}
                     required
-                    className="w-full bg-[#fdfbf7] border border-[#e6e4df] rounded-lg p-2.5 text-[#1a1a1a] font-serif text-sm focus:outline-none focus:border-[#1a1a1a]"
+                    className="w-full bg-[#fdfbf7] border border-[#333333] rounded-lg p-2.5 text-[#f9f8f6] font-serif text-sm focus:outline-none focus:border-[#1a1a1a]"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block font-serif text-xs text-[#707070] font-semibold uppercase tracking-wider mb-1.5">Date</label>
+                    <label className="block font-serif text-xs text-[#a0a0a0] font-semibold uppercase tracking-wider mb-1.5">Date</label>
                     <input
                       type="text"
                       placeholder="e.g. Nov 14, 2024"
                       value={ticketDate}
                       onChange={(e) => setTicketDate(e.target.value)}
                       required
-                      className="w-full bg-[#fdfbf7] border border-[#e6e4df] rounded-lg p-2.5 text-[#1a1a1a] font-serif text-sm focus:outline-none focus:border-[#1a1a1a]"
+                      className="w-full bg-[#fdfbf7] border border-[#333333] rounded-lg p-2.5 text-[#f9f8f6] font-serif text-sm focus:outline-none focus:border-[#1a1a1a]"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-serif text-xs text-[#707070] font-semibold uppercase tracking-wider mb-1.5">Seat / Code</label>
+                    <label className="block font-serif text-xs text-[#a0a0a0] font-semibold uppercase tracking-wider mb-1.5">Seat / Code</label>
                     <input
                       type="text"
                       placeholder="e.g. Row G, Seat 12"
                       value={ticketSeat}
                       onChange={(e) => setTicketSeat(e.target.value)}
                       required
-                      className="w-full bg-[#fdfbf7] border border-[#e6e4df] rounded-lg p-2.5 text-[#1a1a1a] font-serif text-sm focus:outline-none focus:border-[#1a1a1a]"
+                      className="w-full bg-[#fdfbf7] border border-[#333333] rounded-lg p-2.5 text-[#f9f8f6] font-serif text-sm focus:outline-none focus:border-[#1a1a1a]"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block font-serif text-xs text-[#707070] font-semibold uppercase tracking-wider mb-1.5">Memo / Secret Note</label>
+                  <label className="block font-serif text-xs text-[#a0a0a0] font-semibold uppercase tracking-wider mb-1.5">Memo / Secret Note</label>
                   <textarea
                     placeholder="Write a sweet memory from this event..."
                     value={ticketMemo}
                     onChange={(e) => setTicketMemo(e.target.value)}
                     required
                     rows={3}
-                    className="w-full bg-[#fdfbf7] border border-[#e6e4df] rounded-lg p-2.5 text-[#1a1a1a] font-serif text-sm focus:outline-none focus:border-[#1a1a1a] resize-none"
+                    className="w-full bg-[#fdfbf7] border border-[#333333] rounded-lg p-2.5 text-[#f9f8f6] font-serif text-sm focus:outline-none focus:border-[#1a1a1a] resize-none"
                   />
                 </div>
 

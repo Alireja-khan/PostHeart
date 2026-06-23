@@ -202,14 +202,14 @@ export default function CoupleSpacePage() {
   };
 
   return (
-    <div className="w-full h-full flex flex-col bg-[#f9f8f6] relative select-none overflow-hidden">
+    <div className="w-full h-full flex flex-col bg-[#111111] relative select-none overflow-hidden">
       
       {/* Editorial Header & Action bar */}
-      <div className="p-8 border-b border-[#e6e4df] flex flex-col md:flex-row md:items-center justify-between gap-6 z-20 bg-white shadow-xs">
+      <div className="p-8 border-b border-[#333333] flex flex-col md:flex-row md:items-center justify-between gap-6 z-20 bg-[#1a1a1a] shadow-xs">
         <div>
-          <span className="text-[10px] tracking-widest text-[#707070] uppercase font-semibold">Shared Canvas</span>
-          <h1 className="font-serif text-3xl font-bold text-[#1a1a1a] mt-1">Couple Board</h1>
-          <p className="text-xs text-[#707070] mt-1">
+          <span className="text-[10px] tracking-widest text-[#a0a0a0] uppercase font-semibold">Shared Canvas</span>
+          <h1 className="font-serif text-3xl font-bold text-[#f9f8f6] mt-1">Couple Board</h1>
+          <p className="text-xs text-[#a0a0a0] mt-1">
             Pin notes, print polaroids, add tapes and stickers. Drag items around to design our joint memory space.
           </p>
         </div>
@@ -218,21 +218,21 @@ export default function CoupleSpacePage() {
         <div className="flex flex-wrap gap-2.5">
           <button 
             onClick={() => setIsCameraModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#e6e4df] bg-white hover:border-[#1a1a1a] text-xs font-serif text-[#1a1a1a] transition-all card-shadow"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#333333] bg-[#1a1a1a] hover:border-[#1a1a1a] text-xs font-serif text-[#f9f8f6] transition-all card-shadow"
           >
             <Camera size={13} className="text-[#c2410c]" />
             <span>Add Polaroid</span>
           </button>
           <button 
             onClick={() => setIsNoteModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#e6e4df] bg-white hover:border-[#1a1a1a] text-xs font-serif text-[#1a1a1a] transition-all card-shadow"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#333333] bg-[#1a1a1a] hover:border-[#1a1a1a] text-xs font-serif text-[#f9f8f6] transition-all card-shadow"
           >
             <Plus size={13} className="text-[#344e41]" />
             <span>Add Note</span>
           </button>
           <button 
             onClick={addWashiTape}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#e6e4df] bg-white hover:border-[#1a1a1a] text-xs font-serif text-[#1a1a1a] transition-all card-shadow"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#333333] bg-[#1a1a1a] hover:border-[#1a1a1a] text-xs font-serif text-[#f9f8f6] transition-all card-shadow"
           >
             <span>Washi Tape</span>
           </button>
@@ -247,8 +247,8 @@ export default function CoupleSpacePage() {
       </div>
 
       {/* Floating Sticker Palette */}
-      <div className="absolute right-6 top-36 z-20 bg-white border border-[#e6e4df] p-3 rounded-lg shadow-lg flex flex-col items-center gap-3.5">
-        <span className="text-[8px] font-serif text-[#707070] uppercase tracking-wider font-semibold">Stickers</span>
+      <div className="absolute right-6 top-36 z-20 bg-[#1a1a1a] border border-[#333333] p-3 rounded-lg shadow-lg flex flex-col items-center gap-3.5">
+        <span className="text-[8px] font-serif text-[#a0a0a0] uppercase tracking-wider font-semibold">Stickers</span>
         <button onClick={() => addSticker('heart')} className="text-[#c2410c] hover:scale-110 transition-transform"><Heart size={18} fill="currentColor" className="opacity-80" /></button>
         <button onClick={() => addSticker('star')} className="text-yellow-600 hover:scale-110 transition-transform"><Star size={18} fill="currentColor" className="opacity-85" /></button>
         <button onClick={() => addSticker('sparkle')} className="text-[#344e41] hover:scale-110 transition-transform"><Sparkles size={18} className="opacity-80" /></button>
@@ -292,7 +292,7 @@ export default function CoupleSpacePage() {
                 
                 {/* Visual rendering based on item type */}
                 {item.type === 'polaroid' && (
-                  <div className="bg-white p-3 pb-8 border border-[#e6e4df] rounded-lg w-52 shadow-md relative group">
+                  <div className="bg-[#1a1a1a] p-3 pb-8 border border-[#333333] rounded-lg w-52 shadow-md relative group">
                     <button 
                       onClick={() => deleteItem(item.id)}
                       className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity bg-stone-900 text-white p-1 rounded-full hover:scale-105"
@@ -301,18 +301,18 @@ export default function CoupleSpacePage() {
                     </button>
                     
                     {/* Modern Polaroid Pin Replacement (subtle dot anchor) */}
-                    <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border border-[#e6e4df] rounded-full shadow-xs flex items-center justify-center">
+                    <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-[#1a1a1a] border border-[#333333] rounded-full shadow-xs flex items-center justify-center">
                       <div className="w-1.5 h-1.5 bg-[#c2410c] rounded-full"></div>
                     </div>
                     
-                    <div className="w-full aspect-square bg-stone-50 overflow-hidden border border-[#e6e4df]/60 rounded-md">
+                    <div className="w-full aspect-square bg-[#1a1a1a] overflow-hidden border border-[#333333]/60 rounded-md">
                       <img 
                         src={item.image} 
                         alt="Pinned Memory" 
                         className="w-full h-full object-cover pointer-events-none grayscale group-hover:grayscale-0 transition-all duration-300" 
                       />
                     </div>
-                    <div className="mt-3 font-serif text-sm font-bold text-[#1a1a1a] text-center leading-none px-1 truncate">
+                    <div className="mt-3 font-serif text-sm font-bold text-[#f9f8f6] text-center leading-none px-1 truncate">
                       {item.content}
                     </div>
                   </div>
@@ -320,28 +320,28 @@ export default function CoupleSpacePage() {
 
                 {item.type === 'sticky' && (
                   <div 
-                    className="p-4 w-44 aspect-square shadow-sm relative group border border-[#e6e4df] rounded-lg flex flex-col justify-between"
+                    className="p-4 w-44 aspect-square shadow-sm relative group border border-[#333333] rounded-lg flex flex-col justify-between"
                     style={{ 
                       backgroundColor: item.color || '#ffffff'
                     }}
                   >
                     <button 
                       onClick={() => deleteItem(item.id)}
-                      className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity bg-stone-100 text-[#707070] hover:text-[#1a1a1a] p-0.5 rounded-full border border-[#e6e4df]"
+                      className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity bg-stone-100 text-[#a0a0a0] hover:text-[#f9f8f6] p-0.5 rounded-full border border-[#333333]"
                     >
                       <X size={10} />
                     </button>
                     
                     {/* Minimal Pin dot */}
-                    <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border border-[#e6e4df] rounded-full shadow-xs flex items-center justify-center">
+                    <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-[#1a1a1a] border border-[#333333] rounded-full shadow-xs flex items-center justify-center">
                       <div className="w-1.5 h-1.5 bg-[#344e41] rounded-full"></div>
                     </div>
 
-                    <p className="font-serif text-xs text-[#1a1a1a] leading-relaxed flex-1 select-text selection:bg-[#c2410c]/10 break-words mt-1">
+                    <p className="font-serif text-xs text-[#f9f8f6] leading-relaxed flex-1 select-text selection:bg-[#c2410c]/10 break-words mt-1">
                       {item.content}
                     </p>
                     
-                    <div className="text-[7px] font-mono text-[#707070]/60 tracking-wider text-right mt-2 uppercase pointer-events-none font-semibold">
+                    <div className="text-[7px] font-mono text-[#a0a0a0]/60 tracking-wider text-right mt-2 uppercase pointer-events-none font-semibold">
                       Private Note
                     </div>
                   </div>
@@ -358,7 +358,7 @@ export default function CoupleSpacePage() {
                     {item.color === 'heart' && <Heart size={28} fill="#c2410c" className="text-[#c2410c] drop-shadow-xs" />}
                     {item.color === 'star' && <Star size={28} fill="#ca8a04" className="text-[#ca8a04] drop-shadow-xs" />}
                     {item.color === 'sparkle' && <Sparkles size={28} className="text-[#344e41] drop-shadow-xs" />}
-                    {item.color === 'smile' && <Smile size={28} fill="#707070" className="text-[#1a1a1a] drop-shadow-xs" />}
+                    {item.color === 'smile' && <Smile size={28} fill="#707070" className="text-[#f9f8f6] drop-shadow-xs" />}
                   </div>
                 )}
 
@@ -396,36 +396,36 @@ export default function CoupleSpacePage() {
               initial={{ scale: 0.95, y: 15 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 15 }}
-              className="bg-white border border-[#e6e4df] p-6 rounded-lg w-full max-w-md shadow-2xl relative"
+              className="bg-[#1a1a1a] border border-[#333333] p-6 rounded-lg w-full max-w-md shadow-2xl relative"
             >
               <button 
                 onClick={() => setIsCameraModalOpen(false)}
-                className="absolute top-4 right-4 text-[#707070] hover:text-[#1a1a1a]"
+                className="absolute top-4 right-4 text-[#a0a0a0] hover:text-[#f9f8f6]"
               >
                 <X size={20} />
               </button>
 
               <div className="flex items-center gap-2.5 mb-6">
                 <Camera className="text-[#c2410c] w-5 h-5" />
-                <h3 className="font-serif text-[#1a1a1a] text-xl font-bold">Print a Polaroid</h3>
+                <h3 className="font-serif text-[#f9f8f6] text-xl font-bold">Print a Polaroid</h3>
               </div>
 
               <form onSubmit={handlePrintPhoto} className="space-y-4">
                 <div>
-                  <label className="block font-serif text-xs text-[#707070] font-semibold uppercase tracking-wider mb-2">Image URL</label>
+                  <label className="block font-serif text-xs text-[#a0a0a0] font-semibold uppercase tracking-wider mb-2">Image URL</label>
                   <input 
                     type="text" 
                     placeholder="Paste image link here..." 
                     value={photoUrl}
                     onChange={(e) => setPhotoUrl(e.target.value)}
                     required
-                    className="w-full bg-[#fdfbf7] border border-[#e6e4df] rounded-lg p-2.5 text-[#1a1a1a] font-serif text-sm focus:outline-none focus:border-[#1a1a1a]"
+                    className="w-full bg-[#fdfbf7] border border-[#333333] rounded-lg p-2.5 text-[#f9f8f6] font-serif text-sm focus:outline-none focus:border-[#1a1a1a]"
                   />
                 </div>
 
                 {/* Preset suggestions */}
                 <div>
-                  <label className="block font-serif text-[10px] text-[#707070] font-semibold uppercase tracking-wider mb-2">Or Choose preset</label>
+                  <label className="block font-serif text-[10px] text-[#a0a0a0] font-semibold uppercase tracking-wider mb-2">Or Choose preset</label>
                   <div className="flex gap-2">
                     {photoPresets.map((preset, idx) => (
                       <button
@@ -441,14 +441,14 @@ export default function CoupleSpacePage() {
                 </div>
 
                 <div>
-                  <label className="block font-serif text-xs text-[#707070] font-semibold uppercase tracking-wider mb-2">Caption Note</label>
+                  <label className="block font-serif text-xs text-[#a0a0a0] font-semibold uppercase tracking-wider mb-2">Caption Note</label>
                   <input 
                     type="text" 
                     placeholder="Write a sweet label..." 
                     maxLength={30}
                     value={photoCaption}
                     onChange={(e) => setPhotoCaption(e.target.value)}
-                    className="w-full bg-[#fdfbf7] border border-[#e6e4df] rounded-lg p-2.5 text-[#1a1a1a] font-serif text-sm focus:outline-none focus:border-[#1a1a1a]"
+                    className="w-full bg-[#fdfbf7] border border-[#333333] rounded-lg p-2.5 text-[#f9f8f6] font-serif text-sm focus:outline-none focus:border-[#1a1a1a]"
                   />
                 </div>
 
@@ -477,23 +477,23 @@ export default function CoupleSpacePage() {
               initial={{ scale: 0.95, y: 15 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 15 }}
-              className="bg-white border border-[#e6e4df] p-6 rounded-lg w-full max-w-md shadow-2xl relative"
+              className="bg-[#1a1a1a] border border-[#333333] p-6 rounded-lg w-full max-w-md shadow-2xl relative"
             >
               <button 
                 onClick={() => setIsNoteModalOpen(false)}
-                className="absolute top-4 right-4 text-[#707070] hover:text-[#1a1a1a]"
+                className="absolute top-4 right-4 text-[#a0a0a0] hover:text-[#f9f8f6]"
               >
                 <X size={20} />
               </button>
 
               <div className="flex items-center gap-2.5 mb-6">
                 <Plus className="text-[#344e41] w-5 h-5" />
-                <h3 className="font-serif text-[#1a1a1a] text-xl font-bold">Write Sticky Note</h3>
+                <h3 className="font-serif text-[#f9f8f6] text-xl font-bold">Write Sticky Note</h3>
               </div>
 
               <form onSubmit={handleAddSticky} className="space-y-4">
                 <div>
-                  <label className="block font-serif text-xs text-[#707070] font-semibold uppercase tracking-wider mb-2">Note Message</label>
+                  <label className="block font-serif text-xs text-[#a0a0a0] font-semibold uppercase tracking-wider mb-2">Note Message</label>
                   <textarea 
                     placeholder="Type your message..." 
                     maxLength={100}
@@ -501,12 +501,12 @@ export default function CoupleSpacePage() {
                     value={noteContent}
                     onChange={(e) => setNoteContent(e.target.value)}
                     required
-                    className="w-full bg-[#fdfbf7] border border-[#e6e4df] rounded-lg p-2.5 text-[#1a1a1a] font-serif text-sm focus:outline-none focus:border-[#1a1a1a] resize-none"
+                    className="w-full bg-[#fdfbf7] border border-[#333333] rounded-lg p-2.5 text-[#f9f8f6] font-serif text-sm focus:outline-none focus:border-[#1a1a1a] resize-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-serif text-xs text-[#707070] font-semibold uppercase tracking-wider mb-2">Card Theme</label>
+                  <label className="block font-serif text-xs text-[#a0a0a0] font-semibold uppercase tracking-wider mb-2">Card Theme</label>
                   <div className="flex gap-4">
                     {[
                       { color: '#ffffff', name: 'White' },
@@ -518,7 +518,7 @@ export default function CoupleSpacePage() {
                         key={theme.color}
                         type="button"
                         onClick={() => setNoteColor(theme.color)}
-                        className={`w-8 h-8 rounded-full border-2 transition-all ${noteColor === theme.color ? 'border-[#1a1a1a] scale-105 shadow-md' : 'border-[#e6e4df]'}`}
+                        className={`w-8 h-8 rounded-full border-2 transition-all ${noteColor === theme.color ? 'border-[#1a1a1a] scale-105 shadow-md' : 'border-[#333333]'}`}
                         style={{ backgroundColor: theme.color }}
                         title={theme.name}
                       />

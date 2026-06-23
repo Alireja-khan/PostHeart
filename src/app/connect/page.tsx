@@ -35,10 +35,10 @@ export default async function ConnectPartnerPage() {
     const isPending = !!existingDisconnectRequest;
 
     return (
-      <div className="min-h-screen p-8 lg:p-12 font-sans bg-[#f9f8f6] flex flex-col items-center justify-center">
-        <div className="w-full max-w-md bg-white border border-[#e6e4df] rounded-3xl p-8 shadow-sm text-center">
+      <div className="min-h-screen p-8 lg:p-12 font-sans bg-[#111111] flex flex-col items-center justify-center">
+        <div className="w-full max-w-md bg-[#1a1a1a] border border-[#333333] rounded-3xl p-8 shadow-sm text-center">
           <div className="flex justify-center mb-6">
-            <div className="h-32 w-32 bg-[#f9f8f6] rounded-full flex items-center justify-center border-4 border-[#ffd5c2] shadow-md overflow-hidden relative">
+            <div className="h-32 w-32 bg-[#111111] rounded-full flex items-center justify-center border-4 border-[#ffd5c2] shadow-md overflow-hidden relative">
               <img src={currentAvatar} alt={partner.name || "Partner"} className="w-full h-full object-cover" />
               <div className="absolute -bottom-2 right-0 bg-[#c2410c] text-white p-1.5 rounded-full border-2 border-white">
                 <Heart className="w-4 h-4" />
@@ -46,17 +46,17 @@ export default async function ConnectPartnerPage() {
             </div>
           </div>
           
-          <h1 className="text-3xl font-serif font-bold text-[#1a1a1a] mb-2">{partner.name || "Anonymous User"}</h1>
+          <h1 className="text-3xl font-serif font-bold text-[#f9f8f6] mb-2">{partner.name || "Anonymous User"}</h1>
           
           {partner.showEmail && (
-            <div className="flex items-center justify-center text-[#707070] mb-6">
+            <div className="flex items-center justify-center text-[#a0a0a0] mb-6">
               <Mail className="w-4 h-4 mr-2" />
               {partner.email}
             </div>
           )}
 
           {partner.bio && (
-            <div className="bg-[#f9f8f6] border border-[#e6e4df] rounded-2xl p-6 text-[#1a1a1a] text-left mb-8">
+            <div className="bg-[#111111] border border-[#333333] rounded-2xl p-6 text-[#f9f8f6] text-left mb-8">
               <p className="whitespace-pre-wrap">{partner.bio}</p>
             </div>
           )}
@@ -73,7 +73,7 @@ export default async function ConnectPartnerPage() {
 
   // Otherwise, show the search form
   return (
-    <div className="min-h-screen p-8 lg:p-12 font-sans bg-[#f9f8f6] flex items-center justify-center">
+    <div className="min-h-screen p-8 lg:p-12 font-sans bg-[#111111] flex items-center justify-center">
       <SearchForm />
     </div>
   )

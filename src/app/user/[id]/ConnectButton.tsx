@@ -62,7 +62,7 @@ export default function ConnectButton({ partnerId, initialPending = false }: { p
 
   if (isPending) {
     return (
-      <div className="w-full bg-[#f9f8f6] text-[#707070] rounded-xl py-3 font-medium flex items-center justify-center gap-2 border border-[#e6e4df]">
+      <div className="w-full bg-[#111111] text-[#a0a0a0] rounded-xl py-3 font-medium flex items-center justify-center gap-2 border border-[#333333]">
         <Clock className="w-5 h-5" /> Request Pending...
       </div>
     )
