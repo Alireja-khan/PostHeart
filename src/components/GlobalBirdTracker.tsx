@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useAnimationFrame, useMotionValue, useTransform } from 'framer-motion';
 import BoySvg from './BoySvg';
 import GirlSvg from './GirlSvg';
 
@@ -18,7 +18,7 @@ const WaitingFigure = ({ gender, facing }: { gender: string | null, facing: 'lef
 
 export default function GlobalBirdTracker() {
   const [inTransitLetter, setInTransitLetter] = useState<any>(null);
-  const [progressPercent, setProgressPercent] = useState(0);
+  const [hasReached, setHasReached] = useState(false);
 
   // We still fetch the letter to know who is who, but the animation is now continuous
   useEffect(() => {
@@ -43,30 +43,34 @@ export default function GlobalBirdTracker() {
     return () => clearInterval(intervalId);
   }, []);
 
-  // Update progress bar
-  useEffect(() => {
+  const progress = useMotionValue(0);
+
+  // Run a continuous 60FPS loop for perfectly smooth time-based interpolation
+  useAnimationFrame(() => {
     if (!inTransitLetter) return;
 
-    const updateProgress = () => {
-      const now = new Date().getTime();
-      const start = new Date(inTransitLetter.createdAt).getTime();
-      const end = new Date(inTransitLetter.deliverAt).getTime();
+    const now = Date.now();
+    const start = new Date(inTransitLetter.createdAt).getTime();
+    const end = new Date(inTransitLetter.deliverAt).getTime();
 
-      if (now >= end) {
-        setProgressPercent(100);
-      } else if (now <= start) {
-        setProgressPercent(0);
-      } else {
-        const total = end - start;
-        const current = now - start;
-        setProgressPercent((current / total) * 100);
-      }
-    };
+    if (now >= end) {
+      progress.set(100);
+      if (!hasReached) setHasReached(true);
+    } else if (now <= start) {
+      progress.set(0);
+      if (hasReached) setHasReached(false);
+    } else {
+      progress.set(((now - start) / (end - start)) * 100);
+      if (hasReached) setHasReached(false);
+    }
+  });
 
-    updateProgress();
-    const interval = setInterval(updateProgress, 60000); // update every minute
-    return () => clearInterval(interval);
-  }, [inTransitLetter]);
+  // Map the 0-100 progress directly into a CSS calc value continuously
+  const birdLeftStyle = useTransform(progress, (p) => {
+    const position = 15 + (p * 0.7); // 15% to 85%
+    if (!inTransitLetter) return `calc(15% - 28px)`;
+    return inTransitLetter.isSender ? `calc(${position}% - 28px)` : `calc(${100 - position}% - 28px)`;
+  });
 
   if (!inTransitLetter) return null;
 
@@ -76,13 +80,6 @@ export default function GlobalBirdTracker() {
 
   // Premium floating particles array
   const particles = Array.from({ length: 15 });
-
-  // Calculate clamped bird position so it doesn't cross the boy/girl
-  // The figures are placed at roughly 10-15% inward from the edges.
-  // We'll constrain the bird to fly between 15% and 85%.
-  const birdPosition = 15 + (progressPercent * 0.7); 
-  const birdLeft = isSender ? birdPosition : 100 - birdPosition;
-  const hasReached = progressPercent >= 100;
 
   return (
     <div className="absolute top-0 left-0 right-0 h-40 z-50 pointer-events-none overflow-hidden">
@@ -123,9 +120,7 @@ export default function GlobalBirdTracker() {
       {!hasReached && (
         <motion.div 
           className="absolute top-8 w-14 h-14 z-20"
-          initial={{ left: `calc(${birdLeft}% - 28px)` }}
-          animate={{ left: `calc(${birdLeft}% - 28px)` }}
-          transition={{ ease: "linear", duration: 1 }}
+          style={{ left: birdLeftStyle }}
         >
           {/* Bobbing Motion */}
           <motion.div
