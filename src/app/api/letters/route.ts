@@ -39,7 +39,10 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       count: letters.length,
-      data: letters,
+      data: letters.map(letter => ({
+        ...letter,
+        isSender: letter.senderId === currentUser.id
+      })),
     });
   } catch (error) {
     console.error('Error in GET /api/letters:', error);

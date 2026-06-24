@@ -12,6 +12,7 @@ interface TransitLetter {
   createdAt: string;
   deliverAt: string;
   durationHours: number;
+  isSender: boolean;
 }
 
 export default function ScheduledLettersPage() {
@@ -38,7 +39,8 @@ export default function ScheduledLettersPage() {
               content: letter.content,
               createdAt: letter.createdAt,
               deliverAt: letter.deliverAt || new Date().toISOString(),
-              durationHours: letter.delayHours || 24
+              durationHours: letter.delayHours || 24,
+              isSender: letter.isSender
             }));
           setLetters(transit);
         }
@@ -193,7 +195,7 @@ function TransitTrackerModal({
           <X size={18} />
         </button>
 
-        <div className="border-b border-[#333333] pb-4 mb-8">
+        <div className="border-b border-[#333333] pb-4 mb-8 relative">
           <span className="text-[10px] tracking-widest text-[#a0a0a0] uppercase font-semibold">Delivery Logistics</span>
           <h2 className="font-serif text-2xl font-bold text-[#f9f8f6] mt-1">
             Tracking to {letter.receiver}
@@ -201,6 +203,26 @@ function TransitTrackerModal({
           <p className="text-xs text-[#a0a0a0] mt-1 font-sans">
             From {letter.sender} • Posted {new Date(letter.createdAt).toLocaleDateString()}
           </p>
+
+          {/* Cancel button if sender */}
+          {letter.isSender && (
+            <div className="absolute right-0 top-1/2 -translate-y-1/2">
+              <button 
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  if (confirm("Are you sure you want to cancel sending this letter? This action cannot be undone.")) {
+                    const res = await fetch('/api/letters/in-transit', { method: 'DELETE' });
+                    if (res.ok) {
+                      window.location.reload();
+                    }
+                  }
+                }}
+                className="text-[10px] text-red-400 hover:text-red-300 transition-colors px-3 py-1.5 bg-red-900/20 hover:bg-red-900/40 rounded border border-red-900/50 uppercase tracking-wider font-semibold cursor-pointer"
+              >
+                Cancel Letter
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Horizontal Line-Dot progress tracking layout */}
