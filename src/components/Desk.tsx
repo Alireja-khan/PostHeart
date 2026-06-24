@@ -47,13 +47,13 @@ export default function Desk({ initialLetters }: DeskProps) {
         <div className="flex items-center space-x-6 mt-8 md:mt-0">
           <button 
             onClick={() => setActiveTab('received')}
-            className={`font-serif text-lg transition-all ${activeTab === 'received' ? 'text-[#f9f8f6] font-bold border-b-2 border-[#c2410c] pb-1' : 'text-[#a0a0a0] hover:text-[#f9f8f6] pb-1 border-b-2 border-transparent'}`}
+            className={`font-serif text-lg transition-all ${activeTab === 'received' ? 'text-[#f9f8f6] font-bold pb-1' : 'text-[#a0a0a0] hover:text-[#f9f8f6] pb-1'}`}
           >
             Whispers Received
           </button>
           <button 
             onClick={() => setActiveTab('sent')}
-            className={`font-serif text-lg transition-all ${activeTab === 'sent' ? 'text-[#f9f8f6] font-bold border-b-2 border-[#c2410c] pb-1' : 'text-[#a0a0a0] hover:text-[#f9f8f6] pb-1 border-b-2 border-transparent'}`}
+            className={`font-serif text-lg transition-all ${activeTab === 'sent' ? 'text-[#f9f8f6] font-bold pb-1' : 'text-[#a0a0a0] hover:text-[#f9f8f6] pb-1'}`}
           >
             Echoes Sent
           </button>

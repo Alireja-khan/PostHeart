@@ -91,7 +91,7 @@ export default function WriteLetterPage() {
               <select 
                 value={delay} 
                 onChange={(e) => setDelay(e.target.value)}
-                className="bg-transparent border-b border-[#a0a0a0]/30 text-[#f9f8f6] font-serif focus:outline-none focus:border-[#c2410c] cursor-pointer text-xs pb-0.5"
+                className="bg-transparent border-b border-[#a0a0a0]/30 text-[#f9f8f6] font-serif focus:outline-none focus:border-[#f9f8f6] cursor-pointer text-xs pb-0.5"
               >
                 <option value="5m" className="bg-[#1a1a1a]">5 Minutes</option>
                 <option value="1h" className="bg-[#1a1a1a]">1 Hour</option>
