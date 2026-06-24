@@ -6,6 +6,10 @@ import BoySvg from './BoySvg';
 import GirlSvg from './GirlSvg';
 
 const WaitingFigure = ({ gender, facing }: { gender: string | null, facing: 'left' | 'right' }) => {
+  if (!gender) {
+    return <div className={`w-20 h-28 md:w-24 md:h-32 pointer-events-none transition-transform duration-500 ${facing === 'left' ? 'scale-x-[-1]' : ''}`} />;
+  }
+
   const isGirl = gender === 'female';
   const SvgComponent = isGirl ? GirlSvg : BoySvg;
   
