@@ -20,10 +20,11 @@ export async function GET() {
       return NextResponse.json({ message: "User not found" }, { status: 404 })
     }
 
-    // Find the first IN_TRANSIT letter where the current user is either sender or receiver
+    // Find the first IN_TRANSIT letter where the current user is either sender or receiver AND it hasn't arrived yet
     const inTransitLetter = await prisma.letter.findFirst({
       where: {
         status: 'IN_TRANSIT',
+        deliverAt: { gt: new Date() },
         OR: [
           { senderId: currentUser.id },
           { receiverId: currentUser.id }

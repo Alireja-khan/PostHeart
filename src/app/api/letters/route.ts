@@ -93,11 +93,12 @@ export async function POST(req: Request) {
       }
     }
 
-    // Check if the sender already has a letter in transit
+    // Check if the sender already has a letter TRULY in transit (not yet delivered)
     const activeLetter = await prisma.letter.findFirst({
       where: {
         senderId: sender.id,
-        status: 'IN_TRANSIT'
+        status: 'IN_TRANSIT',
+        deliverAt: { gt: new Date() }
       }
     });
 
