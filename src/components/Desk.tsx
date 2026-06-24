@@ -91,7 +91,7 @@ export default function Desk({ initialLetters }: DeskProps) {
                 <span className="text-[11px] text-[#a0a0a0] font-medium">From {letter.sender.name}</span>
                 
                 {/* Content snippet */}
-                <p className="text-xs text-[#a0a0a0]/90 leading-relaxed mt-4 line-clamp-3 font-sans">
+                <p className="text-xs text-[#a0a0a0]/90 leading-relaxed mt-4 line-clamp-3 font-sans break-words">
                   {letter.content}
                 </p>
               </div>
@@ -142,7 +142,7 @@ export default function Desk({ initialLetters }: DeskProps) {
                   </div>
 
                   {/* Letter content in elegant serif */}
-                  <div className="font-serif text-lg text-[#f9f8f6] leading-relaxed whitespace-pre-wrap select-text selection:bg-[#c2410c]/10 pr-2 max-h-[50vh] overflow-y-auto">
+                  <div className="font-serif text-lg text-[#f9f8f6] leading-relaxed whitespace-pre-wrap break-words select-text selection:bg-[#c2410c]/10 pr-2 max-h-[50vh] overflow-y-auto">
                     {selectedLetter.content}
                   </div>
                 </div>

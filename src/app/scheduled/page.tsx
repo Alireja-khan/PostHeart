@@ -116,7 +116,7 @@ export default function ScheduledLettersPage() {
                 </h3>
                 <span className="text-[10px] text-[#a0a0a0] font-medium">From {letter.sender}</span>
                 
-                <p className="text-xs text-[#a0a0a0]/80 italic mt-4 line-clamp-2">
+                <p className="text-xs text-[#a0a0a0]/90 leading-relaxed mt-4 line-clamp-2 font-sans italic break-words">
                   "{letter.content}"
                 </p>
               </div>

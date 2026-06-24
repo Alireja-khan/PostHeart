@@ -359,7 +359,7 @@ export default function KeepsakeBoxPage() {
                       <div className="text-[10px] uppercase tracking-widest text-[#a0a0a0] mb-4 border-b border-[#333333] pb-2">
                         From {letter.sender?.name || 'Sender'}
                       </div>
-                      <p className="font-serif text-[#f9f8f6] text-sm leading-relaxed mb-4 whitespace-pre-wrap">
+                      <p className="font-serif text-[#f9f8f6] text-sm leading-relaxed mb-4 whitespace-pre-wrap break-words">
                         {letter.content}
                       </p>
                       <div className="text-right text-[10px] text-[#a0a0a0] font-mono">
