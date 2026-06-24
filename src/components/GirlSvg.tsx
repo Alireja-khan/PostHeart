@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 
 export default function GirlSvg(props: any) {
   return (
-    <div className={`relative w-full h-full ${props.className || ''}`}>
+    <div className={`relative w-full h-full ${props.className || ''}`} style={{ transform: 'scaleX(-1)' }}>
       <motion.div 
         className="absolute inset-0"
         style={{ transformOrigin: '50% 65%' }}

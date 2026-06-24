@@ -18,6 +18,7 @@ const WaitingFigure = ({ gender, facing }: { gender: string | null, facing: 'lef
 
 export default function GlobalBirdTracker() {
   const [inTransitLetter, setInTransitLetter] = useState<any>(null);
+  const [progressPercent, setProgressPercent] = useState(0);
 
   // We still fetch the letter to know who is who, but the animation is now continuous
   useEffect(() => {
@@ -41,6 +42,31 @@ export default function GlobalBirdTracker() {
     const intervalId = setInterval(fetchLetter, 30000);
     return () => clearInterval(intervalId);
   }, []);
+
+  // Update progress bar
+  useEffect(() => {
+    if (!inTransitLetter) return;
+
+    const updateProgress = () => {
+      const now = new Date().getTime();
+      const start = new Date(inTransitLetter.createdAt).getTime();
+      const end = new Date(inTransitLetter.deliverAt).getTime();
+
+      if (now >= end) {
+        setProgressPercent(100);
+      } else if (now <= start) {
+        setProgressPercent(0);
+      } else {
+        const total = end - start;
+        const current = now - start;
+        setProgressPercent((current / total) * 100);
+      }
+    };
+
+    updateProgress();
+    const interval = setInterval(updateProgress, 60000); // update every minute
+    return () => clearInterval(interval);
+  }, [inTransitLetter]);
 
   if (!inTransitLetter) return null;
 
@@ -86,19 +112,12 @@ export default function GlobalBirdTracker() {
         <WaitingFigure gender={partnerGender} facing="left" />
       </div>
 
-      {/* The Bird - Continuous curved flight path loop */}
+      {/* The Bird - Progress Tracking */}
       <motion.div 
         className="absolute top-8 w-14 h-14 z-20"
-        animate={{ 
-          left: ["15%", "85%", "15%"], // Fly back and forth
-          y: [0, 30, 0, 30, 0], // Curved dip in the middle
-          scaleX: [1, 1, -1, -1, 1] // Flip bird direction
-        }}
-        transition={{ 
-          duration: 10, 
-          ease: "easeInOut",
-          repeat: Infinity 
-        }}
+        initial={{ left: isSender ? `calc(${progressPercent}% - 28px)` : `calc(${100 - progressPercent}% - 28px)` }}
+        animate={{ left: isSender ? `calc(${progressPercent}% - 28px)` : `calc(${100 - progressPercent}% - 28px)` }}
+        transition={{ ease: "linear", duration: 1 }}
       >
         {/* Bobbing Motion */}
         <motion.div
@@ -107,7 +126,7 @@ export default function GlobalBirdTracker() {
           className="w-full h-full relative"
         >
           {/* Realistic Bird Silhouette Animation */}
-          <svg viewBox="0 0 100 100" className="w-full h-full text-white drop-shadow-[0_0_8px_rgba(255,255,255,1)]">
+          <svg viewBox="0 0 100 100" className="w-full h-full text-white drop-shadow-[0_0_8px_rgba(255,255,255,1)]" style={{ transform: isSender ? "scaleX(-1)" : "none" }}>
             <path fill="currentColor">
               <animate 
                 attributeName="d"
