@@ -38,9 +38,7 @@ export default function RootLayout({
           <div className="flex-1 h-full overflow-y-auto relative bg-[#111111]">
             <TopBar />
             <GlobalBirdTracker />
-            <div className="pt-40 min-h-full">
-              {children}
-            </div>
+            {children}
           </div>
           <NotificationSidebar />
         </Providers>

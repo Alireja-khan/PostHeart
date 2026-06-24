@@ -169,27 +169,28 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-[#111111] relative">
+    <div className="min-h-screen bg-[#111111] relative pt-40">
       
       {/* Hidden File Inputs */}
       <input type="file" ref={avatarInputRef} onChange={(e) => handleFileUpload(e, 'avatar')} className="hidden" accept="image/*" />
       <input type="file" ref={coverInputRef} onChange={(e) => handleFileUpload(e, 'cover')} className="hidden" accept="image/*" />
 
       {/* Global Header with Cover Photo */}
-      <div className="bg-[#1a1a1a] border-b border-[#333333]">
+      <div className="border-b border-[#333333]">
         <div className="relative h-64 lg:h-72 w-full overflow-hidden group">
           {/* Cover Image */}
-          <div className="absolute inset-0 bg-[#111111] overflow-hidden">
+          <div className="absolute inset-0 overflow-hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={currentCover} alt="Cover" className="w-full h-full object-cover opacity-60 transition-transform duration-700 group-hover:scale-105" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#111111] to-transparent opacity-80"></div>
+            <img src={currentCover} alt="Cover" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+            <div className="absolute inset-0 bg-black/30"></div>
+            <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/90 to-transparent"></div>
           </div>
           
           {/* Cover Upload Button */}
           <button 
             onClick={() => coverInputRef.current?.click()}
             disabled={uploadingCover}
-            className="absolute top-6 right-6 z-20 bg-black/40 hover:bg-black/60 backdrop-blur-md text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center transition-colors border border-white/20 shadow-lg"
+            className="absolute bottom-6 right-6 z-20 bg-black/40 hover:bg-black/60 backdrop-blur-md text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center transition-colors border border-white/20 shadow-lg"
           >
             {uploadingCover ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Camera className="w-4 h-4 mr-2" />}
             Change Cover
