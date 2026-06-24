@@ -77,31 +77,16 @@ export default function GlobalBirdTracker() {
   // Premium floating particles array
   const particles = Array.from({ length: 15 });
 
+  // Calculate clamped bird position so it doesn't cross the boy/girl
+  // The figures are placed at roughly 10-15% inward from the edges.
+  // We'll constrain the bird to fly between 15% and 85%.
+  const birdPosition = 15 + (progressPercent * 0.7); 
+  const birdLeft = isSender ? birdPosition : 100 - birdPosition;
+  const hasReached = progressPercent >= 100;
+
   return (
     <div className="absolute top-0 left-0 right-0 h-40 z-50 pointer-events-none overflow-hidden">
       
-      {/* Floating Particles */}
-      {particles.map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute w-1 h-1 bg-white/40 rounded-full"
-          initial={{ 
-            x: Math.random() * window.innerWidth, 
-            y: Math.random() * 160 
-          }}
-          animate={{ 
-            y: [null, Math.random() * -50 - 20],
-            opacity: [0, 1, 0]
-          }}
-          transition={{ 
-            duration: 3 + Math.random() * 4, 
-            repeat: Infinity, 
-            ease: "easeInOut",
-            delay: Math.random() * 2 
-          }}
-        />
-      ))}
-
       {/* Floating Particles */}
       {particles.map((_, i) => (
         <motion.div
