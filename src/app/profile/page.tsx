@@ -185,15 +185,7 @@ export default function Profile() {
           <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-black/95 via-black/60 to-transparent"></div>
         </div>
         
-        {/* Cover Upload Button */}
-        <button 
-          onClick={() => coverInputRef.current?.click()}
-          disabled={uploadingCover}
-          className="absolute bottom-24 md:bottom-32 right-6 z-20 bg-black/40 hover:bg-black/60 backdrop-blur-md text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center transition-colors border border-white/20 shadow-lg"
-        >
-          {uploadingCover ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Camera className="w-4 h-4 mr-2" />}
-          Change Cover
-        </button>
+
         
         {/* Header Content & Navigation */}
         <div className="absolute bottom-0 left-0 right-0">
@@ -243,27 +235,39 @@ export default function Profile() {
             </div>
 
             {/* Tab Navigation Over Image */}
-            <nav className="flex space-x-8">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`pb-4 text-sm font-medium transition-colors relative ${
-                    activeTab === tab.id 
-                      ? "text-[#f9f8f6]" 
-                      : "text-white/60 hover:text-[#f9f8f6]"
-                  }`}
-                >
-                  {tab.label}
-                  {activeTab === tab.id && (
-                    <motion.div 
-                      layoutId="activeTabIndicator"
-                      className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#f9f8f6]"
-                    />
-                  )}
-                </button>
-              ))}
-            </nav>
+            <div className="flex items-center justify-between">
+              <nav className="flex space-x-8">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`pb-4 text-sm font-medium transition-colors relative ${
+                      activeTab === tab.id 
+                        ? "text-[#f9f8f6]" 
+                        : "text-white/60 hover:text-[#f9f8f6]"
+                    }`}
+                  >
+                    {tab.label}
+                    {activeTab === tab.id && (
+                      <motion.div 
+                        layoutId="activeTabIndicator"
+                        className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#f9f8f6]"
+                      />
+                    )}
+                  </button>
+                ))}
+              </nav>
+              
+              {/* Cover Upload Button */}
+              <button 
+                onClick={() => coverInputRef.current?.click()}
+                disabled={uploadingCover}
+                className="bg-black/40 hover:bg-black/60 backdrop-blur-md text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center transition-colors border border-white/20 shadow-lg mb-4"
+              >
+                {uploadingCover ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Camera className="w-4 h-4 mr-2" />}
+                <span className="hidden sm:inline">Change Cover</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -17,6 +17,8 @@ const caveat = Caveat({
   subsets: ["latin"],
 });
 
+import PageLayoutWrapper from "@/components/PageLayoutWrapper";
+
 export const metadata: Metadata = {
   title: "Dear You",
   description: "A private, vintage love letter experience.",
@@ -38,7 +40,9 @@ export default function RootLayout({
           <div className="flex-1 h-full overflow-y-auto relative bg-[#111111]">
             <TopBar />
             <GlobalBirdTracker />
-            {children}
+            <PageLayoutWrapper>
+              {children}
+            </PageLayoutWrapper>
           </div>
           <NotificationSidebar />
         </Providers>
