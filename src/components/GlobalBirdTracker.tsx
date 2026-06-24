@@ -17,12 +17,22 @@ const WaitingFigure = ({ gender, facing }: { gender: string | null, facing: 'lef
 };
 
 export default function GlobalBirdTracker() {
-  const [inTransitLetter, setInTransitLetter] = useState<any>(null);
+  const [inTransitLetter, setInTransitLetter] = useState<Record<string, any> | null>(null);
   const [hasReached, setHasReached] = useState(false);
   const [genders, setGenders] = useState<{userGender: string | null, partnerGender: string | null}>({userGender: null, partnerGender: null});
+  const [particles, setParticles] = useState<{x: number, y: number, destY: number, duration: number, delay: number}[]>([]);
 
   // We still fetch the letter to know who is who, but the animation is now continuous
   useEffect(() => {
+    // Initialize particles here to avoid Math.random() during render (react-hooks/purity)
+    setParticles(Array.from({ length: 15 }).map(() => ({
+      x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000),
+      y: Math.random() * 160,
+      destY: Math.random() * -50 - 20,
+      duration: 3 + Math.random() * 4,
+      delay: Math.random() * 2
+    })));
+
     const fetchLetter = async () => {
       try {
         const res = await fetch('/api/letters/in-transit');
@@ -60,8 +70,8 @@ export default function GlobalBirdTracker() {
     if (!inTransitLetter) return;
 
     const now = Date.now();
-    const start = new Date(inTransitLetter.createdAt).getTime();
-    const end = new Date(inTransitLetter.deliverAt).getTime();
+    const start = new Date(inTransitLetter.createdAt as string).getTime();
+    const end = new Date(inTransitLetter.deliverAt as string).getTime();
 
     if (now >= end) {
       progress.set(100);
@@ -85,30 +95,27 @@ export default function GlobalBirdTracker() {
   const currentUserGender = inTransitLetter ? (inTransitLetter.isSender ? inTransitLetter.senderGender : inTransitLetter.receiverGender) : genders.userGender;
   const partnerGender = inTransitLetter ? (inTransitLetter.isSender ? inTransitLetter.receiverGender : inTransitLetter.senderGender) : genders.partnerGender;
 
-  // Premium floating particles array
-  const particles = Array.from({ length: 15 });
-
   return (
     <div className="absolute top-0 left-0 right-0 h-40 z-50 pointer-events-none overflow-hidden">
       
       {/* Floating Particles */}
-      {particles.map((_, i) => (
+      {particles.map((p, i) => (
         <motion.div
           key={i}
           className="absolute w-1 h-1 bg-white/40 rounded-full"
           initial={{ 
-            x: Math.random() * window.innerWidth, 
-            y: Math.random() * 160 
+            x: p.x, 
+            y: p.y 
           }}
           animate={{ 
-            y: [null, Math.random() * -50 - 20],
+            y: [null, p.destY],
             opacity: [0, 1, 0]
           }}
           transition={{ 
-            duration: 3 + Math.random() * 4, 
+            duration: p.duration, 
             repeat: Infinity, 
             ease: "easeInOut",
-            delay: Math.random() * 2 
+            delay: p.delay 
           }}
         />
       ))}

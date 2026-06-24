@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, Image as ImageIcon, Send, Music, Mic, X, AlertCircle } from 'lucide-react';
+import { Image as ImageIcon, Send, Music, Mic, X, AlertCircle } from 'lucide-react';
 
 export default function WriteLetterPage() {
   const router = useRouter();
@@ -13,7 +13,6 @@ export default function WriteLetterPage() {
   const [isMemoryPanelOpen, setIsMemoryPanelOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasInTransitLetter, setHasInTransitLetter] = useState(false);
-  const [isLoadingState, setIsLoadingState] = useState(true);
 
   useEffect(() => {
     const checkActiveLetter = async () => {
@@ -27,8 +26,6 @@ export default function WriteLetterPage() {
         }
       } catch (err) {
         console.error("Error checking in-transit letters:", err);
-      } finally {
-        setIsLoadingState(false);
       }
     };
     checkActiveLetter();

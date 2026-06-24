@@ -129,7 +129,7 @@ export async function POST(req: Request) {
       success: true,
       data: letter
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error in POST /api/letters:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to create letter' },
