@@ -67,7 +67,7 @@ export default function CoupleSpacePage() {
     }
   };
 
-  const initializeDefaultItems = () => {
+  function initializeDefaultItems() {
     const defaults: CorkboardItem[] = [
       {
         id: 'default-1',
