@@ -30,13 +30,6 @@ export default function NotificationSidebar() {
   const [loading, setLoading] = useState(false)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (isSidebarOpen) {
-      fetchData()
-      markAllRead()
-    }
-  }, [isSidebarOpen])
-
   const fetchData = async () => {
     setLoading(true)
     try {
