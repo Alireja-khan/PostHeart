@@ -40,7 +40,13 @@ export default function GlobalBirdTracker() {
 
     fetchLetter();
     const intervalId = setInterval(fetchLetter, 30000);
-    return () => clearInterval(intervalId);
+    
+    window.addEventListener('letter-posted', fetchLetter);
+    
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener('letter-posted', fetchLetter);
+    };
   }, []);
 
   const progress = useMotionValue(0);

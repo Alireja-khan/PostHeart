@@ -65,6 +65,7 @@ export default function WriteLetterPage() {
       if (data.success) {
         setContent('');
         setReceiver('');
+        window.dispatchEvent(new Event('letter-posted'));
         router.push('/scheduled');
       } else {
         alert(data.error || 'Failed to post letter');
