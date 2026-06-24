@@ -68,7 +68,8 @@ export default async function Home() {
       id: letter.receiver.id.toString(),
       email: letter.receiver.email,
       name: letter.receiver.name
-    } : null
+    } : null,
+    isSentByMe: letter.senderId === currentUser.id
   }))
 
   return (

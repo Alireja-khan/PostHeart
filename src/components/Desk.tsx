@@ -15,6 +15,7 @@ interface Letter {
   content: string;
   sender: User;
   receiver: User | null;
+  isSentByMe?: boolean;
 }
 
 interface DeskProps {
@@ -23,30 +24,53 @@ interface DeskProps {
 
 export default function Desk({ initialLetters }: DeskProps) {
   const [selectedLetter, setSelectedLetter] = useState<Letter | null>(null);
+  const [activeTab, setActiveTab] = useState<'received' | 'sent'>('received');
+
+  const filteredLetters = initialLetters.filter(letter => 
+    activeTab === 'sent' ? letter.isSentByMe : !letter.isSentByMe
+  );
 
   return (
     <div className="w-full min-h-full bg-[#111111] p-8 lg:p-12">
       
       {/* Page Header */}
-      <div className="mb-10 max-w-5xl mx-auto">
-        <span className="text-[10px] tracking-widest text-[#a0a0a0] uppercase font-semibold">Dashboard</span>
-        <h2 className="font-serif text-4xl font-bold text-[#f9f8f6] mt-1">My Mailbox</h2>
-        <p className="text-sm text-[#a0a0a0] mt-2">
-          A collection of letters and private thoughts shared between you.
-        </p>
+      <div className="mb-10 max-w-5xl mx-auto flex flex-col md:flex-row md:items-end justify-between border-b border-[#333333] pb-6">
+        <div>
+          <span className="text-[10px] tracking-widest text-[#a0a0a0] uppercase font-semibold">Dashboard</span>
+          <h2 className="font-serif text-4xl font-bold text-[#f9f8f6] mt-1">My Mailbox</h2>
+          <p className="text-sm text-[#a0a0a0] mt-2">
+            A collection of letters and private thoughts shared between you.
+          </p>
+        </div>
+
+        {/* Poetic Tabs */}
+        <div className="flex items-center space-x-6 mt-8 md:mt-0">
+          <button 
+            onClick={() => setActiveTab('received')}
+            className={`font-serif text-lg transition-all ${activeTab === 'received' ? 'text-[#f9f8f6] font-bold border-b-2 border-[#c2410c] pb-1' : 'text-[#a0a0a0] hover:text-[#f9f8f6] pb-1 border-b-2 border-transparent'}`}
+          >
+            Whispers Received
+          </button>
+          <button 
+            onClick={() => setActiveTab('sent')}
+            className={`font-serif text-lg transition-all ${activeTab === 'sent' ? 'text-[#f9f8f6] font-bold border-b-2 border-[#c2410c] pb-1' : 'text-[#a0a0a0] hover:text-[#f9f8f6] pb-1 border-b-2 border-transparent'}`}
+          >
+            Echoes Sent
+          </button>
+        </div>
       </div>
 
       {/* Grid of clean modern cards */}
       <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {initialLetters.length === 0 ? (
+        {filteredLetters.length === 0 ? (
           <div className="col-span-full py-24 flex flex-col items-center justify-center bg-[#1a1a1a] border border-[#333333] rounded-lg p-8">
             <Mail size={32} className="text-[#c2410c] mb-3 opacity-60" />
             <p className="font-serif italic text-[#a0a0a0] text-base">
-              The mailbox is currently empty.
+              {activeTab === 'received' ? "No whispers received yet." : "No echoes sent yet."}
             </p>
           </div>
         ) : (
-          initialLetters.map((letter) => (
+          filteredLetters.map((letter) => (
             <motion.div
               key={letter.id}
               onClick={() => setSelectedLetter(letter)}
