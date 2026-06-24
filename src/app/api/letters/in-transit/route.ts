@@ -66,3 +66,44 @@ export async function GET() {
     );
   }
 }
+
+export async function DELETE() {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.email) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+    }
+
+    const currentUser = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    })
+
+    if (!currentUser) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 })
+    }
+
+    // Delete the active IN_TRANSIT letter where the current user is the SENDER
+    const activeLetter = await prisma.letter.findFirst({
+      where: {
+        status: 'IN_TRANSIT',
+        senderId: currentUser.id
+      }
+    });
+
+    if (!activeLetter) {
+      return NextResponse.json({ success: false, error: "No active letter found to cancel" }, { status: 404 });
+    }
+
+    await prisma.letter.delete({
+      where: { id: activeLetter.id }
+    });
+
+    return NextResponse.json({ success: true, message: "Letter cancelled" });
+  } catch (error) {
+    console.error('Error in DELETE /api/letters/in-transit:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to cancel letter' },
+      { status: 500 }
+    );
+  }
+}

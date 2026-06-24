@@ -102,6 +102,23 @@ export default function GlobalBirdTracker() {
         />
       ))}
 
+      {/* Cancel Letter Button (Only if sender) */}
+      {isSender && (
+        <div className="absolute top-2 right-4 z-40 pointer-events-auto">
+          <button 
+            onClick={async () => {
+              if (confirm("Are you sure you want to cancel sending this letter? This action cannot be undone.")) {
+                const res = await fetch('/api/letters/in-transit', { method: 'DELETE' });
+                if (res.ok) setInTransitLetter(null);
+              }
+            }}
+            className="text-xs text-white/50 hover:text-white transition-colors px-2 py-1 bg-black/20 hover:bg-red-500/80 rounded backdrop-blur-sm cursor-pointer"
+          >
+            Cancel Letter
+          </button>
+        </div>
+      )}
+
       {/* Current User Figure (Always Left) */}
       <div className="absolute left-6 md:left-16 bottom-4 z-30">
         <WaitingFigure gender={currentUserGender} facing="right" />
