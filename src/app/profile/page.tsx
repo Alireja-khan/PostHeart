@@ -169,106 +169,102 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-[#111111] relative pt-40">
+    <div className="min-h-screen bg-[#111111] relative">
       
       {/* Hidden File Inputs */}
       <input type="file" ref={avatarInputRef} onChange={(e) => handleFileUpload(e, 'avatar')} className="hidden" accept="image/*" />
       <input type="file" ref={coverInputRef} onChange={(e) => handleFileUpload(e, 'cover')} className="hidden" accept="image/*" />
 
       {/* Global Header with Cover Photo */}
-      <div className="border-b border-[#333333]">
-        <div className="relative h-64 lg:h-72 w-full overflow-hidden group">
-          {/* Cover Image */}
-          <div className="absolute inset-0 overflow-hidden">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={currentCover} alt="Cover" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-            <div className="absolute inset-0 bg-black/30"></div>
-            <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/90 to-transparent"></div>
-          </div>
-          
-          {/* Cover Upload Button */}
-          <button 
-            onClick={() => coverInputRef.current?.click()}
-            disabled={uploadingCover}
-            className="absolute bottom-6 right-6 z-20 bg-black/40 hover:bg-black/60 backdrop-blur-md text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center transition-colors border border-white/20 shadow-lg"
-          >
-            {uploadingCover ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Camera className="w-4 h-4 mr-2" />}
-            Change Cover
-          </button>
-          
-          {/* Header Content */}
-          <div className="absolute bottom-0 left-0 right-0">
-            <div className="max-w-7xl mx-auto px-6 lg:px-8 pb-8">
-              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div className="flex items-end gap-6 relative z-10">
-                  <div className="relative group/avatar">
-                    <div className="h-24 w-24 bg-[#1a1a1a] rounded-full flex items-center justify-center border-4 border-[#111111] overflow-hidden shrink-0 shadow-xl relative">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={currentAvatar} alt="Profile" className="w-full h-full object-cover" />
-                      
-                      {uploadingAvatar && (
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                          <Loader2 className="w-6 h-6 animate-spin text-white" />
-                        </div>
-                      )}
-                    </div>
-                    <button 
-                      onClick={() => avatarInputRef.current?.click()}
-                      className="absolute bottom-0 right-0 bg-[#111111] text-white p-2 rounded-full border-2 border-white shadow-lg hover:bg-black transition-colors"
-                    >
-                      <Camera className="w-4 h-4" />
-                    </button>
+      <div className="relative h-[400px] md:h-[450px] lg:h-[500px] w-full overflow-hidden group border-b border-[#333333]">
+        {/* Cover Image */}
+        <div className="absolute inset-0 overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={currentCover} alt="Cover" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+          <div className="absolute inset-0 bg-black/30"></div>
+          <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-black/95 via-black/60 to-transparent"></div>
+        </div>
+        
+        {/* Cover Upload Button */}
+        <button 
+          onClick={() => coverInputRef.current?.click()}
+          disabled={uploadingCover}
+          className="absolute bottom-24 md:bottom-32 right-6 z-20 bg-black/40 hover:bg-black/60 backdrop-blur-md text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center transition-colors border border-white/20 shadow-lg"
+        >
+          {uploadingCover ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Camera className="w-4 h-4 mr-2" />}
+          Change Cover
+        </button>
+        
+        {/* Header Content & Navigation */}
+        <div className="absolute bottom-0 left-0 right-0">
+          <div className="max-w-7xl mx-auto px-6 lg:px-8">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-6">
+              <div className="flex items-end gap-6 relative z-10">
+                <div className="relative group/avatar">
+                  <div className="h-24 w-24 bg-[#1a1a1a] rounded-full flex items-center justify-center border-4 border-[#111111] overflow-hidden shrink-0 shadow-xl relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={currentAvatar} alt="Profile" className="w-full h-full object-cover" />
+                    
+                    {uploadingAvatar && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <Loader2 className="w-6 h-6 animate-spin text-white" />
+                      </div>
+                    )}
                   </div>
-                  <div className="mb-2">
-                    <h1 className="text-3xl md:text-4xl font-semibold text-white tracking-tight">{name || "Anonymous User"}</h1>
-                    <p className="text-white/70 text-sm mt-1">{session?.user?.email}</p>
-                  </div>
+                  <button 
+                    onClick={() => avatarInputRef.current?.click()}
+                    className="absolute bottom-0 right-0 bg-[#111111] text-white p-2 rounded-full border-2 border-white shadow-lg hover:bg-black transition-colors"
+                  >
+                    <Camera className="w-4 h-4" />
+                  </button>
                 </div>
-                
-                <div className="flex items-center gap-3 relative z-10 mb-2">
-                  {partnerId ? (
-                    <span className="inline-flex items-center px-4 py-1.5 bg-[#1a1a1a]/10 backdrop-blur-md text-white text-xs font-semibold rounded-full border border-white/20 shadow-sm">
-                      <Heart className="w-3 h-3 mr-1.5 text-red-400" /> Partnered
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center px-4 py-1.5 bg-[#1a1a1a]/10 backdrop-blur-md text-white/80 text-xs font-semibold rounded-full border border-white/20 shadow-sm">
-                      Solo Account
-                    </span>
-                  )}
-                  {memberSince && (
-                    <span className="inline-flex items-center px-4 py-1.5 bg-[#1a1a1a]/10 backdrop-blur-md text-white/80 text-xs font-semibold rounded-full border border-white/20 shadow-sm">
-                      <Calendar className="w-3 h-3 mr-1.5" /> {memberSince}
-                    </span>
-                  )}
+                <div className="mb-2">
+                  <h1 className="text-3xl md:text-4xl font-semibold text-white tracking-tight">{name || "Anonymous User"}</h1>
+                  <p className="text-white/70 text-sm mt-1">{session?.user?.email}</p>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Tab Navigation */}
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <nav className="flex space-x-8 pt-4">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`pb-4 text-sm font-medium transition-colors relative ${
-                  activeTab === tab.id 
-                    ? "text-[#f9f8f6]" 
-                    : "text-[#a0a0a0] hover:text-[#f9f8f6]"
-                }`}
-              >
-                {tab.label}
-                {activeTab === tab.id && (
-                  <motion.div 
-                    layoutId="activeTabIndicator"
-                    className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#111111]"
-                  />
+              
+              <div className="flex items-center gap-3 relative z-10 mb-2">
+                {partnerId ? (
+                  <span className="inline-flex items-center px-4 py-1.5 bg-[#1a1a1a]/10 backdrop-blur-md text-white text-xs font-semibold rounded-full border border-white/20 shadow-sm">
+                    <Heart className="w-3 h-3 mr-1.5 text-red-400" /> Partnered
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center px-4 py-1.5 bg-[#1a1a1a]/10 backdrop-blur-md text-white/80 text-xs font-semibold rounded-full border border-white/20 shadow-sm">
+                    Solo Account
+                  </span>
                 )}
-              </button>
-            ))}
-          </nav>
+                {memberSince && (
+                  <span className="inline-flex items-center px-4 py-1.5 bg-[#1a1a1a]/10 backdrop-blur-md text-white/80 text-xs font-semibold rounded-full border border-white/20 shadow-sm">
+                    <Calendar className="w-3 h-3 mr-1.5" /> {memberSince}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Tab Navigation Over Image */}
+            <nav className="flex space-x-8">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`pb-4 text-sm font-medium transition-colors relative ${
+                    activeTab === tab.id 
+                      ? "text-[#f9f8f6]" 
+                      : "text-white/60 hover:text-[#f9f8f6]"
+                  }`}
+                >
+                  {tab.label}
+                  {activeTab === tab.id && (
+                    <motion.div 
+                      layoutId="activeTabIndicator"
+                      className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#f9f8f6]"
+                    />
+                  )}
+                </button>
+              ))}
+            </nav>
+          </div>
         </div>
       </div>
 
