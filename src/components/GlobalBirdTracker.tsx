@@ -18,9 +18,8 @@ const WaitingFigure = ({ gender, facing }: { gender: string | null, facing: 'lef
 
 export default function GlobalBirdTracker() {
   const [inTransitLetter, setInTransitLetter] = useState<any>(null);
-  const [progressPercent, setProgressPercent] = useState(0);
 
-  // Fetch the in-transit letter
+  // We still fetch the letter to know who is who, but the animation is now continuous
   useEffect(() => {
     const fetchLetter = async () => {
       try {
@@ -39,35 +38,9 @@ export default function GlobalBirdTracker() {
     };
 
     fetchLetter();
-    // Poll every 30 seconds
     const intervalId = setInterval(fetchLetter, 30000);
     return () => clearInterval(intervalId);
   }, []);
-
-  // Update progress bar
-  useEffect(() => {
-    if (!inTransitLetter) return;
-
-    const updateProgress = () => {
-      const now = new Date().getTime();
-      const start = new Date(inTransitLetter.createdAt).getTime();
-      const end = new Date(inTransitLetter.deliverAt).getTime();
-
-      if (now >= end) {
-        setProgressPercent(100);
-      } else if (now <= start) {
-        setProgressPercent(0);
-      } else {
-        const total = end - start;
-        const current = now - start;
-        setProgressPercent((current / total) * 100);
-      }
-    };
-
-    updateProgress();
-    const interval = setInterval(updateProgress, 60000); // update every minute
-    return () => clearInterval(interval);
-  }, [inTransitLetter]);
 
   if (!inTransitLetter) return null;
 
@@ -75,32 +48,66 @@ export default function GlobalBirdTracker() {
   const currentUserGender = isSender ? senderGender : receiverGender;
   const partnerGender = isSender ? receiverGender : senderGender;
 
+  // Premium floating particles array
+  const particles = Array.from({ length: 15 });
+
   return (
-    <div className="absolute top-0 left-0 right-0 h-16 z-50 pointer-events-none">
+    <div className="absolute top-0 left-0 right-0 h-40 z-50 pointer-events-none overflow-hidden">
+      
+      {/* Floating Particles */}
+      {particles.map((_, i) => (
+        <motion.div
+          key={i}
+          className="absolute w-1 h-1 bg-white/40 rounded-full"
+          initial={{ 
+            x: Math.random() * window.innerWidth, 
+            y: Math.random() * 160 
+          }}
+          animate={{ 
+            y: [null, Math.random() * -50 - 20],
+            opacity: [0, 1, 0]
+          }}
+          transition={{ 
+            duration: 3 + Math.random() * 4, 
+            repeat: Infinity, 
+            ease: "easeInOut",
+            delay: Math.random() * 2 
+          }}
+        />
+      ))}
+
       {/* Current User Figure (Always Left) */}
-      <div className="absolute left-6 md:left-12 top-1/2 -translate-y-1/2 z-30">
+      <div className="absolute left-6 md:left-16 bottom-4 z-30">
         <WaitingFigure gender={currentUserGender} facing="right" />
       </div>
 
       {/* Partner Figure (Always Right) */}
-      <div className="absolute right-6 md:right-12 top-1/2 -translate-y-1/2 z-30">
+      <div className="absolute right-6 md:right-16 bottom-4 z-30">
         <WaitingFigure gender={partnerGender} facing="left" />
       </div>
-      {/* The Bird */}
+
+      {/* The Bird - Continuous curved flight path loop */}
       <motion.div 
-        className="absolute top-1/2 -translate-y-1/2 w-14 h-14 z-20"
-        initial={{ left: isSender ? `calc(${progressPercent}% - 28px)` : `calc(${100 - progressPercent}% - 28px)` }}
-        animate={{ left: isSender ? `calc(${progressPercent}% - 28px)` : `calc(${100 - progressPercent}% - 28px)` }}
-        transition={{ ease: "linear", duration: 1 }}
+        className="absolute top-8 w-14 h-14 z-20"
+        animate={{ 
+          left: ["15%", "85%", "15%"], // Fly back and forth
+          y: [0, 30, 0, 30, 0], // Curved dip in the middle
+          scaleX: [1, 1, -1, -1, 1] // Flip bird direction
+        }}
+        transition={{ 
+          duration: 10, 
+          ease: "easeInOut",
+          repeat: Infinity 
+        }}
       >
         {/* Bobbing Motion */}
         <motion.div
           animate={{ y: [-3, 3, -3] }}
-          transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+          transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
           className="w-full h-full relative"
         >
           {/* Realistic Bird Silhouette Animation */}
-          <svg viewBox="0 0 100 100" className="w-full h-full text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.9)]" style={{ transform: isSender ? "scaleX(-1)" : "none" }}>
+          <svg viewBox="0 0 100 100" className="w-full h-full text-white drop-shadow-[0_0_8px_rgba(255,255,255,1)]">
             <path fill="currentColor">
               <animate 
                 attributeName="d"
@@ -119,16 +126,16 @@ export default function GlobalBirdTracker() {
 
           {/* Dangling Letter Envelope */}
           <motion.div 
-            className="absolute bottom-2 right-[18px] w-[14px] h-[10px] bg-white rounded-sm shadow-md flex flex-col overflow-hidden"
-            animate={{ rotate: [-8, 8, -8], transformOrigin: "top center" }}
-            transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+            className="absolute bottom-2 right-[18px] w-[14px] h-[10px] bg-white rounded-sm shadow-lg flex flex-col overflow-hidden"
+            animate={{ rotate: [-12, 12, -12], transformOrigin: "top center" }}
+            transition={{ repeat: Infinity, duration: 1.2, ease: "easeInOut" }}
           >
             {/* Envelope flap detail */}
             <div className="w-full h-[4px] border-b border-gray-300 relative">
               <div className="absolute top-0 left-0 right-0 h-full bg-red-400/20" style={{ clipPath: "polygon(0 0, 50% 100%, 100% 0)" }}></div>
             </div>
             {/* Envelope seal */}
-            <div className="absolute top-[2px] left-1/2 -translate-x-1/2 w-[4px] h-[4px] bg-red-500 rounded-full shadow-sm"></div>
+            <div className="absolute top-[2px] left-1/2 -translate-x-1/2 w-[4px] h-[4px] bg-red-500 rounded-full shadow-md"></div>
           </motion.div>
         </motion.div>
       </motion.div>
