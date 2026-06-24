@@ -69,7 +69,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { content, delayHours } = body;
+    const { content, delayMinutes } = body;
 
     if (!content) {
       return NextResponse.json(
@@ -78,8 +78,9 @@ export async function POST(req: Request) {
       );
     }
 
-    const hours = parseInt(delayHours) || 24;
-    const deliverAt = new Date(Date.now() + hours * 3600 * 1000);
+    const minutes = parseInt(delayMinutes) || 24 * 60;
+    const deliverAt = new Date(Date.now() + minutes * 60 * 1000);
+    const storedDelayHours = Math.round(minutes / 60);
 
     let finalReceiverId = sender.partnerId;
     
@@ -112,7 +113,7 @@ export async function POST(req: Request) {
     const letter = await prisma.letter.create({
       data: {
         content,
-        delayHours: hours,
+        delayHours: storedDelayHours,
         deliverAt,
         status: 'IN_TRANSIT',
         senderId: sender.id,

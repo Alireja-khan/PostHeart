@@ -9,7 +9,7 @@ export default function WriteLetterPage() {
   const router = useRouter();
   const [content, setContent] = useState('');
   const [receiver, setReceiver] = useState('');
-  const [delay, setDelay] = useState('24h');
+  const [delay, setDelay] = useState('5m');
   const [isMemoryPanelOpen, setIsMemoryPanelOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasInTransitLetter, setHasInTransitLetter] = useState(false);
@@ -42,10 +42,11 @@ export default function WriteLetterPage() {
 
     setIsSubmitting(true);
 
-    // Convert delay choice to hours
-    let hours = 24;
-    if (delay === '1h') hours = 1;
-    if (delay === '7d') hours = 168;
+    // Convert delay choice to minutes
+    let delayMinutes = 24 * 60;
+    if (delay === '5m') delayMinutes = 5;
+    if (delay === '1h') delayMinutes = 60;
+    if (delay === '7d') delayMinutes = 7 * 24 * 60;
 
     try {
       const response = await fetch('/api/letters', {
@@ -56,7 +57,7 @@ export default function WriteLetterPage() {
         body: JSON.stringify({
           content,
           receiverName: receiver || 'My Love',
-          delayHours: hours,
+          delayMinutes,
         }),
       });
 
@@ -94,6 +95,7 @@ export default function WriteLetterPage() {
                 onChange={(e) => setDelay(e.target.value)}
                 className="bg-transparent border-b border-[#a0a0a0]/30 text-[#f9f8f6] font-serif focus:outline-none focus:border-[#c2410c] cursor-pointer text-xs pb-0.5"
               >
+                <option value="5m" className="bg-[#1a1a1a]">5 Minutes</option>
                 <option value="1h" className="bg-[#1a1a1a]">1 Hour</option>
                 <option value="24h" className="bg-[#1a1a1a]">24 Hours</option>
                 <option value="7d" className="bg-[#1a1a1a]">7 Days</option>

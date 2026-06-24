@@ -39,7 +39,7 @@ export default function ScheduledLettersPage() {
               content: letter.content,
               createdAt: letter.createdAt,
               deliverAt: letter.deliverAt || new Date().toISOString(),
-              durationHours: letter.delayHours || 24,
+              durationHours: (new Date(letter.deliverAt || new Date()).getTime() - new Date(letter.createdAt).getTime()) / (3600 * 1000),
               isSender: letter.isSender
             }));
           setLetters(transit);
