@@ -14,6 +14,7 @@ export async function GET() {
 
     const currentUser = await prisma.user.findUnique({
       where: { email: session.user.email },
+      include: { partner: true }
     })
 
     if (!currentUser) {
@@ -47,6 +48,8 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
+      userGender: currentUser.gender,
+      partnerGender: currentUser.partner?.gender,
       data: inTransitLetter ? {
         id: inTransitLetter.id,
         createdAt: inTransitLetter.createdAt,

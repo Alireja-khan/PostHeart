@@ -19,6 +19,7 @@ const WaitingFigure = ({ gender, facing }: { gender: string | null, facing: 'lef
 export default function GlobalBirdTracker() {
   const [inTransitLetter, setInTransitLetter] = useState<any>(null);
   const [hasReached, setHasReached] = useState(false);
+  const [genders, setGenders] = useState<{userGender: string | null, partnerGender: string | null}>({userGender: null, partnerGender: null});
 
   // We still fetch the letter to know who is who, but the animation is now continuous
   useEffect(() => {
@@ -27,10 +28,13 @@ export default function GlobalBirdTracker() {
         const res = await fetch('/api/letters/in-transit');
         if (res.ok) {
           const json = await res.json();
-          if (json.success && json.data) {
-            setInTransitLetter(json.data);
-          } else {
-            setInTransitLetter(null);
+          if (json.success) {
+            setGenders({ userGender: json.userGender, partnerGender: json.partnerGender });
+            if (json.data) {
+              setInTransitLetter(json.data);
+            } else {
+              setInTransitLetter(null);
+            }
           }
         }
       } catch (error) {
@@ -78,11 +82,8 @@ export default function GlobalBirdTracker() {
     return inTransitLetter.isSender ? `calc(${position}% - 28px)` : `calc(${100 - position}% - 28px)`;
   });
 
-  if (!inTransitLetter) return null;
-
-  const { isSender, senderGender, receiverGender } = inTransitLetter;
-  const currentUserGender = isSender ? senderGender : receiverGender;
-  const partnerGender = isSender ? receiverGender : senderGender;
+  const currentUserGender = inTransitLetter ? (inTransitLetter.isSender ? inTransitLetter.senderGender : inTransitLetter.receiverGender) : genders.userGender;
+  const partnerGender = inTransitLetter ? (inTransitLetter.isSender ? inTransitLetter.receiverGender : inTransitLetter.senderGender) : genders.partnerGender;
 
   // Premium floating particles array
   const particles = Array.from({ length: 15 });
@@ -123,7 +124,7 @@ export default function GlobalBirdTracker() {
       </div>
 
       {/* The Bird - Progress Tracking */}
-      {!hasReached && (
+      {inTransitLetter && !hasReached && (
         <motion.div 
           className="absolute top-8 w-14 h-14 z-20"
           style={{ left: birdLeftStyle }}
@@ -135,7 +136,7 @@ export default function GlobalBirdTracker() {
             className="w-full h-full relative"
           >
             {/* Realistic Bird Silhouette Animation */}
-            <svg viewBox="0 0 100 100" className="w-full h-full text-white drop-shadow-[0_0_8px_rgba(255,255,255,1)]" style={{ transform: isSender ? "scaleX(-1)" : "none" }}>
+            <svg viewBox="0 0 100 100" className="w-full h-full text-white drop-shadow-[0_0_8px_rgba(255,255,255,1)]" style={{ transform: inTransitLetter.isSender ? "scaleX(-1)" : "none" }}>
               <path fill="currentColor">
                 <animate 
                   attributeName="d"
