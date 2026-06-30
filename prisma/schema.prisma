@@ -42,6 +42,7 @@ model User {
 model Letter {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   content     String
+  images      String[] @default([])
   status      String   @default("DRAFT") // DRAFT, SCHEDULED, IN_TRANSIT, DELIVERED
   delayHours  Int      @default(24)
   createdAt   DateTime @default(now())

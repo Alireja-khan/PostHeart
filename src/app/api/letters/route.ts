@@ -69,7 +69,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { content, delayMinutes } = body;
+    const { content, delayMinutes, images } = body;
 
     if (!content) {
       return NextResponse.json(
@@ -113,6 +113,7 @@ export async function POST(req: Request) {
     const letter = await prisma.letter.create({
       data: {
         content,
+        images: images || [],
         delayHours: storedDelayHours,
         deliverAt,
         status: 'IN_TRANSIT',

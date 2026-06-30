@@ -1,0 +1,192 @@
+<USER_REQUEST>
+Awesome. Let’s get building.
+
+Since you are working inside your codebase, I have written a starter template using **HTML and pure CSS animations**. I chose CSS over complex JavaScript libraries for this first step because it is lightweight, runs incredibly smoothly, and makes it very easy to see exactly how the "rigging" works.
+
+### **The Secret Sauce: `transform-origin**`
+
+When you eventually drop your real SVG code in, the most important CSS property you will use is `transform-origin`. If you want an arm to wave, it needs to rotate from the *shoulder*, not from the middle of the arm. `transform-origin` tells the browser where the "joint" is.
+
+Here is your starter code. You can copy and paste this directly into a new HTML file to see it in action.
+
+### **1. The HTML Structure (Layout & SVGs)**
+
+I have created placeholder shapes for the boy, girl, and bird. Notice how the specific body parts that need to move (like `<g class="girl-leg">`) are grouped and named so we can target them with CSS.
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Hero Section</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<section class="animation-container">
+    
+    <div class="character-wrapper">
+        <svg viewBox="0 0 200 400" class="character-svg">
+            <rect x="70" y="150" width="60" height="200" fill="#2c3e50" rx="10"/>
+            <path class="boy-shirt" d="M60 140 L140 140 L150 260 L50 260 Z" fill="#1abc9c"/>
+            <g class="boy-head">
+                <circle cx="100" cy="100" r="35" fill="#f1c40f"/>
+                <rect x="70" y="60" width="60" height="20" fill="#34495e"/> </g>
+        </svg>
+    </div>
+
+    <div class="center-track">
+        <svg viewBox="0 0 100 100" class="bird">
+            <path d="M20 50 L80 50 L50 20 Z" fill="#e74c3c"/>
+            <rect x="40" y="55" width="20" height="15" fill="#ecf0f1"/> 
+        </svg>
+        <div class="track-line"></div>
+    </div>
+
+    <div class="character-wrapper">
+        <svg viewBox="0 0 200 400" class="character-svg">
+            <rect x="70" y="150" width="60" height="150" fill="#8e44ad" rx="10"/>
+            <g class="girl-leg">
+                <rect x="80" y="280" width="20" height="100" fill="#34495e" rx="10"/>
+            </g>
+            <g class="girl-head">
+                <circle cx="100" cy="100" r="35" fill="#f1c40f"/>
+                <path class="hijab-tail" d="M130 100 Q 160 150 130 200" stroke="#2c3e50" stroke-width="15" fill="none"/>
+            </g>
+        </svg>
+    </div>
+
+</section>
+
+</body>
+</html>
+
+```
+
+### **2. The CSS (Layout & Keyframes)**
+
+This CSS handles the three-column layout and the continuous animation loops.
+
+```css
+/* --- BASE LAYOUT --- */
+body {
+    margin: 0;
+    background-color: #f8f9fa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.animation-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 90%;
+    max-width: 1200px;
+}
+
+.character-wrapper {
+    width: 250px;
+}
+
+.character-svg {
+    width: 100%;
+    height: auto;
+}
+
+/* --- CENTER TRACK STYLING --- */
+.center-track {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+.track-line {
+    width: 80%;
+    height: 4px;
+    border-bottom: 4px dashed #bdc3c7;
+    margin-top: -30px; /* Pulls line under the bird */
+}
+
+.bird {
+    width: 80px;
+    animation: hoverBird 3s ease-in-out infinite;
+}
+
+/* --- ANIMATION KEYFRAMES --- */
+
+/* 1. Bird Hovering */
+@keyframes hoverBird {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-15px); }
+}
+
+/* 2. Boy's Shirt Waving in the Wind */
+.boy-shirt {
+    /* Set the "joint" to the top of the shirt */
+    transform-origin: 100px 140px; 
+    animation: waveShirt 4s ease-in-out infinite;
+}
+@keyframes waveShirt {
+    0%, 100% { transform: skewX(0deg); }
+    50% { transform: skewX(-5deg); }
+}
+
+/* 3. Boy's Head Nodding */
+.boy-head {
+    transform-origin: 100px 135px; /* Base of the neck */
+    animation: subtleNod 6s ease-in-out infinite;
+}
+@keyframes subtleNod {
+    0%, 100% { transform: rotate(0deg); }
+    30% { transform: rotate(3deg); }
+    70% { transform: rotate(-2deg); }
+}
+
+/* 4. Girl's Leg Shifting (Waiting) */
+.girl-leg {
+    transform-origin: 90px 280px; /* The Knee/Hip joint */
+    animation: shiftLeg 3s ease-in-out infinite;
+}
+@keyframes shiftLeg {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(10deg); }
+}
+
+/* 5. Girl's Hijab Fluttering */
+.hijab-tail {
+    animation: flutterHijab 2s ease-in-out infinite;
+}
+@keyframes flutterHijab {
+    0%, 100% { transform: translateX(0) scaleY(1); }
+    50% { transform: translateX(5px) scaleY(1.05); }
+}
+
+```
+
+### **Your Next Steps:**
+
+1. Paste this into your project.
+2. Use Figma or Illustrator to trace your actual images into SVG format.
+3. Group the specific parts of your new SVGs just like I did above (e.g., `<g class="boy-shirt">`).
+4. Replace my placeholder `<svg>` tags with your real SVG code.
+5. Adjust the `transform-origin` coordinates in the CSS to match where the joints are on your new drawings.
+
+How does this setup look to you? Are you ready to start tracing the vectors, or do you have any questions about how the CSS targeting works?
+
+Can you do by your self?
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-06-24T18:02:30+06:00.
+
+The user's current state is as follows:
+Active Document: c:\PostHeart\src\components\GlobalBirdTracker.tsx (LANGUAGE_TSX)
+Cursor is on line: 1
+Other open documents:
+- c:\PostHeart\src\components\GlobalBirdTracker.tsx (LANGUAGE_TSX)
+- c:\PostHeart\process_images.js (LANGUAGE_JAVASCRIPT)
+</ADDITIONAL_METADATA>

@@ -1,0 +1,383 @@
+
+> post-heart@0.1.0 lint
+> eslint
+
+
+C:\PostHeart\cleanup.js
+   1:26  error    A `require()` style import is forbidden     @typescript-eslint/no-require-imports
+  19:14  warning  'first' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\PostHeart\darkmode.js
+  1:12  error    A `require()` style import is forbidden                                @typescript-eslint/no-require-imports
+  2:14  error    A `require()` style import is forbidden                                @typescript-eslint/no-require-imports
+  8:5   warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+
+C:\PostHeart\process_images.js
+  1:14  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  2:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+C:\PostHeart\src\app\api\auth\register\route.ts
+  25:11  warning  'user' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\PostHeart\src\app\api\corkboard\route.ts
+   32:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+   58:41  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  113:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+
+C:\PostHeart\src\app\api\keepsakes\route.ts
+  32:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  61:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  80:12  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\PostHeart\src\app\api\letters\route.ts
+  132:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\PostHeart\src\app\api\notifications\route.ts
+  8:27  warning  'req' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\PostHeart\src\app\api\notifications\unread\route.ts
+  8:27  warning  'req' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\PostHeart\src\app\api\partner\disconnect\route.ts
+  8:28  warning  'req' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\PostHeart\src\app\api\partner\requests\route.ts
+  8:27  warning  'req' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\PostHeart\src\app\connect\DisconnectButton.tsx
+  15:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\PostHeart\src\app\connect\DisconnectButton.tsx:15:5
+  13 |   // Sync state if props change from a router.refresh()
+  14 |   useEffect(() => {
+> 15 |     setIsPending(initialPending);
+     |     ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  16 |   }, [initialPending]);
+  17 |
+  18 |   // Poll for connection status if pending  react-hooks/set-state-in-effect
+  28:16  warning  'e' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
+  56:14  warning  'err' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+
+C:\PostHeart\src\app\connect\SearchForm.tsx
+  28:14   warning  'err' is defined but never used                                  @typescript-eslint/no-unused-vars
+  48:103  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\PostHeart\src\app\connect\page.tsx
+  42:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\PostHeart\src\app\login\page.tsx
+  96:14  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\PostHeart\src\app\mood\page.tsx
+    5:62  warning  'RefreshCw' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+   47:11  error    Error: Cannot access variable before it is declared
+
+`initializeDefaultItems` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+C:\PostHeart\src\app\mood\page.tsx:47:11
+  45 |           setItems(data.data);
+  46 |         } else {
+> 47 |           initializeDefaultItems();
+     |           ^^^^^^^^^^^^^^^^^^^^^^ `initializeDefaultItems` accessed before it is declared
+  48 |         }
+  49 |       } catch (err) {
+  50 |         initializeDefaultItems();
+
+C:\PostHeart\src\app\mood\page.tsx:70:3
+   68 |   };
+   69 |
+>  70 |   const initializeDefaultItems = () => {
+      |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  71 |     const defaults: CorkboardItem[] = [
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  72 |       {
+      …
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 107 |     saveItems(defaults);
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 108 |   };
+      | ^^^^^ `initializeDefaultItems` is declared here
+  109 |
+  110 |   // Handle drag positioning updates
+  111 |   const handleDragEnd = (id: string, info: any) => {  react-hooks/immutability
+   49:16  warning  'err' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
+   54:6   warning  React Hook useEffect has a missing dependency: 'initializeDefaultItems'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      react-hooks/exhaustive-deps
+  111:44  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-explicit-any
+  309:23  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @next/next/no-img-element
+  437:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @next/next/no-img-element
+
+C:\PostHeart\src\app\profile\page.tsx
+   6:98   warning  'User' is defined but never used              @typescript-eslint/no-unused-vars
+   6:104  warning  'Shield' is defined but never used            @typescript-eslint/no-unused-vars
+  15:6    warning  'InTransitLetter' is defined but never used   @typescript-eslint/no-unused-vars
+  87:13   warning  'payload' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\PostHeart\src\app\register\page.tsx
+  49:14  warning  'err' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\PostHeart\src\app\scheduled\page.tsx
+   31:30  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
+   35:27  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
+   57:17  error  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\PostHeart\src\app\scheduled\page.tsx:57:17
+  55 |     const created = new Date(letter.createdAt).getTime();
+  56 |     const deliver = new Date(letter.deliverAt).getTime();
+> 57 |     const now = Date.now();
+     |                 ^^^^^^^^^^ Cannot call impure function
+  58 |
+  59 |     if (now >= deliver) return 100;
+  60 |     if (now <= created) return 0;   react-hooks/purity
+   69:17  error  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\PostHeart\src\app\scheduled\page.tsx:69:17
+  67 |   const getRemainingTime = (letter: TransitLetter) => {
+  68 |     const deliver = new Date(letter.deliverAt).getTime();
+> 69 |     const now = Date.now();
+     |                 ^^^^^^^^^^ Cannot call impure function
+  70 |     const diffMs = deliver - now;
+  71 |
+  72 |     if (diffMs <= 0) return 'Arrived';  react-hooks/purity
+  120:19  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              react/no-unescaped-entities
+  120:36  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              react/no-unescaped-entities
+
+C:\PostHeart\src\app\settings\page.tsx
+   5:10  warning  'Settings' is defined but never used                             @typescript-eslint/no-unused-vars
+  65:26  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\PostHeart\src\app\timeline\page.tsx
+    5:10   warning  'Calendar' is defined but never used                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-vars
+    5:28   warning  'Heart' is defined but never used                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+   96:16   warning  'e' is defined but never used                                                                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
+  101:6    warning  React Hook useEffect has a missing dependency: 'defaultMilestones'. Either include it or remove the dependency array                                                                                                                                                                     react-hooks/exhaustive-deps
+  183:107  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  183:121  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  234:25   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  332:70   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  376:25   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  434:17   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\PostHeart\src\app\user\[id]\ConnectButton.tsx
+  15:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\PostHeart\src\app\user\[id]\ConnectButton.tsx:15:5
+  13 |   // Sync state if props change from a router.refresh()
+  14 |   useEffect(() => {
+> 15 |     setIsPending(initialPending);
+     |     ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  16 |   }, [initialPending]);
+  17 |
+  18 |   // Poll for connection status if pending  react-hooks/set-state-in-effect
+  28:16  warning  'e' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+  56:14  warning  'err' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+
+C:\PostHeart\src\app\user\[id]\page.tsx
+  3:10  warning  'User' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\PostHeart\src\app\vault\page.tsx
+    5:23  warning  'Square' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+   24:60  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  107:66  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  108:64  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  119:57  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  125:16  warning  'err' is defined but never used                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+  131:6   warning  React Hook useEffect has missing dependencies: 'defaultPolaroids' and 'defaultTickets'. Either include them or remove the dependency array                                                                                                                                               react-hooks/exhaustive-deps
+  133:9   warning  'savePhotos' is assigned a value but never used                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+  138:9   warning  'saveTickets' is assigned a value but never used                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+  165:13  warning  'err' is defined but never used                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+  208:13  warning  'err' is defined but never used                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+  418:29  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  441:31  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  441:64  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  706:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  713:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  772:83  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  772:92  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  851:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\PostHeart\src\app\write\page.tsx
+   6:10  warning  'Clock' is defined but never used                    @typescript-eslint/no-unused-vars
+  16:10  warning  'isLoadingState' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\PostHeart\src\components\BoySvg.tsx
+   4:39  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  20:9   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\PostHeart\src\components\GirlSvg.tsx
+   4:40  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  20:9   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\PostHeart\src\components\GlobalBirdTracker.tsx
+    4:18  warning  'AnimatePresence' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+   20:58  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
+  100:16  error    Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\PostHeart\src\components\GlobalBirdTracker.tsx:100:16
+   98 |           className="absolute w-1 h-1 bg-white/40 rounded-full"
+   99 |           initial={{ 
+> 100 |             x: Math.random() * window.innerWidth, 
+      |                ^^^^^^^^^^^^^ Cannot call impure function
+  101 |             y: Math.random() * 160 
+  102 |           }}
+  103 |           animate={{   react-hooks/purity
+  101:16  error    Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\PostHeart\src\components\GlobalBirdTracker.tsx:101:16
+   99 |           initial={{ 
+  100 |             x: Math.random() * window.innerWidth, 
+> 101 |             y: Math.random() * 160 
+      |                ^^^^^^^^^^^^^ Cannot call impure function
+  102 |           }}
+  103 |           animate={{ 
+  104 |             y: [null, Math.random() * -50 - 20],                 react-hooks/purity
+  104:23  error    Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\PostHeart\src\components\GlobalBirdTracker.tsx:104:23
+  102 |           }}
+  103 |           animate={{ 
+> 104 |             y: [null, Math.random() * -50 - 20],
+      |                       ^^^^^^^^^^^^^ Cannot call impure function
+  105 |             opacity: [0, 1, 0]
+  106 |           }}
+  107 |           transition={{                                                   react-hooks/purity
+  108:27  error    Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\PostHeart\src\components\GlobalBirdTracker.tsx:108:27
+  106 |           }}
+  107 |           transition={{ 
+> 108 |             duration: 3 + Math.random() * 4, 
+      |                           ^^^^^^^^^^^^^ Cannot call impure function
+  109 |             repeat: Infinity, 
+  110 |             ease: "easeInOut",
+  111 |             delay: Math.random() * 2                react-hooks/purity
+  111:20  error    Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\PostHeart\src\components\GlobalBirdTracker.tsx:111:20
+  109 |             repeat: Infinity, 
+  110 |             ease: "easeInOut",
+> 111 |             delay: Math.random() * 2 
+      |                    ^^^^^^^^^^^^^ Cannot call impure function
+  112 |           }}
+  113 |         />
+  114 |       ))}                                                                        react-hooks/purity
+
+C:\PostHeart\src\components\NotificationSidebar.tsx
+    4:16  warning  'Check' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+   27:72  warning  'fetchUnread' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+   35:7   error    Error: Cannot access variable before it is declared
+
+`fetchData` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+C:\PostHeart\src\components\NotificationSidebar.tsx:35:7
+  33 |   useEffect(() => {
+  34 |     if (isSidebarOpen) {
+> 35 |       fetchData()
+     |       ^^^^^^^^^ `fetchData` accessed before it is declared
+  36 |       markAllRead()
+  37 |     }
+  38 |   }, [isSidebarOpen])
+
+C:\PostHeart\src\components\NotificationSidebar.tsx:40:3
+  38 |   }, [isSidebarOpen])
+  39 |
+> 40 |   const fetchData = async () => {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 41 |     setLoading(true)
+     | ^^^^^^^^^^^^^^^^^^^^
+> 42 |     try {
+     …
+     | ^^^^^^^^^^^^^^^^^^^^
+> 61 |     }
+     | ^^^^^^^^^^^^^^^^^^^^
+> 62 |   }
+     | ^^^^ `fetchData` is declared here
+  63 |
+  64 |   const handleRequest = async (id: string, action: "ACCEPT" | "DECLINE") => {
+  65 |     setActionLoading(id)  react-hooks/immutability
+   36:7   error    Error: Cannot access variable before it is declared
+
+`markAllRead` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+C:\PostHeart\src\components\NotificationSidebar.tsx:36:7
+  34 |     if (isSidebarOpen) {
+  35 |       fetchData()
+> 36 |       markAllRead()
+     |       ^^^^^^^^^^^ `markAllRead` accessed before it is declared
+  37 |     }
+  38 |   }, [isSidebarOpen])
+  39 |
+
+C:\PostHeart\src\components\NotificationSidebar.tsx:87:3
+   85 |   }
+   86 |
+>  87 |   const markAllRead = async () => {
+      |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  88 |     try {
+      | ^^^^^^^^^
+>  89 |       await fetch("/api/notifications", {
+      …
+      | ^^^^^^^^^
+>  98 |     }
+      | ^^^^^^^^^
+>  99 |   }
+      | ^^^^ `markAllRead` is declared here
+  100 |
+  101 |   if (!isSidebarOpen) return null
+  102 |                                                                                             react-hooks/immutability
+   38:6   warning  React Hook useEffect has a missing dependency: 'markAllRead'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    react-hooks/exhaustive-deps
+  148:27  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @next/next/no-img-element
+  195:62  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   react/no-unescaped-entities
+
+C:\PostHeart\src\components\Sidebar.tsx
+  3:10   warning  'useState' is defined but never used   @typescript-eslint/no-unused-vars
+  3:20   warning  'useEffect' is defined but never used  @typescript-eslint/no-unused-vars
+  7:102  warning  'Bell' is defined but never used       @typescript-eslint/no-unused-vars
+
+C:\PostHeart\src\contexts\NotificationContext.tsx
+  30:14  warning  'error' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+  36:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\PostHeart\src\contexts\NotificationContext.tsx:36:5
+  34 |
+  35 |   useEffect(() => {
+> 36 |     fetchUnread()
+     |     ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  37 |     const interval = setInterval(fetchUnread, 15000)
+  38 |     return () => clearInterval(interval)
+  39 |   }, [session])  react-hooks/set-state-in-effect
+  39:6   warning  React Hook useEffect has a missing dependency: 'fetchUnread'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react-hooks/exhaustive-deps
+
+✖ 105 problems (43 errors, 62 warnings)
+
