@@ -391,7 +391,7 @@ export default function WriteLetterPage() {
         setContent('');
         setReceiver('');
         setUploadedImages([]);
-        setEmbeddedUrls({});
+        setEmbeddedMemories({});
         if (keyboardRef.current) keyboardRef.current.setInput('');
         window.dispatchEvent(new Event('letter-posted'));
         router.push('/scheduled');
