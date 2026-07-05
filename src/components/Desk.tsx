@@ -135,15 +135,12 @@ export default function Desk({ initialLetters }: DeskProps) {
                 {isEnvelopeOpen && (
                   <motion.div
                     initial={{ opacity: 0, y: 100 }}
-                    animate={{ 
-                      opacity: 1, 
-                      y: 0,
-                      transition: { duration: 0.8, ease: "easeInOut", delay: 1.0 } 
-                    }}
-                    exit={{ 
-                      opacity: 0, 
-                      y: 100,
-                      transition: { duration: 0.8, ease: "easeInOut", delay: 0 } 
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 100 }}
+                    transition={{ 
+                      duration: 1, 
+                      ease: "easeInOut",
+                      delay: isEnvelopeOpen ? 0.8 : 0 // Wait for envelope to open, but exit immediately
                     }}
                     className="absolute bottom-10 left-1/2 -translate-x-1/2 w-full max-w-sm h-[800px] overflow-y-auto z-15 flex flex-col gap-4 pb-32 px-4 items-center"
                     style={{
@@ -219,8 +216,10 @@ export default function Desk({ initialLetters }: DeskProps) {
                   zIndex: isEnvelopeOpen ? 5 : 30
                 }}
                 transition={{ 
-                  rotateX: { duration: 1.2, ease: "easeInOut", delay: isEnvelopeOpen ? 0 : 0.8 },
-                  zIndex: { duration: 0.1, delay: isEnvelopeOpen ? 0.6 : 0.8 }
+                  duration: 1.2, 
+                  ease: "easeInOut",
+                  rotateX: { delay: isEnvelopeOpen ? 0 : 0.8 },
+                  zIndex: { delay: isEnvelopeOpen ? 0.8 : 0.8 }
                 }}
                 style={{ transformOrigin: 'top' }}
                 className="absolute top-0 left-0 right-0 h-[220px] origin-top drop-shadow-2xl"
