@@ -19,6 +19,64 @@ interface TicketItem {
   memo: string;
 }
 
+const InlineAudioPlayer = ({ src, type }: { src: string, type: 'music' | 'voice' }) => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  const togglePlay = () => {
+    if (!audioRef.current) return;
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play();
+    }
+    setIsPlaying(!isPlaying);
+  };
+
+  return (
+    <div className={`flex items-center gap-4 p-3 rounded-xl border ${type === 'music' ? 'bg-gradient-to-r from-[#1a1a1a] to-[#2a2a2a] border-[#444]' : 'bg-[#111] border-[#333]'} w-full mb-2 shadow-sm`}>
+      <button 
+        onClick={togglePlay}
+        className={`w-8 h-8 rounded-full flex items-center justify-center text-black ${type === 'music' ? 'bg-[#ff9f1c]' : 'bg-white'} hover:scale-105 active:scale-95 transition-all`}
+      >
+        {isPlaying ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" className="ml-0.5" />}
+      </button>
+      
+      <div className="flex-1 flex flex-col justify-center gap-1.5">
+        <div className="flex justify-between items-center text-[10px] text-[#a0a0a0] font-mono leading-none">
+          <span className="uppercase tracking-widest font-bold">{type === 'music' ? 'Background Audio' : 'Voice Note'}</span>
+        </div>
+        <div 
+          className="w-full h-1.5 bg-black/60 rounded-full overflow-hidden cursor-pointer"
+          onClick={(e) => {
+            if (!audioRef.current) return;
+            const rect = e.currentTarget.getBoundingClientRect();
+            const pos = (e.clientX - rect.left) / rect.width;
+            audioRef.current.currentTime = pos * (audioRef.current.duration || 0);
+          }}
+        >
+          <div 
+            className={`h-full transition-all duration-100 ease-linear ${type === 'music' ? 'bg-[#ff9f1c]' : 'bg-white'}`}
+            style={{ width: `${progress * 100}%` }}
+          />
+        </div>
+      </div>
+
+      <audio
+        ref={audioRef}
+        src={src}
+        onTimeUpdate={() => {
+          if (audioRef.current && audioRef.current.duration) {
+            setProgress(audioRef.current.currentTime / audioRef.current.duration);
+          }
+        }}
+        onEnded={() => setIsPlaying(false)}
+      />
+    </div>
+  );
+};
+
 export default function KeepsakeBoxPage() {
   const [activeTab, setActiveTab] = useState<'letters' | 'photos' | 'playlist' | 'keepsakes'>('letters');
   const [deliveredLetters, setDeliveredLetters] = useState<any[]>([]);
@@ -359,15 +417,40 @@ export default function KeepsakeBoxPage() {
                       <div className="text-[10px] uppercase tracking-widest text-[#a0a0a0] mb-4 border-b border-[#333333] pb-2">
                         From {letter.sender?.name || 'Sender'}
                       </div>
-                      <p className="font-serif text-[#f9f8f6] text-sm leading-relaxed mb-4 whitespace-pre-wrap break-words">
+                      <p className="font-serif text-[#f9f8f6] text-sm leading-relaxed mb-6 whitespace-pre-wrap break-words">
                         {letter.content}
                       </p>
-                      {letter.music && (
-                        <div className="mb-4">
-                          <audio controls src={letter.music} className="w-full h-8 opacity-70 hover:opacity-100 transition-opacity rounded-md" />
+                      
+                      {/* Rich Media Attachments */}
+                      <div className="flex flex-col gap-2 mb-6">
+                        {letter.music && (
+                          <InlineAudioPlayer src={letter.music} type="music" />
+                        )}
+                        
+                        {letter.voices && letter.voices.length > 0 && (
+                          <div className="flex flex-col gap-2 mt-2">
+                            {letter.voices.map((voiceUrl: string, idx: number) => (
+                              <InlineAudioPlayer key={`voice-${idx}`} src={voiceUrl} type="voice" />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {letter.images && letter.images.length > 0 && (
+                        <div className="mb-6 border-t border-[#333] pt-4">
+                          <div className="text-[10px] uppercase tracking-widest text-[#a0a0a0] mb-3">Attached Memories</div>
+                          <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                            {letter.images.map((imgUrl: string, idx: number) => (
+                              <div key={`img-${idx}`} className={`aspect-[4/3] rounded-lg overflow-hidden border border-[#333333] hover:border-[#555] transition-colors relative group ${letter.images.length === 1 ? 'col-span-2 aspect-video' : ''}`}>
+                                <img src={imgUrl} alt={`Attachment ${idx + 1}`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       )}
-                      <div className="text-right text-[10px] text-[#a0a0a0] font-mono">
+
+                      <div className="text-right text-[10px] text-[#a0a0a0] font-mono border-t border-[#333333] pt-4 mt-2">
                         Delivered: {new Date(letter.deliverAt).toLocaleDateString()}
                       </div>
                     </div>
