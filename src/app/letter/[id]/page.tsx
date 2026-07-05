@@ -5,7 +5,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import LetterClientView from './LetterClientView';
 
-export default async function LetterPage({ params }: { params: { id: string } }) {
+export default async function LetterPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const session = await getServerSession(authOptions);
   
   if (!session?.user?.email) {
