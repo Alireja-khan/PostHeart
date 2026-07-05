@@ -1,9 +1,10 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { X, Calendar, Image as ImageIcon, Music, Mic, Download, Play, Pause, PackageOpen } from 'lucide-react';
 import { useState, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { Calendar, Image as ImageIcon, Music, Mic, Download, Play, Pause, PackageOpen, ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 interface User {
   id: string;
@@ -21,12 +22,8 @@ interface Letter {
   deliverAt?: string;
 }
 
-interface LetterViewerProps {
-  letter: Letter;
-  onClose: () => void;
-}
-
-export default function LetterViewer({ letter, onClose }: LetterViewerProps) {
+export default function LetterClientView({ letter }: { letter: Letter }) {
+  const router = useRouter();
   const [playingVoice, setPlayingVoice] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -52,35 +49,31 @@ export default function LetterViewer({ letter, onClose }: LetterViewerProps) {
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-stone-900/40 backdrop-blur-sm z-[100] flex justify-center items-start overflow-y-auto p-4 md:p-10"
-      onClick={onClose}
-    >
+    <div className="w-full h-full flex flex-col pt-6">
+      
+      {/* Header with Back Button */}
+      <div className="max-w-7xl mx-auto w-full mb-6 flex justify-between items-center z-10">
+        <button 
+          onClick={() => router.back()}
+          className="flex items-center gap-2 text-[#a0a0a0] hover:text-[#f9f8f6] transition-colors bg-[#1a1a1a] px-4 py-2 rounded-full border border-[#333]"
+        >
+          <ArrowLeft size={16} />
+          <span className="text-xs uppercase tracking-widest font-bold">Back</span>
+        </button>
+      </div>
+
       <audio ref={audioRef} onEnded={() => setPlayingVoice(null)} className="hidden" />
 
       {/* Main Container - mimics Write layout */}
-      <motion.div 
-        initial={{ scale: 0.95, opacity: 0, y: 20 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.95, opacity: 0, y: 20 }}
-        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-7xl flex flex-col xl:flex-row gap-6 relative mt-10 xl:mt-0 min-h-[85vh]"
-      >
-        {/* Close Button */}
-        <button 
-          onClick={onClose}
-          className="absolute -top-12 right-0 md:-right-4 xl:top-0 bg-[#1a1a1a] text-[#a0a0a0] hover:text-[#f9f8f6] p-3 rounded-full border border-[#333] shadow-lg transition-all hover:bg-[#c2410c] hover:border-[#c2410c] z-50"
-        >
-          <X size={20} />
-        </button>
-
+      <div className="w-full max-w-7xl mx-auto flex flex-col xl:flex-row gap-6 relative flex-1 min-h-[75vh]">
+        
         {/* LEFT/CENTER - Letter Content */}
-        <div className="flex-1 bg-[#1a1a1a] border border-[#333] rounded-2xl p-8 md:p-14 shadow-2xl flex flex-col relative overflow-hidden">
-          
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          className="flex-1 bg-[#1a1a1a] border border-[#333] rounded-2xl p-8 md:p-14 shadow-2xl flex flex-col relative overflow-hidden"
+        >
           {/* Subtle Background Watermark Image if attached */}
           {letter.images && letter.images.length > 0 && (
             <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
@@ -115,10 +108,15 @@ export default function LetterViewer({ letter, onClose }: LetterViewerProps) {
               </p>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* RIGHT SIDE - Folders & Attachments (mimicking Write page) */}
-        <div className="w-full xl:w-[400px] flex flex-col gap-6 shrink-0">
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="w-full xl:w-[400px] flex flex-col gap-6 shrink-0"
+        >
           
           {/* Music Player */}
           {letter.music && (
@@ -223,8 +221,8 @@ export default function LetterViewer({ letter, onClose }: LetterViewerProps) {
             </div>
           )}
 
-        </div>
-      </motion.div>
-    </motion.div>
+        </motion.div>
+      </div>
+    </div>
   );
 }

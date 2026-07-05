@@ -2,19 +2,30 @@ import { PrismaClient } from '@prisma/client'
 import Desk from '@/components/Desk'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from './api/auth/[...nextauth]/route'
+import { Suspense } from 'react'
+import { PackageOpen } from 'lucide-react'
 
 const prisma = new PrismaClient()
 
-export default async function Home() {
+function DeskSkeleton() {
+  return (
+    <div className="w-full min-h-full bg-[#111111] p-8 lg:p-12 flex flex-col items-center justify-center">
+      <div className="animate-pulse flex flex-col items-center">
+        <div className="w-16 h-16 rounded-full bg-[#c2410c]/20 flex items-center justify-center mb-6">
+          <PackageOpen className="text-[#c2410c] opacity-50" size={32} />
+        </div>
+        <div className="h-4 w-48 bg-[#333] rounded mb-3"></div>
+        <div className="h-3 w-32 bg-[#222] rounded"></div>
+      </div>
+    </div>
+  )
+}
+
+async function MailboxData() {
   const session = await getServerSession(authOptions)
   
   if (!session?.user?.email) {
-    // If not logged in, return empty desk or handle redirect
-    return (
-      <main className="w-full h-full">
-        <Desk initialLetters={[]} />
-      </main>
-    )
+    return <Desk initialLetters={[]} />
   }
 
   const currentUser = await prisma.user.findUnique({
@@ -22,11 +33,7 @@ export default async function Home() {
   })
 
   if (!currentUser) {
-    return (
-      <main className="w-full h-full">
-        <Desk initialLetters={[]} />
-      </main>
-    )
+    return <Desk initialLetters={[]} />
   }
 
   const letters = await prisma.letter.findMany({
@@ -55,7 +62,6 @@ export default async function Home() {
     }
   })
 
-  // Format letters cleanly for client-side consumption
   const formattedLetters = letters.map(letter => ({
     id: letter.id.toString(),
     content: letter.content,
@@ -77,9 +83,15 @@ export default async function Home() {
     isSentByMe: letter.senderId === currentUser.id
   }))
 
+  return <Desk initialLetters={formattedLetters} />
+}
+
+export default function Home() {
   return (
     <main className="w-full h-full">
-      <Desk initialLetters={formattedLetters} />
+      <Suspense fallback={<DeskSkeleton />}>
+        <MailboxData />
+      </Suspense>
     </main>
   )
 }

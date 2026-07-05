@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Image as ImageIcon, Music, Mic, Mail, ArrowUpRight, Play, Pause, ExternalLink } from 'lucide-react';
 import Image from 'next/image';
-import LetterViewer from '@/components/LetterViewer';
+import { useRouter } from 'next/navigation';
 
 interface User {
   id: string;
@@ -26,7 +26,7 @@ interface Letter {
 export default function KeepsakeBoxPage() {
   const [activeTab, setActiveTab] = useState<'letters' | 'images' | 'records'>('letters');
   const [deliveredLetters, setDeliveredLetters] = useState<Letter[]>([]);
-  const [selectedLetter, setSelectedLetter] = useState<Letter | null>(null);
+  const router = useRouter();
   const [playingRecord, setPlayingRecord] = useState<string | null>(null);
 
   useEffect(() => {
@@ -108,7 +108,7 @@ export default function KeepsakeBoxPage() {
               return (
                 <div
                   key={letter.id}
-                  onClick={() => setSelectedLetter(letter)}
+                  onClick={() => router.push(`/letter/${letter.id}`)}
                   className="w-full h-72 rounded-xl overflow-hidden shadow-2xl border border-white/10 relative cursor-pointer group hover:scale-105 transition-transform duration-300"
                   style={{ 
                     backgroundColor: '#1a1a1a',
@@ -162,7 +162,7 @@ export default function KeepsakeBoxPage() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
                     <p className="text-white text-xs font-serif mb-3 line-clamp-2 shadow-black drop-shadow-md">"{img.letter.content.substring(0,50)}..."</p>
                     <button 
-                      onClick={() => setSelectedLetter(img.letter)}
+                      onClick={() => router.push(`/letter/${img.letter.id}`)}
                       className="text-[10px] uppercase tracking-widest font-bold text-[#c2410c] bg-white/10 hover:bg-white/20 px-3 py-2 rounded flex items-center gap-2 w-fit backdrop-blur-md"
                     >
                       <ExternalLink size={12} /> View Letter
@@ -202,7 +202,7 @@ export default function KeepsakeBoxPage() {
                   </div>
 
                   <button 
-                    onClick={() => setSelectedLetter(record.letter)}
+                    onClick={() => router.push(`/letter/${record.letter.id}`)}
                     className="w-full mt-2 text-[10px] uppercase tracking-widest font-bold text-[#a0a0a0] hover:text-white border border-[#333] hover:border-[#c2410c] hover:bg-[#c2410c]/10 px-3 py-2 rounded flex items-center justify-center gap-2 transition-colors"
                   >
                     <ExternalLink size={12} /> Open Original Letter
@@ -214,14 +214,6 @@ export default function KeepsakeBoxPage() {
         )}
       </div>
 
-      <AnimatePresence>
-        {selectedLetter && (
-          <LetterViewer 
-            letter={selectedLetter} 
-            onClose={() => setSelectedLetter(null)} 
-          />
-        )}
-      </AnimatePresence>
     </div>
   );
 }
