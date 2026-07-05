@@ -65,10 +65,10 @@ export default function Desk({ initialLetters }: DeskProps) {
   };
 
   return (
-    <div className="w-full min-h-full bg-[#111111] p-8 lg:p-12 relative overflow-hidden flex flex-col">
+    <div className="w-full min-h-full bg-[#111111] p-8 lg:p-12 relative overflow-hidden flex flex-col items-center justify-center">
       
       {/* Page Header - Minimalist */}
-      <div className="mb-10 w-full flex justify-end z-30 relative pt-4 pr-4">
+      <div className="absolute top-8 right-8 z-50">
         <div className="flex flex-col items-end space-y-4 px-6 py-3">
           <button 
             onClick={() => { setActiveTab('received'); setIsEnvelopeOpen(false); setViewMode('envelope'); }}
@@ -85,90 +85,17 @@ export default function Desk({ initialLetters }: DeskProps) {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col justify-center pb-20 items-center w-full relative z-0">
+      <div className="flex-1 flex flex-col justify-center items-center w-full relative z-0">
         
         {viewMode === 'envelope' ? (
-          <div className="relative w-full max-w-3xl flex flex-col items-center mt-auto h-[600px] justify-end">
+          <div className="relative w-full max-w-3xl flex flex-col items-center justify-center min-h-[600px]">
             
-            {/* The Scrollable Card Container */}
-            <AnimatePresence>
-              {isEnvelopeOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 100 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 100 }}
-                  transition={{ duration: 0.8, delay: 0.3 }}
-                  className="absolute bottom-[180px] w-full max-w-sm h-[500px] overflow-y-auto z-15 flex flex-col gap-4 pb-32 px-4 items-center custom-scrollbar"
-                  style={{
-                    maskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
-                    WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
-                    scrollbarWidth: 'none',
-                    msOverflowStyle: 'none'
-                  }}
-                >
-                  {filteredLetters.length === 0 && (
-                    <div className="text-center mt-20 text-[#a0a0a0] font-serif italic">
-                      No letters found in this mailbox.
-                    </div>
-                  )}
-                  {filteredLetters.map((letter, idx) => {
-                    const coverImage = letter.images && letter.images.length > 0 ? letter.images[0] : null;
-
-                    return (
-                      <div
-                        key={letter.id}
-                        onClick={(e) => { 
-                          e.stopPropagation(); 
-                          router.push(`/letter/${letter.id}`);
-                        }}
-                        className="w-full max-w-[340px] shrink-0 h-[200px] rounded-2xl overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.8)] border border-white/20 cursor-pointer group hover:scale-[1.02] transition-transform duration-300 relative"
-                        style={{ 
-                          backgroundColor: '#222',
-                          backgroundImage: coverImage ? `url(${coverImage})` : 'none',
-                          backgroundSize: 'cover',
-                          backgroundPosition: 'center',
-                        }}
-                      >
-                        <div className={`absolute inset-0 bg-gradient-to-r ${coverImage ? 'from-black/95 via-black/60 to-black/30' : 'from-[#111] to-[#222]'}`} />
-                        
-                        <div className="relative z-10 h-full p-5 flex flex-col justify-between">
-                          <div className="flex justify-between items-start">
-                            <span className="text-[10px] uppercase tracking-widest text-[#a0a0a0] font-bold bg-black/60 px-2 py-1 rounded backdrop-blur-md">
-                              From {letter.sender.name}
-                            </span>
-                            <span className="text-[10px] font-mono text-white/80 bg-black/60 px-2 py-1 rounded backdrop-blur-md">
-                              {formatTime(letter.deliverAt)}
-                            </span>
-                          </div>
-
-                          <div className="my-auto">
-                            <p className="font-serif text-white text-lg leading-snug line-clamp-2 drop-shadow-lg">
-                              "{letter.content}"
-                            </p>
-                          </div>
-
-                          <div className="flex items-center gap-3 bg-black/60 backdrop-blur-md p-2 px-3 rounded-lg border border-white/10 w-fit mt-auto">
-                            {letter.images && letter.images.length > 0 && <ImageIcon size={14} className="text-white/70" />}
-                            {letter.music && <Music size={14} className="text-white/70" />}
-                            {letter.voices && letter.voices.length > 0 && <Mic size={14} className="text-white/70" />}
-                            {!letter.images?.length && !letter.music && !letter.voices?.length && (
-                              <span className="text-[10px] text-white/50 italic">Text</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </motion.div>
-              )}
-            </AnimatePresence>
-
             {/* The Envelope Box */}
             <div 
-              className="relative w-[500px] h-[300px] cursor-pointer group z-20 shadow-[0_30px_60px_rgba(0,0,0,0.8)]"
+              className="relative w-[500px] h-[300px] cursor-pointer group z-20 shadow-[0_30px_60px_rgba(0,0,0,0.8)] mt-32"
               onClick={() => setIsEnvelopeOpen(true)}
             >
-              {/* Back of Envelope */}
+              {/* 1. Back of Envelope (z-10) */}
               <div className="absolute inset-0 bg-[#0d0d0d] rounded-sm overflow-hidden z-10 border border-[#222]">
                  <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/black-paper.png')]" />
                  <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black to-transparent" />
@@ -185,7 +112,81 @@ export default function Desk({ initialLetters }: DeskProps) {
                  )}
               </div>
 
-              {/* Envelope Flap (Top) */}
+              {/* 2. The Scrollable Card Container (z-15 - Inside the Envelope) */}
+              <AnimatePresence>
+                {isEnvelopeOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 100 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 100 }}
+                    transition={{ duration: 0.8, delay: 0.3 }}
+                    className="absolute bottom-10 left-1/2 -translate-x-1/2 w-full max-w-sm h-[800px] overflow-y-auto z-15 flex flex-col gap-4 pb-32 px-4 items-center"
+                    style={{
+                      maskImage: 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)',
+                      WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)',
+                      scrollbarWidth: 'none',
+                      msOverflowStyle: 'none'
+                    }}
+                  >
+                    <div className="h-[200px] shrink-0" /> {/* Spacer for top fading */}
+                    {filteredLetters.length === 0 && (
+                      <div className="text-center mt-20 text-[#a0a0a0] font-serif italic">
+                        No letters found in this mailbox.
+                      </div>
+                    )}
+                    {filteredLetters.map((letter) => {
+                      const coverImage = letter.images && letter.images.length > 0 ? letter.images[0] : null;
+
+                      return (
+                        <div
+                          key={letter.id}
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            router.push(`/letter/${letter.id}`);
+                          }}
+                          className="w-full max-w-[340px] shrink-0 h-[200px] rounded-2xl overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.8)] border border-white/20 cursor-pointer group hover:scale-[1.02] transition-transform duration-300 relative"
+                          style={{ 
+                            backgroundColor: '#222',
+                            backgroundImage: coverImage ? `url(${coverImage})` : 'none',
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                          }}
+                        >
+                          <div className={`absolute inset-0 bg-gradient-to-r ${coverImage ? 'from-black/95 via-black/60 to-black/30' : 'from-[#111] to-[#222]'}`} />
+                          
+                          <div className="relative z-10 h-full p-5 flex flex-col justify-between">
+                            <div className="flex justify-between items-start">
+                              <span className="text-[10px] uppercase tracking-widest text-[#a0a0a0] font-bold bg-black/60 px-2 py-1 rounded backdrop-blur-md">
+                                From {letter.sender.name}
+                              </span>
+                              <span className="text-[10px] font-mono text-white/80 bg-black/60 px-2 py-1 rounded backdrop-blur-md">
+                                {formatTime(letter.deliverAt)}
+                              </span>
+                            </div>
+
+                            <div className="my-auto">
+                              <p className="font-serif text-white text-lg leading-snug line-clamp-2 drop-shadow-lg">
+                                "{letter.content}"
+                              </p>
+                            </div>
+
+                            <div className="flex items-center gap-3 bg-black/60 backdrop-blur-md p-2 px-3 rounded-lg border border-white/10 w-fit mt-auto">
+                              {letter.images && letter.images.length > 0 && <ImageIcon size={14} className="text-white/70" />}
+                              {letter.music && <Music size={14} className="text-white/70" />}
+                              {letter.voices && letter.voices.length > 0 && <Mic size={14} className="text-white/70" />}
+                              {!letter.images?.length && !letter.music && !letter.voices?.length && (
+                                <span className="text-[10px] text-white/50 italic">Text</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* 3. Envelope Flap (Top, z-30 -> z-5) */}
               <motion.div 
                 initial={{ rotateX: 0, zIndex: 30 }}
                 animate={{ 
@@ -213,7 +214,7 @@ export default function Desk({ initialLetters }: DeskProps) {
                 </svg>
               </motion.div>
 
-              {/* Envelope Front Left Wing */}
+              {/* 4. Envelope Front Left Wing (z-20) */}
               <div className="absolute inset-0 z-20 pointer-events-none drop-shadow-xl">
                 <svg viewBox="0 0 500 300" preserveAspectRatio="none" className="w-full h-full">
                   <path d="M0,0 L250,160 L0,300 Z" fill="#111" />
@@ -222,7 +223,7 @@ export default function Desk({ initialLetters }: DeskProps) {
                 </svg>
               </div>
 
-              {/* Envelope Front Right Wing */}
+              {/* 5. Envelope Front Right Wing (z-20) */}
               <div className="absolute inset-0 z-20 pointer-events-none drop-shadow-xl">
                 <svg viewBox="0 0 500 300" preserveAspectRatio="none" className="w-full h-full">
                   <path d="M500,0 L250,160 L500,300 Z" fill="#111" />
@@ -231,7 +232,7 @@ export default function Desk({ initialLetters }: DeskProps) {
                 </svg>
               </div>
 
-              {/* Envelope Front Bottom */}
+              {/* 6. Envelope Front Bottom (z-20) */}
               <div className="absolute inset-0 z-20 pointer-events-none drop-shadow-2xl">
                 <svg viewBox="0 0 500 300" preserveAspectRatio="none" className="w-full h-full">
                   <path d="M0,300 L250,160 L500,300 Z" fill="#0a0a0a" />
@@ -260,7 +261,7 @@ export default function Desk({ initialLetters }: DeskProps) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1.5 }}
-                className="mt-12 text-[#555] text-xs font-mono flex flex-col items-center gap-2 animate-pulse absolute -right-24 bottom-32"
+                className="mt-12 text-[#555] text-xs font-mono flex flex-col items-center gap-2 animate-pulse absolute -right-32 top-1/2"
               >
                 <div className="w-px h-12 bg-gradient-to-t from-[#555] to-transparent mb-2" />
                 <span className="[writing-mode:vertical-rl]">Scroll Cards</span>
@@ -271,7 +272,7 @@ export default function Desk({ initialLetters }: DeskProps) {
             {isEnvelopeOpen && (
               <button 
                 onClick={() => setViewMode('grid')}
-                className="absolute -left-32 bottom-32 flex items-center gap-2 text-[#555] hover:text-[#f9f8f6] transition-colors bg-[#111] px-4 py-2 rounded-full border border-[#222]"
+                className="absolute -left-32 top-1/2 flex items-center gap-2 text-[#555] hover:text-[#f9f8f6] transition-colors bg-[#111] px-4 py-2 rounded-full border border-[#222]"
               >
                 <Grid size={14} />
                 <span className="text-xs uppercase tracking-widest font-bold">Grid</span>
