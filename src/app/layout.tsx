@@ -6,6 +6,7 @@ import { Providers } from "@/components/Providers";
 import TopBar from "@/components/TopBar";
 import NotificationSidebar from "@/components/NotificationSidebar";
 import GlobalBirdTracker from "@/components/GlobalBirdTracker";
+import { Toaster } from 'react-hot-toast';
 
 const lora = Lora({
   variable: "--font-lora",
@@ -36,6 +37,18 @@ export default function RootLayout({
     >
       <body className="h-full flex bg-[#111111] text-[#f9f8f6] overflow-hidden">
         <Providers>
+          <Toaster 
+            position="top-center" 
+            toastOptions={{
+              style: {
+                background: '#1a1a1a',
+                color: '#f9f8f6',
+                border: '1px solid #333',
+                borderRadius: '8px',
+                fontFamily: 'serif'
+              }
+            }} 
+          />
           <Sidebar />
           <div className="flex-1 h-full overflow-y-auto relative bg-[#111111]">
             <TopBar />

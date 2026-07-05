@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Bell, Check, X, Loader2, UserPlus, Info } from "lucide-react"
+import { Mail, Check, X, Loader2, UserPlus, Info } from "lucide-react"
 import { useNotification } from "@/contexts/NotificationContext"
 
 type Request = {
@@ -107,7 +107,7 @@ export default function NotificationSidebar() {
         {/* Header */}
         <div className="flex justify-between items-center px-6 py-6 border-b border-[#333333] bg-[#1a1a1a]">
           <h2 className="text-2xl font-serif font-bold text-[#f9f8f6] flex items-center">
-            <Bell className="w-6 h-6 mr-3 text-[#c2410c]" />
+            <Mail className="w-6 h-6 mr-3 text-[#c2410c]" />
             Notifications
           </h2>
           <button 
@@ -184,7 +184,7 @@ export default function NotificationSidebar() {
                 </h3>
                 {notifications.length === 0 ? (
                   <div className="text-center py-12 bg-[#1a1a1a] rounded-2xl border border-[#333333] shadow-sm">
-                    <Bell className="w-10 h-10 text-[#e6e4df] mx-auto mb-3" />
+                    <Mail className="w-10 h-10 text-[#e6e4df] mx-auto mb-3" />
                     <p className="text-sm text-[#a0a0a0]">You're all caught up!</p>
                   </div>
                 ) : (

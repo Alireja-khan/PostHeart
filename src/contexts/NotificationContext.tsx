@@ -1,7 +1,8 @@
 "use client"
 
-import React, { createContext, useContext, useState, useEffect } from "react"
+import React, { createContext, useContext, useState, useEffect, useRef } from "react"
 import { useSession } from "next-auth/react"
+import toast from "react-hot-toast"
 
 type NotificationContextType = {
   isSidebarOpen: boolean
@@ -17,6 +18,7 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setSidebarOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
+  const prevUnreadRef = useRef(0)
   const { data: session } = useSession()
 
   const fetchUnread = async () => {
@@ -25,6 +27,10 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       const res = await fetch("/api/notifications/unread")
       if (res.ok) {
         const data = await res.json()
+        if (data.unread > prevUnreadRef.current && prevUnreadRef.current !== 0) {
+          toast.success("A new letter has arrived!", { icon: '💌' })
+        }
+        prevUnreadRef.current = data.unread
         setUnreadCount(data.unread)
       }
     } catch (error) {

@@ -59,6 +59,11 @@ export default async function Home() {
   const formattedLetters = letters.map(letter => ({
     id: letter.id.toString(),
     content: letter.content,
+    images: letter.images || [],
+    music: letter.music || null,
+    voices: letter.voices || [],
+    deliverAt: letter.deliverAt?.toISOString() || letter.createdAt.toISOString(),
+    createdAt: letter.createdAt.toISOString(),
     sender: {
       id: letter.sender.id.toString(),
       email: letter.sender.email,
