@@ -71,13 +71,31 @@ export default function Desk({ initialLetters }: DeskProps) {
       <div className="absolute top-8 right-8 z-50">
         <div className="flex flex-col items-end space-y-4 px-6 py-3">
           <button 
-            onClick={() => { setActiveTab('received'); setIsEnvelopeOpen(false); setViewMode('envelope'); }}
+            onClick={() => { 
+              if (isEnvelopeOpen) {
+                setIsEnvelopeOpen(false);
+                setViewMode('envelope');
+                setTimeout(() => setActiveTab('received'), 1000);
+              } else {
+                setActiveTab('received');
+                setViewMode('envelope');
+              }
+            }}
             className={`font-serif text-sm uppercase tracking-widest transition-all px-6 py-3 rounded-full border shadow-lg ${activeTab === 'received' ? 'text-[#c2410c] font-bold bg-[#1a1a1a] border-[#333]' : 'text-[#a0a0a0] hover:text-[#f9f8f6] border-transparent'}`}
           >
             Whispers Received
           </button>
           <button 
-            onClick={() => { setActiveTab('sent'); setIsEnvelopeOpen(false); setViewMode('envelope'); }}
+            onClick={() => { 
+              if (isEnvelopeOpen) {
+                setIsEnvelopeOpen(false);
+                setViewMode('envelope');
+                setTimeout(() => setActiveTab('sent'), 1000);
+              } else {
+                setActiveTab('sent');
+                setViewMode('envelope');
+              }
+            }}
             className={`font-serif text-sm uppercase tracking-widest transition-all px-6 py-3 rounded-full border shadow-lg ${activeTab === 'sent' ? 'text-[#c2410c] font-bold bg-[#1a1a1a] border-[#333]' : 'text-[#a0a0a0] hover:text-[#f9f8f6] border-transparent'}`}
           >
             Echoes Sent
@@ -121,6 +139,7 @@ export default function Desk({ initialLetters }: DeskProps) {
                     exit={{ opacity: 0, y: 100 }}
                     transition={{ 
                       duration: 0.8, 
+                      ease: "easeInOut",
                       delay: isEnvelopeOpen ? 0.8 : 0 // Wait for envelope to open, but exit immediately
                     }}
                     className="absolute bottom-10 left-1/2 -translate-x-1/2 w-full max-w-sm h-[800px] overflow-y-auto z-15 flex flex-col gap-4 pb-32 px-4 items-center"
@@ -197,10 +216,8 @@ export default function Desk({ initialLetters }: DeskProps) {
                   zIndex: isEnvelopeOpen ? 5 : 30
                 }}
                 transition={{ 
-                  duration: 1, 
-                  ease: [0.22, 1, 0.36, 1],
-                  rotateX: { delay: isEnvelopeOpen ? 0 : 0.8 },
-                  zIndex: { delay: isEnvelopeOpen ? 0.8 : 0.8 }
+                  rotateX: { duration: 1.2, ease: "easeInOut", delay: isEnvelopeOpen ? 0 : 0.8 },
+                  zIndex: { duration: 0.1, delay: isEnvelopeOpen ? 0.8 : 0.8 }
                 }}
                 style={{ transformOrigin: 'top' }}
                 className="absolute top-0 left-0 right-0 h-[220px] origin-top drop-shadow-2xl"
