@@ -69,24 +69,23 @@ export default function Desk({ initialLetters }: DeskProps) {
       
       {/* Page Header - Minimalist */}
       <div className="mb-10 w-full flex justify-end z-30 relative pt-4 pr-4">
-        <div className="flex items-center space-x-6 bg-[#1a1a1a] px-6 py-3 rounded-full border border-[#333] shadow-lg">
+        <div className="flex flex-col items-end space-y-4 px-6 py-3">
           <button 
             onClick={() => { setActiveTab('received'); setIsEnvelopeOpen(false); setViewMode('envelope'); }}
-            className={`font-serif text-sm uppercase tracking-widest transition-all ${activeTab === 'received' ? 'text-[#c2410c] font-bold' : 'text-[#a0a0a0] hover:text-[#f9f8f6]'}`}
+            className={`font-serif text-sm uppercase tracking-widest transition-all px-6 py-3 rounded-full border shadow-lg ${activeTab === 'received' ? 'text-[#c2410c] font-bold bg-[#1a1a1a] border-[#333]' : 'text-[#a0a0a0] hover:text-[#f9f8f6] border-transparent'}`}
           >
             Whispers Received
           </button>
-          <div className="w-px h-4 bg-[#444]" />
           <button 
             onClick={() => { setActiveTab('sent'); setIsEnvelopeOpen(false); setViewMode('envelope'); }}
-            className={`font-serif text-sm uppercase tracking-widest transition-all ${activeTab === 'sent' ? 'text-[#c2410c] font-bold' : 'text-[#a0a0a0] hover:text-[#f9f8f6]'}`}
+            className={`font-serif text-sm uppercase tracking-widest transition-all px-6 py-3 rounded-full border shadow-lg ${activeTab === 'sent' ? 'text-[#c2410c] font-bold bg-[#1a1a1a] border-[#333]' : 'text-[#a0a0a0] hover:text-[#f9f8f6] border-transparent'}`}
           >
             Echoes Sent
           </button>
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col justify-end pb-20 items-center w-full relative z-0">
+      <div className="flex-1 flex flex-col justify-center pb-20 items-center w-full relative z-0">
         
         {viewMode === 'envelope' ? (
           <div className="relative w-full max-w-3xl flex flex-col items-center mt-auto h-[600px] justify-end">
@@ -97,11 +96,14 @@ export default function Desk({ initialLetters }: DeskProps) {
                 <motion.div
                   initial={{ opacity: 0, y: 100 }}
                   animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 100 }}
                   transition={{ duration: 0.8, delay: 0.3 }}
-                  className="absolute bottom-[180px] w-full max-w-sm h-[500px] overflow-y-auto z-15 flex flex-col gap-4 pb-32 px-4 scrollbar-hide items-center custom-scrollbar"
+                  className="absolute bottom-[180px] w-full max-w-sm h-[500px] overflow-y-auto z-15 flex flex-col gap-4 pb-32 px-4 items-center custom-scrollbar"
                   style={{
-                    maskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)',
-                    WebkitMaskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)'
+                    maskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
+                    WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
+                    scrollbarWidth: 'none',
+                    msOverflowStyle: 'none'
                   }}
                 >
                   {filteredLetters.length === 0 && (
@@ -185,10 +187,17 @@ export default function Desk({ initialLetters }: DeskProps) {
 
               {/* Envelope Flap (Top) */}
               <motion.div 
-                initial={{ rotateX: 0 }}
-                animate={{ rotateX: isEnvelopeOpen ? 180 : 0 }}
-                transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-                style={{ transformOrigin: 'top', zIndex: isEnvelopeOpen ? 5 : 30 }}
+                initial={{ rotateX: 0, zIndex: 30 }}
+                animate={{ 
+                  rotateX: isEnvelopeOpen ? 180 : 0,
+                  zIndex: isEnvelopeOpen ? 5 : 30
+                }}
+                transition={{ 
+                  duration: 1, 
+                  ease: [0.22, 1, 0.36, 1],
+                  zIndex: { delay: isEnvelopeOpen ? 0.3 : 0 }
+                }}
+                style={{ transformOrigin: 'top' }}
                 className="absolute top-0 left-0 right-0 h-[220px] origin-top drop-shadow-2xl"
               >
                 {/* SVG Flap mirroring the reference image */}
