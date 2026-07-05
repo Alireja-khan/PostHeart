@@ -362,6 +362,11 @@ export default function KeepsakeBoxPage() {
                       <p className="font-serif text-[#f9f8f6] text-sm leading-relaxed mb-4 whitespace-pre-wrap break-words">
                         {letter.content}
                       </p>
+                      {letter.music && (
+                        <div className="mb-4">
+                          <audio controls src={letter.music} className="w-full h-8 opacity-70 hover:opacity-100 transition-opacity rounded-md" />
+                        </div>
+                      )}
                       <div className="text-right text-[10px] text-[#a0a0a0] font-mono">
                         Delivered: {new Date(letter.deliverAt).toLocaleDateString()}
                       </div>

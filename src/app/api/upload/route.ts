@@ -33,6 +33,7 @@ export async function POST(req: Request) {
     // Upload to Cloudinary
     const uploadResponse = await cloudinary.uploader.upload(base64Image, {
       folder: 'postheart_uploads',
+      resource_type: "auto",
     });
 
     return NextResponse.json({ 

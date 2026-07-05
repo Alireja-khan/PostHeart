@@ -69,7 +69,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { content, delayMinutes, images } = body;
+    const { content, delayMinutes, images, music } = body;
 
     if (!content) {
       return NextResponse.json(
@@ -114,6 +114,7 @@ export async function POST(req: Request) {
       data: {
         content,
         images: images || [],
+        music: music || null,
         delayHours: storedDelayHours,
         deliverAt,
         status: 'IN_TRANSIT',

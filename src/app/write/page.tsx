@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Image as ImageIcon, Send, Music, Mic, X, Clock, Feather, Globe, Keyboard as KeyboardIcon, Loader2, Folder, Plus } from 'lucide-react';
+import { Image as ImageIcon, Send, Music, Mic, X, Clock, Feather, Globe, Keyboard as KeyboardIcon, Loader2, Folder, Plus, Play, Pause, SkipBack, SkipForward, Edit2, Trash2, Volume2, VolumeX, Repeat, Repeat1 } from 'lucide-react';
 import Keyboard from 'react-simple-keyboard';
 import 'react-simple-keyboard/build/css/index.css';
 
@@ -18,6 +18,144 @@ const LANGUAGES = [
 
 // Global in-memory cache for maximum speed on repeated words
 const transliterationCache = new Map<string, string>();
+
+const VoiceNoteCard = ({ 
+  id, url, onRemove, onAdd, isTop, hasMultiple, onNext, onPrev 
+}: { 
+  id: string, url: string, onRemove: (id: string) => void, onAdd?: () => void, isTop?: boolean, hasMultiple?: boolean, onNext?: () => void, onPrev?: () => void 
+}) => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(1);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isRepeat, setIsRepeat] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.volume = isMuted ? 0 : volume;
+  }, [volume, isMuted]);
+
+  return (
+    <div className="relative w-52 bg-[#1a1a1a] rounded-3xl p-4 shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-white/10 overflow-hidden group">
+      <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+      
+      {/* Header */}
+      <div className="flex justify-between items-start mb-4 relative z-10">
+        <div className="flex items-center gap-2 bg-black/40 rounded-full pr-2 p-1">
+          <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center overflow-hidden">
+            <Mic size={12} className="text-white/60" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-white text-[10px] font-bold leading-tight">Voice Note</span>
+          </div>
+        </div>
+        
+        <div className="flex gap-1">
+          {isTop && onAdd && (
+            <button 
+              onClick={onAdd}
+              className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors text-white"
+            >
+              <Plus size={10} />
+            </button>
+          )}
+          <button 
+            onClick={() => onRemove(id)}
+            className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors text-white"
+          >
+            <Trash2 size={10} />
+          </button>
+        </div>
+      </div>
+
+      {/* Progress */}
+      <div className="mb-3 relative z-10">
+        <div className="flex justify-between text-[9px] text-white/50 mb-1 font-mono">
+          <span>{Math.floor(currentTime / 60)}:{(Math.floor(currentTime % 60)).toString().padStart(2, '0')}</span>
+          <span>{Math.floor(duration / 60)}:{(Math.floor(duration % 60)).toString().padStart(2, '0')}</span>
+        </div>
+        <div 
+          className="w-full h-1 bg-white/10 rounded-full overflow-hidden cursor-pointer"
+          onClick={(e) => {
+             if (!audioRef.current || !duration) return;
+             const rect = e.currentTarget.getBoundingClientRect();
+             const pos = (e.clientX - rect.left) / rect.width;
+             audioRef.current.currentTime = pos * duration;
+          }}
+        >
+          <div 
+            className="h-full bg-white transition-all duration-100 ease-linear"
+            style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Volume and Extra Controls */}
+      <div className="flex justify-between items-center mb-3 relative z-10">
+        <div className="flex items-center gap-2 w-1/2">
+          <button onClick={() => setIsMuted(!isMuted)} className="text-white/50 hover:text-white transition-colors">
+            {isMuted || volume === 0 ? <VolumeX size={12} /> : <Volume2 size={12} />}
+          </button>
+          <div 
+            className="w-full h-1 bg-white/10 rounded-full overflow-hidden cursor-pointer flex-1"
+            onClick={(e) => {
+              const rect = e.currentTarget.getBoundingClientRect();
+              const pos = (e.clientX - rect.left) / rect.width;
+              setVolume(Math.max(0, Math.min(1, pos)));
+              setIsMuted(false);
+            }}
+          >
+            <div className="h-full bg-white transition-all" style={{ width: `${isMuted ? 0 : volume * 100}%` }} />
+          </div>
+        </div>
+        <button 
+          onClick={() => setIsRepeat(!isRepeat)}
+          className={`transition-colors ${isRepeat ? 'text-white' : 'text-white/30 hover:text-white/60'}`}
+        >
+          {isRepeat ? <Repeat1 size={12} /> : <Repeat size={12} />}
+        </button>
+      </div>
+
+      {/* Main Controls */}
+      <div className="flex justify-center items-center gap-4 relative z-10">
+        {isTop && hasMultiple && (
+           <button onClick={onPrev} className="text-white/40 hover:text-white transition-colors">
+             <SkipBack size={14} fill="currentColor" />
+           </button>
+        )}
+        <button 
+          onClick={() => {
+            if (isPlaying) {
+              audioRef.current?.pause();
+            } else {
+              audioRef.current?.play();
+            }
+            setIsPlaying(!isPlaying);
+          }}
+          className="w-8 h-8 bg-white text-black rounded-full flex items-center justify-center hover:scale-105 transition-transform shadow-[0_0_15px_rgba(255,255,255,0.2)]"
+        >
+          {isPlaying ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" className="ml-0.5" />}
+        </button>
+        {isTop && hasMultiple && (
+           <button onClick={onNext} className="text-white/40 hover:text-white transition-colors">
+             <SkipForward size={14} fill="currentColor" />
+           </button>
+        )}
+      </div>
+
+      <audio 
+        ref={audioRef}
+        src={url}
+        loop={isRepeat}
+        onTimeUpdate={() => setCurrentTime(audioRef.current?.currentTime || 0)}
+        onLoadedMetadata={() => setDuration(audioRef.current?.duration || 0)}
+        onEnded={() => !isRepeat && setIsPlaying(false)}
+        className="hidden"
+      />
+    </div>
+  );
+};
 
 export default function WriteLetterPage() {
   const router = useRouter();
@@ -35,6 +173,8 @@ export default function WriteLetterPage() {
   const [isFocused, setIsFocused] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [uploadingImages, setUploadingImages] = useState<string[]>([]);
+  const [uploadedMusic, setUploadedMusic] = useState<string | null>(null);
+  const [isUploadingMusic, setIsUploadingMusic] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [embeddedMemories, setEmbeddedMemories] = useState<Record<number, { images: string[], music: string[], audio: string[] }>>({});
   const [nextEmbedId, setNextEmbedId] = useState(1);
@@ -43,14 +183,89 @@ export default function WriteLetterPage() {
   const [embedGalleryType, setEmbedGalleryType] = useState<'images' | 'music' | 'audio'>('images');
   const [isUploading, setIsUploading] = useState(false);
   const [mousePos, setMousePos] = useState<{ x: number, y: number } | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(1);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isRepeat, setIsRepeat] = useState(false);
+  const [musicCover, setMusicCover] = useState<string | null>(null);
+  const [showCoverPrompt, setShowCoverPrompt] = useState(false);
+  
+  // Voice Recording State
+  const [isVoicePopupOpen, setIsVoicePopupOpen] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [recordedVoices, setRecordedVoices] = useState<{ id: string, url: string }[]>([]);
 
   const delayMenuRef = useRef<HTMLDivElement>(null);
   const langMenuRef = useRef<HTMLDivElement>(null);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const keyboardRef = useRef<any>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const voiceAudioRef = useRef<HTMLAudioElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const embedFileInputRef = useRef<HTMLInputElement>(null);
+  const musicInputRef = useRef<HTMLInputElement>(null);
+  const musicCoverInputRef = useRef<HTMLInputElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const galleryRef = useRef<HTMLDivElement>(null);
+
+  // Load draft from sessionStorage on mount
+  useEffect(() => {
+    try {
+      const savedDraft = sessionStorage.getItem('writeLetterDraft');
+      if (savedDraft) {
+        const draft = JSON.parse(savedDraft);
+        if (draft.content) setContent(draft.content);
+        if (draft.receiver) setReceiver(draft.receiver);
+        if (draft.delay) setDelay(draft.delay);
+        if (draft.language) setLanguage(draft.language);
+        if (draft.uploadedImages) setUploadedImages(draft.uploadedImages);
+        if (draft.uploadedMusic !== undefined) setUploadedMusic(draft.uploadedMusic);
+        if (draft.musicCover !== undefined) setMusicCover(draft.musicCover);
+        if (draft.recordedVoices) setRecordedVoices(draft.recordedVoices);
+        if (draft.embeddedMemories) setEmbeddedMemories(draft.embeddedMemories);
+        if (draft.nextEmbedId) setNextEmbedId(draft.nextEmbedId);
+        
+        // Sync keyboard state if needed, wrapped in timeout to ensure ref is mounted
+        setTimeout(() => {
+          if (keyboardRef.current && draft.content) {
+            keyboardRef.current.setInput(draft.content);
+          }
+        }, 100);
+      }
+    } catch (e) {
+      console.error('Error loading draft', e);
+    }
+  }, []);
+
+  // Save draft to sessionStorage on change
+  useEffect(() => {
+    try {
+      // Don't save empty states that would overwrite valid drafts immediately on mount
+      if (!content && !receiver && uploadedImages.length === 0 && !uploadedMusic && recordedVoices.length === 0 && Object.keys(embeddedMemories).length === 0) {
+        return;
+      }
+      const draft = {
+        content,
+        receiver,
+        delay,
+        language,
+        uploadedImages,
+        uploadedMusic,
+        musicCover,
+        recordedVoices,
+        embeddedMemories,
+        nextEmbedId
+      };
+      sessionStorage.setItem('writeLetterDraft', JSON.stringify(draft));
+    } catch (e) {
+      console.error('Error saving draft', e);
+    }
+  }, [content, receiver, delay, language, uploadedImages, uploadedMusic, musicCover, recordedVoices, embeddedMemories, nextEmbedId]);
 
   useEffect(() => {
     const checkActiveLetter = async () => {
@@ -226,6 +441,95 @@ export default function WriteLetterPage() {
     // Notice: We NO LONGER open the gallery automatically!
   };
 
+  const handleMusicUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    
+    setIsUploadingMusic(true);
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (data.success) {
+        setUploadedMusic(data.url);
+        setShowCoverPrompt(true);
+      }
+    } catch (err) {
+      console.error("Music upload error", err);
+    } finally {
+      setIsUploadingMusic(false);
+      if (musicInputRef.current) musicInputRef.current.value = '';
+    }
+  };
+
+  const handleMusicCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (data.success) {
+        setMusicCover(data.url);
+        setShowCoverPrompt(false);
+      }
+    } catch (err) {
+      console.error("Music cover upload error", err);
+    } finally {
+      if (musicCoverInputRef.current) musicCoverInputRef.current.value = '';
+    }
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const audioUrl = URL.createObjectURL(audioBlob);
+        setRecordedVoices(prev => [{ id: Math.random().toString(36).substring(7), url: audioUrl }, ...prev]);
+        stream.getTracks().forEach(track => track.stop());
+        setIsVoicePopupOpen(false);
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      setRecordingTime(0);
+      timerIntervalRef.current = setInterval(() => {
+        setRecordingTime(prev => prev + 1);
+      }, 1000);
+    } catch (err) {
+      console.error("Error accessing microphone", err);
+      alert("Could not access microphone.");
+      setIsVoicePopupOpen(false);
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+      }
+    }
+  };
+
   const handleEmbedImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
     
@@ -381,6 +685,8 @@ export default function WriteLetterPage() {
         body: JSON.stringify({
           content: finalContent,
           images: uploadedImages,
+          music: uploadedMusic,
+          voices: recordedVoices.map(v => v.url),
           receiverName: receiver || 'My Love',
           delayMinutes,
         }),
@@ -391,7 +697,10 @@ export default function WriteLetterPage() {
         setContent('');
         setReceiver('');
         setUploadedImages([]);
+        setUploadedMusic(null);
+        setRecordedVoices([]);
         setEmbeddedMemories({});
+        sessionStorage.removeItem('writeLetterDraft');
         if (keyboardRef.current) keyboardRef.current.setInput('');
         window.dispatchEvent(new Event('letter-posted'));
         router.push('/scheduled');
@@ -412,7 +721,7 @@ export default function WriteLetterPage() {
     return '7d';
   };
 
-  const totalImages = uploadedImages.length + uploadingImages.length;
+  const totalAttachments = uploadedImages.length + uploadingImages.length;
   const allImages = [...uploadedImages, ...uploadingImages];
   const lastImage = allImages.length > 0 ? allImages[allImages.length - 1] : null;
   const secondLastImage = allImages.length > 1 ? allImages[allImages.length - 2] : null;
@@ -548,12 +857,20 @@ export default function WriteLetterPage() {
                 <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-medium">Virtual Keyboard</span>
               </button>
 
-              <button className="p-2.5 text-black/40 hover:text-black rounded-full transition-colors relative group hidden sm:block">
-                <Music size={16} strokeWidth={2} />
-                <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-medium">Add Music</span>
+              <button 
+                onClick={() => musicInputRef.current?.click()}
+                className={`p-2.5 rounded-full transition-colors relative group hidden sm:block ${uploadedMusic ? 'text-[#ff9f1c]' : 'text-black/40 hover:text-black'}`}
+              >
+                {isUploadingMusic ? <Loader2 size={16} className="animate-spin" /> : <Music size={16} strokeWidth={2} />}
+                <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-medium">
+                  {uploadedMusic ? 'Music Added' : 'Add Music'}
+                </span>
               </button>
 
-              <button className="p-2.5 text-black/40 hover:text-black rounded-full transition-colors relative group">
+              <button 
+                onClick={() => setIsVoicePopupOpen(true)}
+                className="p-2.5 text-black/40 hover:text-black rounded-full transition-colors relative group"
+              >
                 <Mic size={16} strokeWidth={2} />
                 <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-medium">Voice Note</span>
               </button>
@@ -707,62 +1024,422 @@ export default function WriteLetterPage() {
         )}
       </AnimatePresence>
 
-      {/* Right-Side Folder UI */}
+      {/* Background Audio Element */}
+      {uploadedMusic && (
+        <audio 
+          ref={audioRef}
+          src={uploadedMusic}
+          loop={isRepeat}
+          muted={isMuted}
+          onTimeUpdate={() => setCurrentTime(audioRef.current?.currentTime || 0)}
+          onLoadedMetadata={() => setDuration(audioRef.current?.duration || 0)}
+          onEnded={() => !isRepeat && setIsPlaying(false)}
+        />
+      )}
+
+      {/* Sync volume to audio ref when it changes */}
+      {useEffect(() => {
+        if (audioRef.current) audioRef.current.volume = volume;
+      }, [volume])}
+
+      {/* Prompt for cover art */}
       <AnimatePresence>
-        {totalImages > 0 && !hasInTransitLetter && !isGalleryOpen && (
+        {showCoverPrompt && (
           <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 50 }}
-            onClick={() => setIsGalleryOpen(true)}
-            className="fixed right-6 top-1/2 -translate-y-1/2 z-40 cursor-pointer group"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-6"
           >
-            {/* Custom CSS Glass Folder matching the reference image */}
-            <div className="relative w-24 h-[72px] transition-transform duration-300 group-hover:scale-105 group-hover:-translate-x-2">
-              
-              {/* Folder Back (Dark) */}
-              <div className="absolute bottom-0 left-0 w-full h-[85%] bg-gradient-to-b from-[#2a2a2a] to-[#111] rounded-xl rounded-tl-none shadow-2xl border border-white/10" />
-              {/* Folder Back Tab */}
-              <div className="absolute top-0 left-0 w-[40%] h-[25%] bg-[#2a2a2a] rounded-t-lg border-t border-l border-white/10" />
-
-              {/* Document 1 */}
-              <div className="absolute top-2 left-4 w-12 h-[50px] bg-[#e5e5e5] rounded shadow-sm transform -rotate-6 origin-bottom-left transition-transform duration-300 group-hover:-translate-y-3 group-hover:-rotate-12 overflow-hidden border border-white/20">
-                {secondLastImage ? (
-                  <img src={secondLastImage} alt="Preview 1" className="w-full h-full object-cover opacity-90" />
-                ) : (
-                  <>
-                    <div className="mt-2 ml-2 w-8 h-[2px] bg-black/10 rounded-full" />
-                    <div className="mt-1.5 ml-2 w-5 h-[2px] bg-black/10 rounded-full" />
-                  </>
-                )}
-              </div>
-              
-              {/* Document 2 */}
-              <div className="absolute top-3 left-8 w-12 h-[48px] bg-white rounded shadow-sm transform rotate-6 origin-bottom-right transition-transform duration-300 group-hover:-translate-y-2 group-hover:rotate-12 overflow-hidden border border-white/20">
-                {lastImage ? (
-                  <img src={lastImage} alt="Preview 2" className="w-full h-full object-cover" />
-                ) : (
-                  <>
-                    <div className="mt-2 ml-2 w-6 h-[2px] bg-black/10 rounded-full" />
-                    <div className="mt-1.5 ml-2 w-8 h-[2px] bg-black/10 rounded-full" />
-                    <div className="mt-1.5 ml-2 w-4 h-[2px] bg-black/10 rounded-full" />
-                  </>
-                )}
-              </div>
-
-              {/* Front Glass layer (Translucent Frosted) */}
-              <div className="absolute bottom-0 left-0 w-full h-[70%] bg-white/[0.15] backdrop-blur-md rounded-xl border border-white/30 shadow-[0_-4px_16px_rgba(0,0,0,0.2)] overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent" />
-              </div>
-              
-              {/* Notification Badge */}
-              <div className="absolute -top-3 -right-3 bg-black text-white text-[11px] font-bold w-6 h-6 flex items-center justify-center rounded-full shadow-lg border border-white/20 z-10">
-                {totalImages}
+            <div className="bg-[#1a1a1a] border border-white/20 p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center">
+              <h3 className="text-white text-xl font-serif mb-2">Music Uploaded</h3>
+              <p className="text-white/60 mb-6 text-sm">Would you like to add a cover art image for this music card?</p>
+              <div className="flex gap-4 justify-center">
+                <button 
+                  onClick={() => setShowCoverPrompt(false)}
+                  className="px-6 py-2 rounded-full border border-white/20 text-white/60 hover:text-white hover:bg-white/5 transition-colors"
+                >
+                  Skip
+                </button>
+                <button 
+                  onClick={() => musicCoverInputRef.current?.click()}
+                  className="px-6 py-2 rounded-full bg-white text-black hover:scale-105 transition-transform"
+                >
+                  Add Cover Art
+                </button>
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Voice Recording Popup */}
+      <AnimatePresence>
+        {isVoicePopupOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-6"
+          >
+            <div className="bg-[#111] border border-white/10 p-10 rounded-[40px] shadow-2xl max-w-sm w-full flex flex-col items-center relative overflow-hidden">
+              {/* Animated Glow when recording */}
+              {isRecording && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: [0.1, 0.3, 0.1], scale: [1, 1.2, 1] }}
+                  transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                  className="absolute inset-0 bg-white/20 rounded-full blur-3xl -z-10"
+                />
+              )}
+              
+              <button onClick={() => { stopRecording(); setIsVoicePopupOpen(false); }} className="absolute top-6 right-6 text-white/40 hover:text-white transition-colors">
+                <X size={20} />
+              </button>
+
+              <div className="mb-8 relative flex items-center justify-center w-32 h-32 mt-4">
+                {isRecording ? (
+                  <div className="relative flex items-center justify-center">
+                     {[1, 2, 3].map((i) => (
+                       <motion.div
+                         key={i}
+                         animate={{ scale: [1, 2], opacity: [0.5, 0] }}
+                         transition={{ repeat: Infinity, duration: 1.5, delay: i * 0.5, ease: "easeOut" }}
+                         className="absolute inset-0 border border-white/50 rounded-full"
+                       />
+                     ))}
+                     <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(255,255,255,0.3)] z-10 relative">
+                       <Mic size={24} className="text-black" />
+                     </div>
+                  </div>
+                ) : (
+                  <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center border border-white/20">
+                    <Mic size={24} className="text-white/60" />
+                  </div>
+                )}
+              </div>
+
+              <div className="text-center mb-10">
+                <h3 className="text-white text-xl font-medium mb-2">{isRecording ? "Listening..." : "Record a Voice Note"}</h3>
+                <p className="text-white/40 font-mono text-sm">
+                  {Math.floor(recordingTime / 60)}:{(Math.floor(recordingTime % 60)).toString().padStart(2, '0')}
+                </p>
+              </div>
+
+              {isRecording ? (
+                <button 
+                  onClick={stopRecording}
+                  className="w-full py-4 rounded-full bg-white/10 text-white font-medium hover:bg-white/20 transition-colors border border-white/10"
+                >
+                  Stop Recording
+                </button>
+              ) : (
+                <button 
+                  onClick={startRecording}
+                  className="w-full py-4 rounded-full bg-white text-black font-medium hover:scale-105 transition-transform"
+                >
+                  Start Recording
+                </button>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Right-Side Attachments Container */}
+      <div className="fixed right-6 top-[55%] -translate-y-1/2 z-40 flex flex-col items-end gap-6 pointer-events-none">
+      
+        {/* Right-Side Voice Notes Stack */}
+        <AnimatePresence>
+          {recordedVoices.length > 0 && !hasInTransitLetter && (
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 50 }}
+              className="relative w-52"
+              style={{ height: `${160 + (Math.min(recordedVoices.length - 1, 2) * 12)}px` }}
+            >
+              <AnimatePresence>
+                {recordedVoices.slice(0, 3).map((voice, visualIndex) => {
+                  const isTop = visualIndex === 0;
+                  const zIndex = 50 - visualIndex * 10;
+                  const offset = visualIndex * 12; 
+                  const scale = 1 - (visualIndex * 0.05);
+                  const opacity = 1 - (visualIndex * 0.2);
+                  
+                  return (
+                    <motion.div 
+                      key={voice.id}
+                      initial={{ opacity: 0, y: -20, scale: 0.9 }}
+                      animate={{ opacity, y: offset, scale }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      transition={{ duration: 0.4, ease: "easeOut" }}
+                      className="absolute top-0 left-0 w-full"
+                      style={{ 
+                        zIndex,
+                        pointerEvents: isTop ? 'auto' : 'none' 
+                      }}
+                    >
+                      <VoiceNoteCard
+                        id={voice.id}
+                        url={voice.url}
+                        onRemove={(id) => setRecordedVoices(prev => prev.filter(v => v.id !== id))}
+                        onAdd={() => setIsVoicePopupOpen(true)}
+                        isTop={isTop}
+                        hasMultiple={recordedVoices.length > 1}
+                        onNext={() => {
+                          setRecordedVoices(prev => {
+                            const arr = [...prev];
+                            arr.push(arr.shift()!);
+                            return arr;
+                          });
+                        }}
+                        onPrev={() => {
+                          setRecordedVoices(prev => {
+                            const arr = [...prev];
+                            arr.unshift(arr.pop()!);
+                            return arr;
+                          });
+                        }}
+                      />
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Right-Side Music Player UI */}
+        <AnimatePresence>
+          {uploadedMusic && !hasInTransitLetter && (
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 50 }}
+              className="pointer-events-auto"
+            >
+            <div className="relative w-52 bg-[#1a1a1a] rounded-3xl p-4 shadow-2xl border border-white/10 overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+              
+              {/* Header */}
+              <div className="flex justify-between items-start mb-4 relative z-10">
+                <div className="flex items-center gap-2 bg-black/40 rounded-full pr-2 p-1">
+                  <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center overflow-hidden">
+                    <Music size={12} className="text-white/60" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-white text-[10px] font-bold leading-tight">Audio Track</span>
+                  </div>
+                </div>
+                
+                <div className="flex gap-1">
+                  <button 
+                    onClick={() => musicInputRef.current?.click()}
+                    className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors text-white"
+                  >
+                    <Edit2 size={10} />
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setUploadedMusic(null);
+                      setMusicCover(null);
+                      setIsPlaying(false);
+                    }}
+                    className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors text-white"
+                  >
+                    <Trash2 size={10} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Cover Art */}
+              <div 
+                className="w-full aspect-square rounded-2xl bg-gradient-to-br from-orange-500/20 to-purple-500/20 mb-4 flex items-center justify-center border border-white/5 overflow-hidden relative z-10 cursor-pointer group/cover"
+                onClick={() => musicCoverInputRef.current?.click()}
+              >
+                 {musicCover ? (
+                   <img src={musicCover} alt="Cover" className="w-full h-full object-cover" />
+                 ) : (
+                   <>
+                     <div className="absolute inset-0 backdrop-blur-3xl opacity-50" />
+                     <Music size={32} className="text-white/20" />
+                   </>
+                 )}
+                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/cover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+                    <span className="text-white text-xs font-bold tracking-wider">Change Cover</span>
+                 </div>
+                 {isPlaying && !musicCover && (
+                    <div className="absolute bottom-4 flex gap-1 items-end h-4">
+                      {[1,2,3,4].map(i => (
+                        <motion.div 
+                          key={i}
+                          animate={{ height: ['20%', '100%', '20%'] }}
+                          transition={{ repeat: Infinity, duration: 0.8 + (i * 0.2), ease: 'easeInOut' }}
+                          className="w-1 bg-white/50 rounded-full"
+                        />
+                      ))}
+                    </div>
+                 )}
+              </div>
+
+              {/* Progress */}
+              <div className="mb-3 relative z-10">
+                <div className="flex justify-between text-[9px] text-white/50 mb-1 font-mono">
+                  <span>{Math.floor(currentTime / 60)}:{(Math.floor(currentTime % 60)).toString().padStart(2, '0')}</span>
+                  <span>{Math.floor(duration / 60)}:{(Math.floor(duration % 60)).toString().padStart(2, '0')}</span>
+                </div>
+                <div 
+                  className="w-full h-1 bg-white/10 rounded-full overflow-hidden cursor-pointer"
+                  onClick={(e) => {
+                     if (!audioRef.current || !duration) return;
+                     const rect = e.currentTarget.getBoundingClientRect();
+                     const pos = (e.clientX - rect.left) / rect.width;
+                     audioRef.current.currentTime = pos * duration;
+                  }}
+                >
+                  <div 
+                    className="h-full bg-white transition-all duration-100 ease-linear"
+                    style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Volume and Extra Controls */}
+              <div className="flex justify-between items-center mb-3 relative z-10">
+                <div className="flex items-center gap-2 w-1/2">
+                  <button onClick={() => setIsMuted(!isMuted)} className="text-white/50 hover:text-white transition-colors">
+                    {isMuted || volume === 0 ? <VolumeX size={12} /> : <Volume2 size={12} />}
+                  </button>
+                  <div 
+                    className="w-full h-1 bg-white/10 rounded-full overflow-hidden cursor-pointer flex-1"
+                    onClick={(e) => {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const pos = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+                      setVolume(pos);
+                      if (pos > 0) setIsMuted(false);
+                    }}
+                  >
+                    <div className="h-full bg-white transition-all duration-100 ease-linear" style={{ width: `${isMuted ? 0 : volume * 100}%` }} />
+                  </div>
+                </div>
+                
+                <button 
+                  onClick={() => setIsRepeat(!isRepeat)}
+                  className={`transition-colors ${isRepeat ? 'text-[#ff9f1c]' : 'text-white/50 hover:text-white'}`}
+                >
+                  <Repeat size={12} />
+                </button>
+              </div>
+
+              {/* Main Controls */}
+              <div className="flex justify-center items-center gap-5 relative z-10">
+                <button 
+                   onClick={() => { if(audioRef.current) audioRef.current.currentTime = Math.max(0, currentTime - 10) }}
+                   className="text-white/50 hover:text-white transition-colors"
+                >
+                  <SkipBack size={14} fill="currentColor" />
+                </button>
+                <button 
+                  onClick={() => {
+                    if (isPlaying) {
+                      audioRef.current?.pause();
+                    } else {
+                      audioRef.current?.play();
+                    }
+                    setIsPlaying(!isPlaying);
+                  }}
+                  className="w-8 h-8 bg-white text-black rounded-full flex items-center justify-center hover:scale-105 transition-transform"
+                >
+                  {isPlaying ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" className="ml-0.5" />}
+                </button>
+                <button 
+                   onClick={() => { if(audioRef.current) audioRef.current.currentTime = Math.min(duration, currentTime + 10) }}
+                   className="text-white/50 hover:text-white transition-colors"
+                >
+                  <SkipForward size={14} fill="currentColor" />
+                </button>
+              </div>
+
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Right-Side Folder UI */}
+      <AnimatePresence>
+        {totalAttachments > 0 && !hasInTransitLetter && !isGalleryOpen && (
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 50 }}
+            onClick={() => setIsGalleryOpen(true)}
+            className="pointer-events-auto cursor-pointer group"
+          >
+            <div className="relative w-52 bg-[#1a1a1a] rounded-3xl p-4 shadow-2xl border border-white/10 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+              
+              {/* Header */}
+              <div className="flex justify-between items-start mb-4 relative z-10">
+                <div className="flex items-center gap-2 bg-black/40 rounded-full pr-2 p-1">
+                  <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center overflow-hidden">
+                    <Folder size={12} className="text-white/60" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-white text-[10px] font-bold leading-tight">Gallery</span>
+                  </div>
+                </div>
+                
+                <div className="bg-white/10 text-white text-[10px] font-bold px-2 py-1 rounded-full border border-white/10">
+                  {totalAttachments} items
+                </div>
+              </div>
+
+              {/* Folder Graphic */}
+              <div className="flex justify-center mt-2 relative z-10">
+                <div className="relative w-24 h-[72px] transition-transform duration-300 group-hover:scale-105">
+                  {/* Folder Back (Dark) */}
+                  <div className="absolute bottom-0 left-0 w-full h-[85%] bg-gradient-to-b from-[#2a2a2a] to-[#111] rounded-xl rounded-tl-none shadow-2xl border border-white/10" />
+                  {/* Folder Back Tab */}
+                  <div className="absolute top-0 left-0 w-[40%] h-[25%] bg-[#2a2a2a] rounded-t-lg border-t border-l border-white/10" />
+
+                  {/* Document 1 */}
+                  <div className="absolute top-2 left-4 w-12 h-[50px] bg-[#e5e5e5] rounded shadow-sm transform -rotate-6 origin-bottom-left transition-transform duration-300 group-hover:-translate-y-3 group-hover:-rotate-12 overflow-hidden border border-white/20">
+                    {secondLastImage ? (
+                      <img src={secondLastImage} alt="Preview 1" className="w-full h-full object-cover opacity-90" />
+                    ) : (
+                      <>
+                        <div className="mt-2 ml-2 w-8 h-[2px] bg-black/10 rounded-full" />
+                        <div className="mt-1.5 ml-2 w-5 h-[2px] bg-black/10 rounded-full" />
+                      </>
+                    )}
+                  </div>
+                  
+                  {/* Document 2 */}
+                  <div className="absolute top-3 left-8 w-12 h-[48px] bg-white rounded shadow-sm transform rotate-6 origin-bottom-right transition-transform duration-300 group-hover:-translate-y-2 group-hover:rotate-12 overflow-hidden border border-white/20">
+                    {lastImage ? (
+                      <img src={lastImage} alt="Preview 2" className="w-full h-full object-cover" />
+                    ) : (
+                      <>
+                        <div className="mt-2 ml-2 w-6 h-[2px] bg-black/10 rounded-full" />
+                        <div className="mt-1.5 ml-2 w-8 h-[2px] bg-black/10 rounded-full" />
+                        <div className="mt-1.5 ml-2 w-4 h-[2px] bg-black/10 rounded-full" />
+                      </>
+                    )}
+                  </div>
+
+                  {/* Front Glass layer (Translucent Frosted) */}
+                  <div className="absolute bottom-0 left-0 w-full h-[70%] bg-white/[0.15] backdrop-blur-md rounded-xl border border-white/30 shadow-[0_-4px_16px_rgba(0,0,0,0.2)] overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      </div>
 
       {/* Gallery Popup Overlay */}
       <AnimatePresence>
@@ -801,6 +1478,7 @@ export default function WriteLetterPage() {
                   </div>
                 ))}
                 
+
                 {/* Currently uploading temporary images */}
                 {uploadingImages.map((localUrl, idx) => (
                   <div key={`temp-${idx}`} className="relative group aspect-square rounded-2xl overflow-hidden bg-black/20 border border-white/10">
@@ -882,6 +1560,20 @@ export default function WriteLetterPage() {
         onChange={handleEmbedImageUpload} 
         className="hidden" 
         multiple
+        accept="image/*"
+      />
+      <input 
+        type="file" 
+        ref={musicInputRef} 
+        onChange={handleMusicUpload} 
+        className="hidden" 
+        accept="audio/*"
+      />
+      <input 
+        type="file" 
+        ref={musicCoverInputRef} 
+        onChange={handleMusicCoverUpload} 
+        className="hidden" 
         accept="image/*"
       />
 
