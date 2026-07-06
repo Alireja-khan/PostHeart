@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, forwardRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import HTMLFlipBook from 'react-pageflip';
 import { Image as ImageIcon, Music, Mic, X, Folder, Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Repeat, Repeat1, ArrowLeft, Feather } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -249,20 +250,16 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
 
   // Pagination States
   const [currentPage, setCurrentPage] = useState(0);
-  const [flipDirection, setFlipDirection] = useState<'next' | 'prev' | null>(null);
   const pageTurnAudioRef = useRef<HTMLAudioElement | null>(null);
+  const bookRef = useRef<any>(null);
   
   const pages = useMemo(() => getPaginatedContent(displayContent), [displayContent]);
 
   const turnPage = (direction: 'next' | 'prev') => {
-    if (direction === 'next' && currentPage < pages.length - 1) {
-      setFlipDirection('next');
-      setCurrentPage(prev => prev + 1);
-      playTurnSound();
-    } else if (direction === 'prev' && currentPage > 0) {
-      setFlipDirection('prev');
-      setCurrentPage(prev => prev - 1);
-      playTurnSound();
+    if (direction === 'next' && bookRef.current) {
+      bookRef.current.pageFlip().flipNext();
+    } else if (direction === 'prev' && bookRef.current) {
+      bookRef.current.pageFlip().flipPrev();
     }
   };
 
@@ -271,6 +268,11 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
       pageTurnAudioRef.current.currentTime = 0;
       pageTurnAudioRef.current.play().catch(e => console.log('Audio play failed', e));
     }
+  };
+
+  const onPage = (e: any) => {
+    setCurrentPage(e.data);
+    playTurnSound();
   };
 
   // Rotate list of voices
@@ -367,11 +369,11 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
         />
       )}
 
-      {/* Ultra Minimal Boundless Content Area with 3D Page Turn */}
-      <div className="w-full max-w-2xl flex flex-col z-10 relative mt-12 px-4" style={{ perspective: "1500px" }}>
+      {/* Ultra Minimal Boundless Content Area with Realistic Page Turn */}
+      <div className="w-full max-w-2xl flex flex-col items-center justify-center z-10 relative mt-12 px-4 h-full min-h-[600px]">
         
         {/* Pagination Controls */}
-        <div className="flex items-center justify-between mb-8 opacity-50 text-[#a0a0a0] text-[10px] uppercase tracking-widest font-bold">
+        <div className="flex items-center justify-between w-full max-w-md mb-8 opacity-50 text-[#a0a0a0] text-[10px] uppercase tracking-widest font-bold">
           <button 
             onClick={() => turnPage('prev')} 
             disabled={currentPage === 0}
@@ -389,52 +391,56 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
           </button>
         </div>
 
-        <AnimatePresence mode="wait" custom={flipDirection}>
-          <motion.div
-            key={currentPage}
-            custom={flipDirection}
-            initial={(d: string) => ({ 
-              opacity: 0, 
-              rotateY: d === 'next' ? 60 : -60,
-              x: d === 'next' ? 30 : -30,
-              scale: 0.95
-            })}
-            animate={{ opacity: 1, rotateY: 0, x: 0, scale: 1 }}
-            exit={(d: string) => ({ 
-              opacity: 0, 
-              rotateY: d === 'next' ? -60 : 60,
-              x: d === 'next' ? -30 : 30,
-              scale: 0.95
-            })}
-            transition={{ duration: 0.6, type: "spring", stiffness: 80, damping: 20 }}
-            style={{ 
-              transformOrigin: flipDirection === 'next' ? 'right center' : 'left center' 
-            }}
-            className="flex flex-col w-full"
+        <div className="relative w-full max-w-lg shadow-2xl rounded-lg">
+          {/* @ts-ignore - react-pageflip types require all optional props in React 18 */}
+          <HTMLFlipBook 
+            width={450} 
+            height={650} 
+            size="stretch"
+            minWidth={300}
+            maxWidth={600}
+            minHeight={400}
+            maxHeight={800}
+            drawShadow={true}
+            flippingTime={1000}
+            usePortrait={true}
+            startPage={0}
+            showCover={false}
+            mobileScrollSupport={true}
+            onFlip={onPage}
+            className="bg-transparent"
+            ref={bookRef}
+            style={{ margin: "0 auto" }}
           >
-            {currentPage === 0 && (
-              <div className="flex flex-col mb-12">
-                <h2 className={`w-full bg-transparent text-3xl md:text-5xl text-white/90 mb-4 text-left ${activeFontClass}`}>
-                  {displayReceiver}
-                </h2>
+            {pages.map((pageText, index) => (
+              <div key={index} className="bg-[#111111] border border-white/5 p-8 md:p-12 h-full overflow-hidden flex flex-col relative text-left">
+                {index === 0 && (
+                  <div className="flex flex-col mb-8">
+                    <h2 className={`w-full bg-transparent text-2xl md:text-4xl text-white/90 mb-4 text-left ${activeFontClass}`}>
+                      {displayReceiver}
+                    </h2>
+                  </div>
+                )}
+                
+                <div 
+                  className={`w-full text-lg md:text-xl leading-relaxed md:leading-loose whitespace-pre-wrap break-words text-white/90 text-left ${activeFontClass}`}
+                >
+                  {renderParsedContent(pageText)}
+                </div>
+                
+                {index === pages.length - 1 && (
+                  <p className={`italic text-white/40 mt-12 text-lg text-right ${activeFontClass}`}>
+                    - {letter.sender.name}
+                  </p>
+                )}
+                
+                <div className="absolute bottom-4 right-8 text-[#a0a0a0] opacity-30 text-xs font-sans">
+                  {index + 1}
+                </div>
               </div>
-            )}
-            
-            <div className="relative w-full min-h-[300px]">
-              <div 
-                className={`w-full text-xl md:text-2xl leading-relaxed md:leading-loose whitespace-pre-wrap break-words text-white/90 text-left ${activeFontClass}`}
-              >
-                {renderParsedContent(pages[currentPage])}
-              </div>
-              
-              {currentPage === pages.length - 1 && (
-                <p className={`italic text-white/40 mt-16 text-lg text-right ${activeFontClass}`}>
-                  - {letter.sender.name}
-                </p>
-              )}
-            </div>
-          </motion.div>
-        </AnimatePresence>
+            ))}
+          </HTMLFlipBook>
+        </div>
       </div>
 
       {/* Right-Side Attachments Container */}
