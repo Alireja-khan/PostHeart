@@ -75,3 +75,8 @@ body {
 .font-myhandwriting {
   font-family: 'MyHandwriting', var(--font-caveat), cursive;
 }
+
+/* Vintage Typewriter Font Integration */
+.font-typewriter {
+  font-family: var(--font-special-elite), Courier, monospace;
+}

@@ -227,6 +227,8 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
     const fontName = fontMatch[1];
     if (fontName === 'caveat') {
       activeFontClass = "font-handwriting";
+    } else if (fontName === 'typewriter') {
+      activeFontClass = "font-typewriter";
     } else if (fontName === 'custom') {
       activeFontClass = "font-myhandwriting";
     }

@@ -784,7 +784,7 @@ export default function WriteLetterPage() {
             onChange={(e) => setReceiver(e.target.value)}
             disabled={hasInTransitLetter || isSubmitting}
             spellCheck="false"
-            className={`w-full bg-transparent border-none text-3xl md:text-5xl text-white/90 focus:outline-none placeholder-white/20 ${font === 'caveat' ? 'font-handwriting' : font === 'custom' ? 'font-myhandwriting' : 'font-serif'}`}
+            className={`w-full bg-transparent border-none text-3xl md:text-5xl text-white/90 focus:outline-none placeholder-white/20 ${font === 'caveat' ? 'font-handwriting' : font === 'custom' ? 'font-myhandwriting' : font === 'typewriter' ? 'font-typewriter' : 'font-serif'}`}
           />
         </div>
         
@@ -800,7 +800,7 @@ export default function WriteLetterPage() {
         >
           {/* Backdrop for syntax highlighting inline images */}
           <div 
-            className={`absolute inset-0 w-full h-full text-xl md:text-2xl leading-relaxed md:leading-loose whitespace-pre-wrap break-words pointer-events-none z-10 p-0 m-0 ${font === 'caveat' ? 'font-handwriting' : font === 'custom' ? 'font-myhandwriting' : 'font-serif'}`}
+            className={`absolute inset-0 w-full h-full text-xl md:text-2xl leading-relaxed md:leading-loose whitespace-pre-wrap break-words pointer-events-none z-10 p-0 m-0 ${font === 'caveat' ? 'font-handwriting' : font === 'custom' ? 'font-myhandwriting' : font === 'typewriter' ? 'font-typewriter' : 'font-serif'}`}
             style={{ color: isFocused || content ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.5)' }}
           >
             {renderRichText(content)}
@@ -822,7 +822,7 @@ export default function WriteLetterPage() {
             spellCheck="false"
             lang={language}
             dir={language === 'ar' ? 'rtl' : 'ltr'}
-            className={`w-full relative z-0 bg-transparent border-none text-xl md:text-2xl leading-relaxed md:leading-loose focus:outline-none resize-none transition-colors duration-500 min-h-[300px] overflow-hidden p-0 m-0 text-transparent caret-white ${font === 'caveat' ? 'font-handwriting' : font === 'custom' ? 'font-myhandwriting' : 'font-serif'}`}
+            className={`w-full relative z-0 bg-transparent border-none text-xl md:text-2xl leading-relaxed md:leading-loose focus:outline-none resize-none transition-colors duration-500 min-h-[300px] overflow-hidden p-0 m-0 text-transparent caret-white ${font === 'caveat' ? 'font-handwriting' : font === 'custom' ? 'font-myhandwriting' : font === 'typewriter' ? 'font-typewriter' : 'font-serif'}`}
             style={{ outline: 'none' }}
           />
           {isTransliterating && (
@@ -939,6 +939,7 @@ export default function WriteLetterPage() {
                       {[
                         { id: 'serif', name: 'Classic Serif' },
                         { id: 'caveat', name: 'Elegant Hand' },
+                        { id: 'typewriter', name: 'Vintage Typewriter' },
                         { id: 'custom', name: 'My Handwriting' }
                       ].map((f) => (
                         <button 
