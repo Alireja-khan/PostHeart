@@ -370,7 +370,7 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
       )}
 
       {/* Ultra Minimal Boundless Content Area with Realistic Page Turn */}
-      <div className="w-full max-w-2xl flex flex-col items-center justify-start z-10 relative mt-0 pt-0 px-4 h-full max-h-[85vh]">
+      <div className="w-full max-w-5xl flex flex-col items-center justify-start z-10 relative mt-0 pt-0 px-4 h-full max-h-[85vh]">
         
         {/* Pagination Controls */}
         <div className="flex items-center justify-between w-full max-w-md mb-4 opacity-50 text-[#a0a0a0] text-[10px] uppercase tracking-widest font-bold">
@@ -391,7 +391,7 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
           </button>
         </div>
 
-        <div className="relative w-full max-w-lg shadow-2xl rounded-lg mt-2">
+        <div className="relative w-full max-w-4xl shadow-2xl rounded-lg mt-2">
           {/* @ts-ignore - react-pageflip types require all optional props in React 18 */}
           <HTMLFlipBook 
             width={450} 
@@ -405,7 +405,7 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
             flippingTime={1000}
             usePortrait={true}
             startPage={0}
-            showCover={false}
+            showCover={true}
             mobileScrollSupport={true}
             onFlip={onPage}
             className="bg-transparent"
