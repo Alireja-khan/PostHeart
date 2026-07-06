@@ -187,7 +187,7 @@ const AudioPlayerRow = ({ url }: { url: string }) => {
   );
 };
 
-const getPaginatedContent = (text: string, charsPerPage: number = 420) => {
+const getPaginatedContent = (text: string, charsPerPage: number = 380) => {
   const paragraphs = text.split('\n');
   const pages: string[] = [];
   let currentPage = '';
@@ -414,8 +414,8 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
           >
             {/* Front Cover */}
             <div data-density="hard" className="bg-[#0a0a0a] border border-white/10 p-6 md:p-8 h-full overflow-hidden flex flex-col justify-center items-center relative text-center">
-              <h1 className="text-3xl md:text-5xl font-serif text-white/90 mb-4">{displayReceiver}</h1>
-              <p className="text-white/40 italic">A private letter for you</p>
+              <h1 className={`text-3xl md:text-5xl text-white/90 mb-4 ${activeFontClass}`}>Dear You.</h1>
+              <p className={`text-white/40 text-lg md:text-xl ${activeFontClass}`}>A Private Space</p>
               <div className="absolute bottom-8 opacity-20">
                 <Feather size={24} />
               </div>
@@ -431,7 +431,7 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
                 </div>
                 
                 {index === pages.length - 1 && (
-                  <p className={`italic text-white/40 mt-12 text-lg text-right ${activeFontClass}`}>
+                  <p className={`italic text-white/40 mt-6 text-lg text-right ${activeFontClass}`}>
                     - {letter.sender.name}
                   </p>
                 )}
