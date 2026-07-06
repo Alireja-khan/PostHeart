@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Image as ImageIcon, Music, Mic, Grid, PackageOpen, ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -35,6 +35,24 @@ export default function Desk({ initialLetters }: DeskProps) {
   // Interactive Envelope States
   const [isEnvelopeOpen, setIsEnvelopeOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'envelope' | 'grid'>('envelope');
+  const [flapZIndex, setFlapZIndex] = useState(30);
+
+  useEffect(() => {
+    if (isEnvelopeOpen) {
+      // Opening: flap stays at front (30) for 1.0s, then goes to back (12)
+      const timer = setTimeout(() => {
+        setFlapZIndex(12);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else {
+      // Closing: instantly set to back (12) so it goes behind letters, then goes to front (30) after 0.6s
+      setFlapZIndex(12);
+      const timer = setTimeout(() => {
+        setFlapZIndex(30);
+      }, 600);
+      return () => clearTimeout(timer);
+    }
+  }, [isEnvelopeOpen]);
 
   const filteredLetters = initialLetters.filter(letter => 
     activeTab === 'sent' ? letter.isSentByMe : !letter.isSentByMe
@@ -66,6 +84,14 @@ export default function Desk({ initialLetters }: DeskProps) {
 
   return (
     <div className="w-full min-h-full bg-[#111111] p-8 lg:p-12 relative overflow-hidden flex flex-col items-center justify-center">
+      {/* Global SVG Texture Definition */}
+      <svg style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden' }}>
+        <defs>
+          <pattern id="texture" patternUnits="userSpaceOnUse" width="100" height="100">
+            <image href="https://www.transparenttextures.com/patterns/black-paper.png" width="100" height="100" opacity="0.3" />
+          </pattern>
+        </defs>
+      </svg>
       
       {/* Page Header - Minimalist */}
       <div className="absolute top-8 right-8 z-50">
@@ -131,106 +157,95 @@ export default function Desk({ initialLetters }: DeskProps) {
               </div>
 
               {/* 2. The Scrollable Card Container (z-15 - Inside the Envelope) */}
-              <AnimatePresence>
-                {isEnvelopeOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 100 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 100 }}
-                    transition={{ 
-                      duration: 1, 
-                      ease: "easeInOut",
-                      delay: isEnvelopeOpen ? 0.8 : 0 // Wait for envelope to open, but exit immediately
-                    }}
-                    className="absolute bottom-10 left-1/2 -translate-x-1/2 w-full max-w-sm h-[800px] overflow-y-auto z-15 flex flex-col gap-4 pb-32 px-4 items-center"
-                    style={{
-                      maskImage: 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)',
-                      WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)',
-                      scrollbarWidth: 'none',
-                      msOverflowStyle: 'none'
-                    }}
-                  >
-                    <div className="h-[200px] shrink-0" /> {/* Spacer for top fading */}
-                    {filteredLetters.length === 0 && (
-                      <div className="text-center mt-20 text-[#a0a0a0] font-serif italic">
-                        No letters found in this mailbox.
-                      </div>
-                    )}
-                    {filteredLetters.map((letter) => {
-                      const coverImage = letter.images && letter.images.length > 0 ? letter.images[0] : null;
+              <div className="absolute inset-x-0 bottom-0 top-[-600px] overflow-hidden pointer-events-none z-[15]">
+                <AnimatePresence>
+                  {isEnvelopeOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 150 }}
+                      animate={{ opacity: 1, y: 0, transition: { duration: 1, ease: "easeInOut", delay: 0.8 } }}
+                      exit={{ opacity: 0, y: 400, transition: { duration: 0.8, ease: "easeInOut", delay: 0 } }}
+                      className="absolute bottom-10 left-1/2 -translate-x-1/2 w-full max-w-sm h-[800px] overflow-y-auto pointer-events-auto flex flex-col gap-4 pb-32 px-4 items-center"
+                      style={{
+                        maskImage: 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)',
+                        WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)',
+                        scrollbarWidth: 'none',
+                        msOverflowStyle: 'none'
+                      }}
+                    >
+                      <div className="h-[200px] shrink-0" /> {/* Spacer for top fading */}
+                      {filteredLetters.length === 0 && (
+                        <div className="text-center mt-20 text-[#a0a0a0] font-serif italic">
+                          No letters found in this mailbox.
+                        </div>
+                      )}
+                      {filteredLetters.map((letter) => {
+                        const coverImage = letter.images && letter.images.length > 0 ? letter.images[0] : null;
 
-                      return (
-                        <div
-                          key={letter.id}
-                          onClick={(e) => { 
-                            e.stopPropagation(); 
-                            router.push(`/letter/${letter.id}`);
-                          }}
-                          className="w-full max-w-[340px] shrink-0 h-[200px] rounded-2xl overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.8)] border border-white/20 cursor-pointer group hover:scale-[1.02] transition-transform duration-300 relative"
-                          style={{ 
-                            backgroundColor: '#222',
-                            backgroundImage: coverImage ? `url(${coverImage})` : 'none',
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center',
-                          }}
-                        >
-                          <div className={`absolute inset-0 bg-gradient-to-r ${coverImage ? 'from-black/95 via-black/60 to-black/30' : 'from-[#111] to-[#222]'}`} />
-                          
-                          <div className="relative z-10 h-full p-5 flex flex-col justify-between">
-                            <div className="flex justify-between items-start">
-                              <span className="text-[10px] uppercase tracking-widest text-[#a0a0a0] font-bold bg-black/60 px-2 py-1 rounded backdrop-blur-md">
-                                From {letter.sender.name}
-                              </span>
-                              <span className="text-[10px] font-mono text-white/80 bg-black/60 px-2 py-1 rounded backdrop-blur-md">
-                                {formatTime(letter.deliverAt)}
-                              </span>
-                            </div>
+                        return (
+                          <div
+                            key={letter.id}
+                            onClick={(e) => { 
+                              e.stopPropagation(); 
+                              router.push(`/letter/${letter.id}`);
+                            }}
+                            className="w-full max-w-[340px] shrink-0 h-[200px] rounded-2xl overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.8)] border border-white/20 cursor-pointer group hover:scale-[1.02] transition-transform duration-300 relative"
+                            style={{ 
+                              backgroundColor: '#222',
+                              backgroundImage: coverImage ? `url(${coverImage})` : 'none',
+                              backgroundSize: 'cover',
+                              backgroundPosition: 'center',
+                            }}
+                          >
+                            <div className={`absolute inset-0 bg-gradient-to-r ${coverImage ? 'from-black/95 via-black/60 to-black/30' : 'from-[#111] to-[#222]'}`} />
+                            
+                            <div className="relative z-10 h-full p-5 flex flex-col justify-between">
+                              <div className="flex justify-between items-start">
+                                <span className="text-[10px] uppercase tracking-widest text-[#a0a0a0] font-bold bg-black/60 px-2 py-1 rounded backdrop-blur-md">
+                                  From {letter.sender.name}
+                                </span>
+                                <span className="text-[10px] font-mono text-white/80 bg-black/60 px-2 py-1 rounded backdrop-blur-md">
+                                  {formatTime(letter.deliverAt)}
+                                </span>
+                              </div>
 
-                            <div className="my-auto">
-                              <p className="font-serif text-white text-lg leading-snug line-clamp-2 drop-shadow-lg">
-                                "{letter.content}"
-                              </p>
-                            </div>
+                              <div className="my-auto">
+                                <p className="font-serif text-white text-lg leading-snug line-clamp-2 drop-shadow-lg">
+                                  "{letter.content}"
+                                </p>
+                              </div>
 
-                            <div className="flex items-center gap-3 bg-black/60 backdrop-blur-md p-2 px-3 rounded-lg border border-white/10 w-fit mt-auto">
-                              {letter.images && letter.images.length > 0 && <ImageIcon size={14} className="text-white/70" />}
-                              {letter.music && <Music size={14} className="text-white/70" />}
-                              {letter.voices && letter.voices.length > 0 && <Mic size={14} className="text-white/70" />}
-                              {!letter.images?.length && !letter.music && !letter.voices?.length && (
-                                <span className="text-[10px] text-white/50 italic">Text</span>
-                              )}
+                              <div className="flex items-center gap-3 bg-black/60 backdrop-blur-md p-2 px-3 rounded-lg border border-white/10 w-fit mt-auto">
+                                {letter.images && letter.images.length > 0 && <ImageIcon size={14} className="text-white/70" />}
+                                {letter.music && <Music size={14} className="text-white/70" />}
+                                {letter.voices && letter.voices.length > 0 && <Mic size={14} className="text-white/70" />}
+                                {!letter.images?.length && !letter.music && !letter.voices?.length && (
+                                  <span className="text-[10px] text-white/50 italic">Text</span>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      );
-                    })}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                        );
+                      })}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
 
               {/* 3. Envelope Flap (Top, z-30 -> z-5) */}
               <motion.div 
-                initial={{ rotateX: 0, zIndex: 30 }}
+                initial={{ rotateX: 0 }}
                 animate={{ 
-                  rotateX: isEnvelopeOpen ? 180 : 0,
-                  zIndex: isEnvelopeOpen ? 5 : 30
+                  rotateX: isEnvelopeOpen ? 180 : 0
                 }}
                 transition={{ 
-                  duration: 1.2, 
-                  ease: "easeInOut",
-                  rotateX: { delay: isEnvelopeOpen ? 0 : 0.8 },
-                  zIndex: { delay: isEnvelopeOpen ? 0.8 : 0.8 }
+                  rotateX: { duration: 1.2, ease: "easeInOut", delay: isEnvelopeOpen ? 0 : 0.8 }
                 }}
-                style={{ transformOrigin: 'top' }}
+                style={{ transformOrigin: 'top', zIndex: flapZIndex }}
                 className="absolute top-0 left-0 right-0 h-[220px] origin-top drop-shadow-2xl"
               >
                 {/* SVG Flap mirroring the reference image */}
                 <svg viewBox="0 0 500 220" preserveAspectRatio="none" className="w-full h-full filter drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">
                   <path d="M0,0 L250,220 L500,0 Z" fill="#151515" />
-                  {/* Flap Texture */}
-                  <pattern id="texture" patternUnits="userSpaceOnUse" width="100" height="100">
-                    <image href="https://www.transparenttextures.com/patterns/black-paper.png" width="100" height="100" opacity="0.3" />
-                  </pattern>
                   <path d="M0,0 L250,220 L500,0 Z" fill="url(#texture)" />
                   {/* Flap Edge Highlight */}
                   <path d="M0,0 L250,220 L500,0 Z" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="2" />
