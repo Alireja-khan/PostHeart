@@ -938,7 +938,6 @@ export default function WriteLetterPage() {
                     >
                       {[
                         { id: 'serif', name: 'Classic Serif' },
-                        { id: 'caveat', name: 'Elegant Hand' },
                         { id: 'typewriter', name: 'Vintage Typewriter' },
                         { id: 'custom', name: 'My Handwriting' }
                       ].map((f) => (
