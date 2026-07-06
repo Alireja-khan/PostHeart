@@ -370,7 +370,7 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
       )}
 
       {/* Ultra Minimal Boundless Content Area with Realistic Page Turn */}
-      <div className="w-full max-w-2xl flex flex-col items-center justify-center z-10 relative mt-12 px-4 h-full min-h-[600px]">
+      <div className="w-full max-w-2xl flex flex-col items-center justify-center z-10 relative mt-2 px-4 h-full min-h-[600px]">
         
         {/* Pagination Controls */}
         <div className="flex items-center justify-between w-full max-w-md mb-8 opacity-50 text-[#a0a0a0] text-[10px] uppercase tracking-widest font-bold">
