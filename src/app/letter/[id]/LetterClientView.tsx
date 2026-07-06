@@ -186,6 +186,26 @@ const AudioPlayerRow = ({ url }: { url: string }) => {
   );
 };
 
+const getPaginatedContent = (text: string, charsPerPage: number = 700) => {
+  const paragraphs = text.split('\n');
+  const pages: string[] = [];
+  let currentPage = '';
+
+  paragraphs.forEach((p) => {
+    if (currentPage.length + p.length > charsPerPage && currentPage.length > 0) {
+      pages.push(currentPage.trim());
+      currentPage = '';
+    }
+    currentPage += p + '\n';
+  });
+  
+  if (currentPage.trim().length > 0) {
+    pages.push(currentPage.trim());
+  }
+  
+  return pages.length > 0 ? pages : [''];
+};
+
 export default function LetterClientView({ letter }: { letter: Letter }) {
   const router = useRouter();
   const [playingVoice, setPlayingVoice] = useState<string | null>(null);
@@ -226,6 +246,32 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
   if (fontMatch) {
     displayContent = displayContent.substring(fontMatch[0].length);
   }
+
+  // Pagination States
+  const [currentPage, setCurrentPage] = useState(0);
+  const [flipDirection, setFlipDirection] = useState<'next' | 'prev' | null>(null);
+  const pageTurnAudioRef = useRef<HTMLAudioElement | null>(null);
+  
+  const pages = useMemo(() => getPaginatedContent(displayContent), [displayContent]);
+
+  const turnPage = (direction: 'next' | 'prev') => {
+    if (direction === 'next' && currentPage < pages.length - 1) {
+      setFlipDirection('next');
+      setCurrentPage(prev => prev + 1);
+      playTurnSound();
+    } else if (direction === 'prev' && currentPage > 0) {
+      setFlipDirection('prev');
+      setCurrentPage(prev => prev - 1);
+      playTurnSound();
+    }
+  };
+
+  const playTurnSound = () => {
+    if (pageTurnAudioRef.current) {
+      pageTurnAudioRef.current.currentTime = 0;
+      pageTurnAudioRef.current.play().catch(e => console.log('Audio play failed', e));
+    }
+  };
 
   // Rotate list of voices
   const [voiceList, setVoiceList] = useState<{ id: string, url: string }[]>(
@@ -321,31 +367,75 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
         />
       )}
 
-      {/* Ultra Minimal Boundless Content Area */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full max-w-2xl flex flex-col z-10 relative mt-12"
-      >
-        <div className="flex flex-col mb-12">
-          <h2 className={`w-full bg-transparent text-3xl md:text-5xl text-white/90 mb-4 text-center ${activeFontClass}`}>
-            {displayReceiver}
-          </h2>
-        </div>
+      {/* Ultra Minimal Boundless Content Area with 3D Page Turn */}
+      <div className="w-full max-w-2xl flex flex-col z-10 relative mt-12 px-4" style={{ perspective: "1500px" }}>
         
-        <div className="relative w-full min-h-[300px]">
-          <div 
-            className={`w-full text-xl md:text-2xl leading-relaxed md:leading-loose whitespace-pre-wrap break-words text-white/90 text-center ${activeFontClass}`}
+        {/* Pagination Controls */}
+        <div className="flex items-center justify-between mb-8 opacity-50 text-[#a0a0a0] text-[10px] uppercase tracking-widest font-bold">
+          <button 
+            onClick={() => turnPage('prev')} 
+            disabled={currentPage === 0}
+            className="hover:text-white disabled:opacity-30 transition-colors py-2 px-4 -ml-4"
           >
-            {renderParsedContent(displayContent)}
-          </div>
-          
-          <p className={`italic text-white/40 mt-16 text-lg text-right ${activeFontClass}`}>
-            - {letter.sender.name}
-          </p>
+            &larr; Prev
+          </button>
+          <span>Page {currentPage + 1} / {pages.length}</span>
+          <button 
+            onClick={() => turnPage('next')} 
+            disabled={currentPage === pages.length - 1}
+            className="hover:text-white disabled:opacity-30 transition-colors py-2 px-4 -mr-4"
+          >
+            Next &rarr;
+          </button>
         </div>
-      </motion.div>
+
+        <AnimatePresence mode="wait" custom={flipDirection}>
+          <motion.div
+            key={currentPage}
+            custom={flipDirection}
+            initial={(d: string) => ({ 
+              opacity: 0, 
+              rotateY: d === 'next' ? 60 : -60,
+              x: d === 'next' ? 30 : -30,
+              scale: 0.95
+            })}
+            animate={{ opacity: 1, rotateY: 0, x: 0, scale: 1 }}
+            exit={(d: string) => ({ 
+              opacity: 0, 
+              rotateY: d === 'next' ? -60 : 60,
+              x: d === 'next' ? -30 : 30,
+              scale: 0.95
+            })}
+            transition={{ duration: 0.6, type: "spring", stiffness: 80, damping: 20 }}
+            style={{ 
+              transformOrigin: flipDirection === 'next' ? 'right center' : 'left center' 
+            }}
+            className="flex flex-col w-full"
+          >
+            {currentPage === 0 && (
+              <div className="flex flex-col mb-12">
+                <h2 className={`w-full bg-transparent text-3xl md:text-5xl text-white/90 mb-4 text-left ${activeFontClass}`}>
+                  {displayReceiver}
+                </h2>
+              </div>
+            )}
+            
+            <div className="relative w-full min-h-[300px]">
+              <div 
+                className={`w-full text-xl md:text-2xl leading-relaxed md:leading-loose whitespace-pre-wrap break-words text-white/90 text-left ${activeFontClass}`}
+              >
+                {renderParsedContent(pages[currentPage])}
+              </div>
+              
+              {currentPage === pages.length - 1 && (
+                <p className={`italic text-white/40 mt-16 text-lg text-right ${activeFontClass}`}>
+                  - {letter.sender.name}
+                </p>
+              )}
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
 
       {/* Right-Side Attachments Container */}
       <div className="fixed right-6 top-[55%] -translate-y-1/2 z-40 flex flex-col items-end gap-6 pointer-events-none">
