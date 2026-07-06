@@ -344,6 +344,17 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
   const lastImage = letter.images && letter.images.length > 0 ? letter.images[letter.images.length - 1] : null;
   const secondLastImage = letter.images && letter.images.length > 1 ? letter.images[letter.images.length - 2] : null;
 
+  const totalFlipPages = 2 + pages.length + (pages.length % 2 !== 0 ? 1 : 0) + 2; 
+  const isFrontCover = currentPage === 0;
+  const isBackCover = currentPage >= totalFlipPages - 2;
+
+  let transformStyle = 'translateX(0)';
+  if (isFrontCover) {
+    transformStyle = 'translateX(-25%)';
+  } else if (isBackCover) {
+    transformStyle = 'translateX(25%)';
+  }
+
   return (
     <div className="w-full h-screen overflow-hidden bg-transparent text-white relative flex flex-col items-center pt-32 pb-12 px-6 font-sans">
       
@@ -392,7 +403,10 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
           </button>
         </div>
 
-        <div className="relative w-full max-w-4xl shadow-2xl rounded-lg mt-2">
+        <div 
+          className="relative w-full max-w-4xl shadow-2xl rounded-lg mt-2 transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]"
+          style={{ transform: transformStyle }}
+        >
           {/* @ts-ignore - react-pageflip types require all optional props in React 18 */}
           <HTMLFlipBook 
             width={450} 
