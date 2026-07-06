@@ -422,6 +422,9 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
               </div>
             </div>
 
+            {/* Inside Front Cover (Blank) */}
+            <div data-density="hard" className="bg-[#111111] border border-white/5 h-full"></div>
+
             {/* Inner Pages */}
             {pages.map((pageText, index) => (
               <div key={`inner-${index}`} className="bg-[#111111] border border-white/5 p-6 md:p-8 h-full overflow-hidden flex flex-col justify-center relative text-left">
@@ -444,10 +447,13 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
               </div>
             ))}
 
-            {/* Blank page to ensure even page count if needed */}
+            {/* Blank page to ensure even text page count if needed */}
             {pages.length % 2 !== 0 && (
               <div data-density="soft" className="bg-[#111111] border border-white/5 h-full"></div>
             )}
+
+            {/* Inside Back Cover (Blank) */}
+            <div data-density="hard" className="bg-[#111111] border border-white/5 h-full"></div>
 
             {/* Back Cover */}
             <div data-density="hard" className="bg-[#0a0a0a] border border-white/10 p-6 md:p-8 h-full overflow-hidden flex flex-col justify-center items-center relative text-center">
