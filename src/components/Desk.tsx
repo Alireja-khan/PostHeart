@@ -178,7 +178,7 @@ export default function Desk({ initialLetters }: DeskProps) {
                         msOverflowStyle: 'none'
                       }}
                     >
-                      <div className="h-[200px] shrink-0" /> {/* Spacer for top fading */}
+                      <div className="h-[280px] shrink-0" /> {/* Spacer for top fading */}
                       {filteredLetters.length === 0 && (
                         <div className="text-center mt-20 text-[#a0a0a0] font-serif italic">
                           No letters found in this mailbox.
