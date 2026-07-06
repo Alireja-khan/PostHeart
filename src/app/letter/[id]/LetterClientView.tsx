@@ -221,17 +221,9 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
     displayContent = displayContent.substring(toMatch[0].length);
   }
 
-  let activeFontClass = "font-serif";
+  let activeFontClass = "font-typewriter";
   const fontMatch = displayContent.match(/^\[Font: (.*?)\]\n+/);
   if (fontMatch) {
-    const fontName = fontMatch[1];
-    if (fontName === 'caveat') {
-      activeFontClass = "font-handwriting";
-    } else if (fontName === 'typewriter') {
-      activeFontClass = "font-typewriter";
-    } else if (fontName === 'custom') {
-      activeFontClass = "font-myhandwriting";
-    }
     displayContent = displayContent.substring(fontMatch[0].length);
   }
 

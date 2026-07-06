@@ -168,8 +168,6 @@ export default function WriteLetterPage() {
   const [receiver, setReceiver] = useState('');
   const [delay, setDelay] = useState('1m');
   const [language, setLanguage] = useState('en');
-  const [font, setFont] = useState('serif');
-  const [isFontMenuOpen, setIsFontMenuOpen] = useState(false);
   const [isMemoryOpen, setIsMemoryOpen] = useState(false);
   const [isDelayMenuOpen, setIsDelayMenuOpen] = useState(false);
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
@@ -207,7 +205,6 @@ export default function WriteLetterPage() {
 
   const delayMenuRef = useRef<HTMLDivElement>(null);
   const langMenuRef = useRef<HTMLDivElement>(null);
-  const fontMenuRef = useRef<HTMLDivElement>(null);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const keyboardRef = useRef<any>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -231,7 +228,6 @@ export default function WriteLetterPage() {
         if (draft.receiver) setReceiver(draft.receiver);
         if (draft.delay) setDelay(draft.delay);
         if (draft.language) setLanguage(draft.language);
-        if (draft.font) setFont(draft.font);
         if (draft.uploadedImages) setUploadedImages(draft.uploadedImages);
         if (draft.uploadedMusic !== undefined) setUploadedMusic(draft.uploadedMusic);
         if (draft.musicCover !== undefined) setMusicCover(draft.musicCover);
@@ -263,7 +259,6 @@ export default function WriteLetterPage() {
         receiver,
         delay,
         language,
-        font,
         uploadedImages,
         uploadedMusic,
         musicCover,
@@ -275,7 +270,7 @@ export default function WriteLetterPage() {
     } catch (e) {
       console.error('Error saving draft', e);
     }
-  }, [content, receiver, delay, language, font, uploadedImages, uploadedMusic, musicCover, recordedVoices, embeddedMemories, nextEmbedId]);
+  }, [content, receiver, delay, language, uploadedImages, uploadedMusic, musicCover, recordedVoices, embeddedMemories, nextEmbedId]);
 
   useEffect(() => {
     const checkActiveLetter = async () => {
@@ -300,9 +295,6 @@ export default function WriteLetterPage() {
       }
       if (langMenuRef.current && !langMenuRef.current.contains(event.target as Node)) {
         setIsLangMenuOpen(false);
-      }
-      if (fontMenuRef.current && !fontMenuRef.current.contains(event.target as Node)) {
-        setIsFontMenuOpen(false);
       }
       if (galleryRef.current && !galleryRef.current.contains(event.target as Node)) {
         setIsGalleryOpen(false);
@@ -676,7 +668,7 @@ export default function WriteLetterPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          content: `[To: ${receiver || 'my love'}]\n[Font: ${font}]\n\n${finalContent}`,
+          content: `[To: ${receiver || 'my love'}]\n\n${finalContent}`,
           images: uploadedImages,
           music: uploadedMusic ? (musicCover ? `${uploadedMusic}|${musicCover}` : uploadedMusic) : null,
           voices: recordedVoices.map(v => v.url),
@@ -784,7 +776,7 @@ export default function WriteLetterPage() {
             onChange={(e) => setReceiver(e.target.value)}
             disabled={hasInTransitLetter || isSubmitting}
             spellCheck="false"
-            className={`w-full bg-transparent border-none text-3xl md:text-5xl text-white/90 focus:outline-none placeholder-white/20 ${font === 'caveat' ? 'font-handwriting' : font === 'custom' ? 'font-myhandwriting' : font === 'typewriter' ? 'font-typewriter' : 'font-serif'}`}
+            className="w-full bg-transparent border-none text-3xl md:text-5xl text-white/90 focus:outline-none placeholder-white/20 font-typewriter"
           />
         </div>
         
@@ -800,7 +792,7 @@ export default function WriteLetterPage() {
         >
           {/* Backdrop for syntax highlighting inline images */}
           <div 
-            className={`absolute inset-0 w-full h-full text-xl md:text-2xl leading-relaxed md:leading-loose whitespace-pre-wrap break-words pointer-events-none z-10 p-0 m-0 ${font === 'caveat' ? 'font-handwriting' : font === 'custom' ? 'font-myhandwriting' : font === 'typewriter' ? 'font-typewriter' : 'font-serif'}`}
+            className="absolute inset-0 w-full h-full text-xl md:text-2xl leading-relaxed md:leading-loose whitespace-pre-wrap break-words pointer-events-none z-10 p-0 m-0 font-typewriter"
             style={{ color: isFocused || content ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.5)' }}
           >
             {renderRichText(content)}
@@ -822,7 +814,7 @@ export default function WriteLetterPage() {
             spellCheck="false"
             lang={language}
             dir={language === 'ar' ? 'rtl' : 'ltr'}
-            className={`w-full relative z-0 bg-transparent border-none text-xl md:text-2xl leading-relaxed md:leading-loose focus:outline-none resize-none transition-colors duration-500 min-h-[300px] overflow-hidden p-0 m-0 text-transparent caret-white ${font === 'caveat' ? 'font-handwriting' : font === 'custom' ? 'font-myhandwriting' : font === 'typewriter' ? 'font-typewriter' : 'font-serif'}`}
+            className="w-full relative z-0 bg-transparent border-none text-xl md:text-2xl leading-relaxed md:leading-loose focus:outline-none resize-none transition-colors duration-500 min-h-[300px] overflow-hidden p-0 m-0 text-transparent caret-white font-typewriter"
             style={{ outline: 'none' }}
           />
           {isTransliterating && (
@@ -908,48 +900,6 @@ export default function WriteLetterPage() {
                           className={`text-left px-3 py-2 text-[12px] rounded-xl font-bold transition-colors ${language === lang.code ? 'bg-black text-white' : 'text-black/60 hover:text-black hover:bg-black/5'}`}
                         >
                           {lang.name}
-                        </button>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              <div className="w-[1px] h-4 bg-black/10 mx-1" />
-
-              {/* Font Selector */}
-              <div className="relative" ref={fontMenuRef}>
-                <button 
-                  onClick={() => setIsFontMenuOpen(!isFontMenuOpen)}
-                  className={`p-2.5 rounded-full transition-colors relative group ${isFontMenuOpen ? 'text-black bg-black/5' : 'text-black/40 hover:text-black'}`}
-                >
-                  <Feather size={16} strokeWidth={2} />
-                  <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-medium">Writing Font</span>
-                </button>
-
-                <AnimatePresence>
-                  {isFontMenuOpen && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      transition={{ duration: 0.15 }}
-                      className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 bg-white border border-black/10 rounded-2xl shadow-xl flex flex-col p-1.5 min-w-[140px] z-50"
-                    >
-                      {[
-                        { id: 'serif', name: 'Classic Serif' },
-                        { id: 'typewriter', name: 'Vintage Typewriter' },
-                        { id: 'custom', name: 'My Handwriting' }
-                      ].map((f) => (
-                        <button 
-                          key={f.id}
-                          onClick={() => {
-                            setFont(f.id);
-                            setIsFontMenuOpen(false);
-                          }}
-                          className={`text-left px-3 py-2 text-[12px] rounded-xl font-bold transition-colors ${font === f.id ? 'bg-black text-white' : 'text-black/60 hover:text-black hover:bg-black/5'}`}
-                        >
-                          {f.name}
                         </button>
                       ))}
                     </motion.div>
