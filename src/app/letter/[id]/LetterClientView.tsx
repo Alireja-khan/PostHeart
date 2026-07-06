@@ -187,7 +187,7 @@ const AudioPlayerRow = ({ url }: { url: string }) => {
   );
 };
 
-const getPaginatedContent = (text: string, charsPerPage: number = 700) => {
+const getPaginatedContent = (text: string, charsPerPage: number = 480) => {
   const paragraphs = text.split('\n');
   const pages: string[] = [];
   let currentPage = '';
@@ -344,10 +344,10 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
   const secondLastImage = letter.images && letter.images.length > 1 ? letter.images[letter.images.length - 2] : null;
 
   return (
-    <div className="w-full min-h-screen bg-transparent text-white relative flex flex-col items-center pt-24 pb-48 px-6 font-sans">
+    <div className="w-full h-screen overflow-hidden bg-transparent text-white relative flex flex-col items-center pt-32 pb-12 px-6 font-sans">
       
       {/* Back Button (Ultra Minimal, matches top left back style of Details page screenshot) */}
-      <div className="absolute top-8 left-8 z-50">
+      <div className="absolute top-56 left-8 z-50">
         <button 
           onClick={() => router.back()}
           className="flex items-center gap-2 border border-white/10 px-4 py-2 rounded-full bg-white/5 backdrop-blur-md text-[10px] uppercase tracking-widest text-[#a0a0a0] hover:text-[#f9f8f6] transition-colors font-bold"
@@ -370,7 +370,7 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
       )}
 
       {/* Ultra Minimal Boundless Content Area with Realistic Page Turn */}
-      <div className="w-full max-w-2xl flex flex-col items-center justify-start z-10 relative mt-0 pt-4 px-4 h-full">
+      <div className="w-full max-w-2xl flex flex-col items-center justify-start z-10 relative mt-0 pt-0 px-4 h-full max-h-[85vh]">
         
         {/* Pagination Controls */}
         <div className="flex items-center justify-between w-full max-w-md mb-4 opacity-50 text-[#a0a0a0] text-[10px] uppercase tracking-widest font-bold">
@@ -391,16 +391,16 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
           </button>
         </div>
 
-        <div className="relative w-full max-w-lg shadow-2xl rounded-lg">
+        <div className="relative w-full max-w-lg shadow-2xl rounded-lg mt-2">
           {/* @ts-ignore - react-pageflip types require all optional props in React 18 */}
           <HTMLFlipBook 
             width={450} 
-            height={550} 
+            height={520} 
             size="stretch"
             minWidth={300}
             maxWidth={600}
             minHeight={400}
-            maxHeight={600}
+            maxHeight={580}
             drawShadow={true}
             flippingTime={1000}
             usePortrait={true}
@@ -413,9 +413,9 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
             style={{ margin: "0 auto" }}
           >
             {pages.map((pageText, index) => (
-              <div key={index} className="bg-[#111111] border border-white/5 p-8 md:p-12 h-full overflow-hidden flex flex-col relative text-left">
+              <div key={index} className="bg-[#111111] border border-white/5 p-6 md:p-8 h-full overflow-hidden flex flex-col justify-center relative text-left">
                 {index === 0 && (
-                  <div className="flex flex-col mb-8">
+                  <div className="flex flex-col mb-4">
                     <h2 className={`w-full bg-transparent text-2xl md:text-4xl text-white/90 mb-4 text-left ${activeFontClass}`}>
                       {displayReceiver}
                     </h2>
