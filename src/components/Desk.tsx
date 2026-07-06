@@ -88,6 +88,10 @@ export default function Desk({ initialLetters }: DeskProps) {
     }
   };
 
+  const cleanContent = (text: string) => {
+    return text.replace(/^\[To: (.*?)\]\n+/, '');
+  };
+
   return (
     <div className="w-full min-h-full bg-[#111111] p-8 lg:p-12 relative overflow-hidden flex flex-col items-center justify-center">
       {/* Global SVG Texture Definition */}
@@ -216,7 +220,7 @@ export default function Desk({ initialLetters }: DeskProps) {
 
                               <div className="my-auto">
                                 <p className="font-serif text-white text-lg leading-snug line-clamp-2 drop-shadow-lg">
-                                  "{letter.content}"
+                                  "{cleanContent(letter.content)}"
                                 </p>
                               </div>
 
@@ -363,7 +367,7 @@ export default function Desk({ initialLetters }: DeskProps) {
                       </div>
 
                       <h3 className="font-serif text-xl font-bold text-[#f9f8f6] mb-1 group-hover:text-[#c2410c] transition-colors line-clamp-2">
-                        "{letter.content.substring(0, 60)}..."
+                        "{cleanContent(letter.content).substring(0, 60)}..."
                       </h3>
 
                       <div className="border-t border-white/10 pt-3 mt-auto flex justify-between items-center text-[10px] text-[#a0a0a0]">

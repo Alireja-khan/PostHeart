@@ -131,7 +131,7 @@ export default function KeepsakeBoxPage() {
 
                     <div className="my-auto">
                       <p className="font-serif text-white text-lg leading-snug line-clamp-4 text-center drop-shadow-md">
-                        "{letter.content.substring(0, 100)}..."
+                        "{letter.content.replace(/^\[To: (.*?)\]\n+/, '').substring(0, 100)}..."
                       </p>
                     </div>
 
@@ -160,7 +160,7 @@ export default function KeepsakeBoxPage() {
                   <img src={img.url} alt="Archived Image" className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-500" />
                   
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
-                    <p className="text-white text-xs font-serif mb-3 line-clamp-2 shadow-black drop-shadow-md">"{img.letter.content.substring(0,50)}..."</p>
+                    <p className="text-white text-xs font-serif mb-3 line-clamp-2 shadow-black drop-shadow-md">"{img.letter.content.replace(/^\[To: (.*?)\]\n+/, '').substring(0,50)}..."</p>
                     <button 
                       onClick={() => router.push(`/letter/${img.letter.id}`)}
                       className="text-[10px] uppercase tracking-widest font-bold text-[#c2410c] bg-white/10 hover:bg-white/20 px-3 py-2 rounded flex items-center gap-2 w-fit backdrop-blur-md"
