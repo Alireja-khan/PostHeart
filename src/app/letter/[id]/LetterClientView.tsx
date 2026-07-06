@@ -193,7 +193,8 @@ const getPaginatedContent = (text: string, charsPerPage: number = 380) => {
   let currentPage = '';
 
   paragraphs.forEach((p) => {
-    if (currentPage.length + p.length > charsPerPage && currentPage.length > 0) {
+    const currentLimit = pages.length === 0 ? charsPerPage - 100 : charsPerPage;
+    if (currentPage.length + p.length > currentLimit && currentPage.length > 0) {
       pages.push(currentPage.trim());
       currentPage = '';
     }
@@ -424,6 +425,13 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
             {/* Inner Pages */}
             {pages.map((pageText, index) => (
               <div key={`inner-${index}`} className="bg-[#111111] border border-white/5 p-6 md:p-8 h-full overflow-hidden flex flex-col justify-center relative text-left">
+                {index === 0 && displayReceiver && (
+                  <div className="flex flex-col mb-4">
+                    <h2 className={`w-full bg-transparent text-2xl md:text-4xl text-white/90 mb-4 text-left ${activeFontClass}`}>
+                      {displayReceiver}
+                    </h2>
+                  </div>
+                )}
                 <div 
                   className={`w-full text-lg md:text-xl leading-relaxed md:leading-loose whitespace-pre-wrap break-words text-white/90 text-left ${activeFontClass}`}
                 >
