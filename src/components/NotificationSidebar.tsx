@@ -30,6 +30,13 @@ export default function NotificationSidebar() {
   const [loading, setLoading] = useState(false)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
+  useEffect(() => {
+    if (isSidebarOpen) {
+      fetchData();
+      markAllRead();
+    }
+  }, [isSidebarOpen]);
+
   const fetchData = async () => {
     setLoading(true)
     try {
@@ -84,8 +91,7 @@ export default function NotificationSidebar() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({})
       })
-      // We don't map notifications here because fetchData will fetch the updated ones
-      clearUnread() // Clear the red dot instantly
+      await fetchUnread() // Recalculate and update the unread badge from the server
     } catch (error) {
       console.error("Failed to mark as read", error)
     }
