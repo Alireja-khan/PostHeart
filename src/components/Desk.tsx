@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Image as ImageIcon, Music, Mic, Grid, PackageOpen, ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -36,8 +36,14 @@ export default function Desk({ initialLetters }: DeskProps) {
   const [isEnvelopeOpen, setIsEnvelopeOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'envelope' | 'grid'>('envelope');
   const [flapZIndex, setFlapZIndex] = useState(30);
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    
     if (isEnvelopeOpen) {
       // Opening: flap stays at front (30) for 1.0s, then goes to back (12)
       const timer = setTimeout(() => {
