@@ -62,3 +62,16 @@ body {
 .font-handwriting {
   font-family: var(--font-caveat), cursive;
 }
+
+/* Custom Handwriting Font Integration */
+@font-face {
+  font-family: 'MyHandwriting';
+  src: url('/fonts/MyHandwriting.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-myhandwriting {
+  font-family: 'MyHandwriting', var(--font-caveat), cursive;
+}

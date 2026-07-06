@@ -89,7 +89,7 @@ export default function Desk({ initialLetters }: DeskProps) {
   };
 
   const cleanContent = (text: string) => {
-    return text.replace(/^\[To: (.*?)\]\n+/, '');
+    return text.replace(/^\[To: (.*?)\]\n+/, '').replace(/^\[Font: (.*?)\]\n+/, '');
   };
 
   return (

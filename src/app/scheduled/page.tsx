@@ -117,7 +117,7 @@ export default function ScheduledLettersPage() {
                 <span className="text-[10px] text-[#a0a0a0] font-medium">From {letter.sender}</span>
                 
                 <p className="text-xs text-[#a0a0a0]/90 leading-relaxed mt-4 line-clamp-2 font-sans italic break-words">
-                  "{letter.content.replace(/^\[To: (.*?)\]\n+/, '')}"
+                  "{letter.content.replace(/^\[To: (.*?)\]\n+/, '').replace(/^\[Font: (.*?)\]\n+/, '')}"
                 </p>
               </div>
 

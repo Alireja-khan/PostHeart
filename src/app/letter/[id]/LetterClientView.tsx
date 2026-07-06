@@ -221,6 +221,18 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
     displayContent = displayContent.substring(toMatch[0].length);
   }
 
+  let activeFontClass = "font-serif";
+  const fontMatch = displayContent.match(/^\[Font: (.*?)\]\n+/);
+  if (fontMatch) {
+    const fontName = fontMatch[1];
+    if (fontName === 'caveat') {
+      activeFontClass = "font-handwriting";
+    } else if (fontName === 'custom') {
+      activeFontClass = "font-myhandwriting";
+    }
+    displayContent = displayContent.substring(fontMatch[0].length);
+  }
+
   // Rotate list of voices
   const [voiceList, setVoiceList] = useState<{ id: string, url: string }[]>(
     letter.voices?.map((url, i) => ({ id: i.toString(), url })) || []
@@ -323,19 +335,19 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
         className="w-full max-w-2xl flex flex-col z-10 relative mt-12"
       >
         <div className="flex flex-col mb-12">
-          <h2 className="w-full bg-transparent text-3xl md:text-5xl text-white/90 font-serif mb-4 text-center">
+          <h2 className={`w-full bg-transparent text-3xl md:text-5xl text-white/90 mb-4 text-center ${activeFontClass}`}>
             {displayReceiver}
           </h2>
         </div>
         
         <div className="relative w-full min-h-[300px]">
           <div 
-            className="w-full text-xl md:text-2xl font-serif leading-relaxed md:leading-loose whitespace-pre-wrap break-words text-white/90 text-center"
+            className={`w-full text-xl md:text-2xl leading-relaxed md:leading-loose whitespace-pre-wrap break-words text-white/90 text-center ${activeFontClass}`}
           >
             {renderParsedContent(displayContent)}
           </div>
           
-          <p className="font-serif italic text-white/40 mt-16 text-lg text-right">
+          <p className={`italic text-white/40 mt-16 text-lg text-right ${activeFontClass}`}>
             - {letter.sender.name}
           </p>
         </div>
