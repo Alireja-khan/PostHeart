@@ -19,7 +19,6 @@ const LANGUAGES = [
 
 // Global in-memory cache for maximum speed on repeated words
 const transliterationCache = new Map<string, string>();
-
 const VoiceNoteCard = ({ 
   id, url, onRemove, onAdd, isTop, hasMultiple, onNext, onPrev 
 }: { 
@@ -32,6 +31,8 @@ const VoiceNoteCard = ({
   const [isMuted, setIsMuted] = useState(false);
   const [isRepeat, setIsRepeat] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+
+  const isUploading = url.startsWith('blob:');
 
   useEffect(() => {
     if (audioRef.current) audioRef.current.volume = isMuted ? 0 : volume;
@@ -127,6 +128,7 @@ const VoiceNoteCard = ({
         )}
         <button 
           onClick={() => {
+            if (isUploading) return;
             if (isPlaying) {
               audioRef.current?.pause();
             } else {
@@ -134,9 +136,10 @@ const VoiceNoteCard = ({
             }
             setIsPlaying(!isPlaying);
           }}
-          className="w-8 h-8 bg-white text-black rounded-full flex items-center justify-center hover:scale-105 transition-transform shadow-[0_0_15px_rgba(255,255,255,0.2)]"
+          disabled={isUploading}
+          className="w-8 h-8 bg-white text-black rounded-full flex items-center justify-center hover:scale-105 transition-transform shadow-[0_0_15px_rgba(255,255,255,0.2)] disabled:opacity-50"
         >
-          {isPlaying ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" className="ml-0.5" />}
+          {isUploading ? <Loader2 size={14} className="animate-spin text-black" /> : isPlaying ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" className="ml-0.5" />}
         </button>
         {isTop && hasMultiple && (
            <button onClick={onNext} className="text-white/40 hover:text-white transition-colors">
@@ -162,7 +165,7 @@ export default function WriteLetterPage() {
   const router = useRouter();
   const [content, setContent] = useState('');
   const [receiver, setReceiver] = useState('');
-  const [delay, setDelay] = useState('5m');
+  const [delay, setDelay] = useState('1m');
   const [language, setLanguage] = useState('en');
   const [isMemoryOpen, setIsMemoryOpen] = useState(false);
   const [isDelayMenuOpen, setIsDelayMenuOpen] = useState(false);
@@ -500,12 +503,30 @@ export default function WriteLetterPage() {
         }
       };
 
-      mediaRecorder.onstop = () => {
+      mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
         const audioUrl = URL.createObjectURL(audioBlob);
-        setRecordedVoices(prev => [{ id: Math.random().toString(36).substring(7), url: audioUrl }, ...prev]);
+        const voiceId = Math.random().toString(36).substring(7);
+        setRecordedVoices(prev => [{ id: voiceId, url: audioUrl }, ...prev]);
         stream.getTracks().forEach(track => track.stop());
         setIsVoicePopupOpen(false);
+
+        // Upload in background
+        const formData = new FormData();
+        const file = new File([audioBlob], `voice_${voiceId}.webm`, { type: 'audio/webm' });
+        formData.append('file', file);
+        try {
+          const res = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData,
+          });
+          const data = await res.json();
+          if (data.success) {
+            setRecordedVoices(prev => prev.map(v => v.id === voiceId ? { ...v, url: data.url } : v));
+          }
+        } catch (err) {
+          console.error("Failed to upload voice note", err);
+        }
       };
 
       mediaRecorder.start();
@@ -675,6 +696,7 @@ export default function WriteLetterPage() {
     finalContent = finalContent.replace(/\u200C|\u200D|\u200B/g, '');
 
     let delayMinutes = 24 * 60;
+    if (delay === '1m') delayMinutes = 1;
     if (delay === '5m') delayMinutes = 5;
     if (delay === '1h') delayMinutes = 60;
     if (delay === '7d') delayMinutes = 7 * 24 * 60;
@@ -716,6 +738,7 @@ export default function WriteLetterPage() {
   };
 
   const getDelayText = (val: string) => {
+    if (val === '1m') return '1m';
     if (val === '5m') return '5m';
     if (val === '1h') return '1h';
     if (val === '24h') return '24h';
@@ -943,7 +966,7 @@ export default function WriteLetterPage() {
                       transition={{ duration: 0.15 }}
                       className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 bg-white border border-black/10 rounded-2xl shadow-xl flex flex-col p-1.5 min-w-[120px]"
                     >
-                      {['5m', '1h', '24h', '7d'].map((val) => (
+                      {['1m', '5m', '1h', '24h', '7d'].map((val) => (
                         <button 
                           key={val}
                           onClick={() => {
@@ -952,7 +975,7 @@ export default function WriteLetterPage() {
                           }}
                           className={`text-left px-3 py-2 text-[12px] rounded-xl font-bold transition-colors ${delay === val ? 'bg-black text-white' : 'text-black/60 hover:text-black hover:bg-black/5'}`}
                         >
-                          {val === '5m' ? '5 minutes' : val === '1h' ? '1 hour' : val === '24h' ? 'Tomorrow' : 'Next week'}
+                          {val === '1m' ? '1 minute' : val === '5m' ? '5 minutes' : val === '1h' ? '1 hour' : val === '24h' ? 'Tomorrow' : 'Next week'}
                         </button>
                       ))}
                     </motion.div>

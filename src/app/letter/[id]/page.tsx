@@ -59,9 +59,5 @@ export default async function LetterPage(props: { params: Promise<{ id: string }
     } : null,
   };
 
-  return (
-    <div className="w-full min-h-full bg-[#111111] p-8 lg:p-12">
-      <LetterClientView letter={formattedLetter} />
-    </div>
-  );
+  return <LetterClientView letter={formattedLetter} />;
 }
