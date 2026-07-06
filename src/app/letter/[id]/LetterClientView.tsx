@@ -187,7 +187,7 @@ const AudioPlayerRow = ({ url }: { url: string }) => {
   );
 };
 
-const getPaginatedContent = (text: string, charsPerPage: number = 480) => {
+const getPaginatedContent = (text: string, charsPerPage: number = 420) => {
   const paragraphs = text.split('\n');
   const pages: string[] = [];
   let currentPage = '';
@@ -412,16 +412,18 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
             ref={bookRef}
             style={{ margin: "0 auto" }}
           >
+            {/* Front Cover */}
+            <div data-density="hard" className="bg-[#0a0a0a] border border-white/10 p-6 md:p-8 h-full overflow-hidden flex flex-col justify-center items-center relative text-center">
+              <h1 className="text-3xl md:text-5xl font-serif text-white/90 mb-4">{displayReceiver}</h1>
+              <p className="text-white/40 italic">A private letter for you</p>
+              <div className="absolute bottom-8 opacity-20">
+                <Feather size={24} />
+              </div>
+            </div>
+
+            {/* Inner Pages */}
             {pages.map((pageText, index) => (
-              <div key={index} className="bg-[#111111] border border-white/5 p-6 md:p-8 h-full overflow-hidden flex flex-col justify-center relative text-left">
-                {index === 0 && (
-                  <div className="flex flex-col mb-4">
-                    <h2 className={`w-full bg-transparent text-2xl md:text-4xl text-white/90 mb-4 text-left ${activeFontClass}`}>
-                      {displayReceiver}
-                    </h2>
-                  </div>
-                )}
-                
+              <div key={`inner-${index}`} className="bg-[#111111] border border-white/5 p-6 md:p-8 h-full overflow-hidden flex flex-col justify-center relative text-left">
                 <div 
                   className={`w-full text-lg md:text-xl leading-relaxed md:leading-loose whitespace-pre-wrap break-words text-white/90 text-left ${activeFontClass}`}
                 >
@@ -439,6 +441,19 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
                 </div>
               </div>
             ))}
+
+            {/* Blank page to ensure even page count if needed */}
+            {pages.length % 2 !== 0 && (
+              <div data-density="soft" className="bg-[#111111] border border-white/5 h-full"></div>
+            )}
+
+            {/* Back Cover */}
+            <div data-density="hard" className="bg-[#0a0a0a] border border-white/10 p-6 md:p-8 h-full overflow-hidden flex flex-col justify-center items-center relative text-center">
+              <div className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center opacity-30 mb-4">
+                <Feather size={20} />
+              </div>
+              <p className="text-white/20 text-xs tracking-widest uppercase font-bold">PostHeart</p>
+            </div>
           </HTMLFlipBook>
         </div>
       </div>
