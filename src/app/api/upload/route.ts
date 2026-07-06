@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]/route";
 import { v2 as cloudinary } from 'cloudinary';
+import { promises as fs } from 'fs';
+import path from 'path';
+import os from 'os';
 
 // Configure Cloudinary
 cloudinary.config({
@@ -27,14 +30,20 @@ export async function POST(req: Request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Convert buffer to Base64 string for Cloudinary
-    const base64Image = `data:${file.type};base64,${buffer.toString('base64')}`;
+    // Save buffer to temporary file with original extension to preserve metadata
+    const tempDir = os.tmpdir();
+    const ext = path.extname(file.name) || ".mp3";
+    const tempFilePath = path.join(tempDir, `upload_${Date.now()}${ext}`);
+    await fs.writeFile(tempFilePath, buffer);
 
-    // Upload to Cloudinary
-    const uploadResponse = await cloudinary.uploader.upload(base64Image, {
+    // Upload binary file directly to Cloudinary
+    const uploadResponse = await cloudinary.uploader.upload(tempFilePath, {
       folder: 'postheart_uploads',
       resource_type: "auto",
     });
+
+    // Clean up temp file
+    await fs.unlink(tempFilePath).catch(e => console.error("Temp file cleanup error:", e));
 
     return NextResponse.json({ 
       success: true, 

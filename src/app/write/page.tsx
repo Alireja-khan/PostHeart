@@ -1592,7 +1592,7 @@ export default function WriteLetterPage() {
         ref={musicInputRef} 
         onChange={handleMusicUpload} 
         className="hidden" 
-        accept="audio/*"
+        accept="audio/*, .mp3, .wav, .m4a, .aac, .ogg, .webm, .flac, .mp4"
       />
       <input 
         type="file" 
