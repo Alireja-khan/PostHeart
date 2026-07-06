@@ -438,12 +438,6 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
                   {renderParsedContent(pageText)}
                 </div>
                 
-                {index === pages.length - 1 && (
-                  <p className={`italic text-white/40 mt-6 text-lg text-right ${activeFontClass}`}>
-                    - {letter.sender.name}
-                  </p>
-                )}
-                
                 <div className="absolute bottom-4 right-8 text-[#a0a0a0] opacity-30 text-xs font-sans">
                   {index + 1}
                 </div>
