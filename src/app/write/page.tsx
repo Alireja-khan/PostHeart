@@ -706,9 +706,9 @@ export default function WriteLetterPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          content: finalContent,
+          content: `[To: ${receiver || 'my love'}]\n\n${finalContent}`,
           images: uploadedImages,
-          music: uploadedMusic,
+          music: uploadedMusic ? (musicCover ? `${uploadedMusic}|${musicCover}` : uploadedMusic) : null,
           voices: recordedVoices.map(v => v.url),
           receiverName: receiver || 'My Love',
           delayMinutes,

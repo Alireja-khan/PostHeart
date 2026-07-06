@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]/route";
+import { checkAndDeliverLetters } from "@/lib/delivery";
 
 const prisma = new PrismaClient();
 
@@ -14,6 +15,9 @@ export async function GET(req: Request) {
 
     const user = await prisma.user.findUnique({ where: { email: session.user.email } });
     if (!user) return NextResponse.json({ message: "User not found" }, { status: 404 });
+
+    // Deliver any in-transit letters and create notifications
+    await checkAndDeliverLetters(user.id);
 
     const notifications = await prisma.notification.findMany({
       where: { userId: user.id },

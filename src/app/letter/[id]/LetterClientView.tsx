@@ -205,6 +205,22 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
   const [isEmbedGalleryOpen, setIsEmbedGalleryOpen] = useState(false);
   const [embedGalleryType, setEmbedGalleryType] = useState<'images' | 'music' | 'audio'>('images');
 
+  // Lightbox State
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+
+  // Parse music cover
+  const [musicUrl, musicCoverUrl] = letter.music ? letter.music.split('|') : [null, null];
+
+  // Parse receiver name header out of content
+  let displayReceiver = `To ${letter.receiver?.name || "my love"}...`;
+  let displayContent = letter.content;
+
+  const toMatch = displayContent.match(/^\[To: (.*?)\]\n+/);
+  if (toMatch) {
+    displayReceiver = toMatch[1];
+    displayContent = displayContent.substring(toMatch[0].length);
+  }
+
   // Rotate list of voices
   const [voiceList, setVoiceList] = useState<{ id: string, url: string }[]>(
     letter.voices?.map((url, i) => ({ id: i.toString(), url })) || []
@@ -287,10 +303,10 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
         </button>
       </div>
 
-      {letter.music && (
+      {musicUrl && (
         <audio 
           ref={musicRef} 
-          src={letter.music} 
+          src={musicUrl} 
           loop={musicIsRepeat}
           onTimeUpdate={() => setMusicCurrentTime(musicRef.current?.currentTime || 0)}
           onLoadedMetadata={() => setMusicDuration(musicRef.current?.duration || 0)}
@@ -308,7 +324,7 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
       >
         <div className="flex flex-col mb-12">
           <h2 className="w-full bg-transparent text-3xl md:text-5xl text-white/90 font-serif mb-4 text-center">
-            To {letter.receiver?.name || "my love"}...
+            {displayReceiver}
           </h2>
         </div>
         
@@ -316,7 +332,7 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
           <div 
             className="w-full text-xl md:text-2xl font-serif leading-relaxed md:leading-loose whitespace-pre-wrap break-words text-white/90 text-center"
           >
-            {renderParsedContent(letter.content)}
+            {renderParsedContent(displayContent)}
           </div>
           
           <p className="font-serif italic text-white/40 mt-16 text-lg text-right">
@@ -415,20 +431,26 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
 
                 {/* Cover Art */}
                 <div className="w-full aspect-square rounded-2xl bg-gradient-to-br from-orange-500/20 to-purple-500/20 mb-4 flex items-center justify-center border border-white/5 overflow-hidden relative z-10 cursor-pointer">
-                   <div className="absolute inset-0 backdrop-blur-3xl opacity-50" />
-                   <Music size={32} className="text-white/20" />
-                   {playingMusic && (
-                      <div className="absolute bottom-4 flex gap-1 items-end h-4">
-                        {[1,2,3,4].map(i => (
-                          <motion.div 
-                            key={i}
-                            animate={{ height: ['20%', '100%', '20%'] }}
-                            transition={{ repeat: Infinity, duration: 0.8 + (i * 0.2), ease: 'easeInOut' }}
-                            className="w-1 bg-white/50 rounded-full"
-                          />
-                        ))}
-                      </div>
-                   )}
+                  {musicCoverUrl ? (
+                    <img src={musicCoverUrl} alt="Cover" className="w-full h-full object-cover" />
+                  ) : (
+                    <>
+                      <div className="absolute inset-0 backdrop-blur-3xl opacity-50" />
+                      <Music size={32} className="text-white/20" />
+                    </>
+                  )}
+                  {playingMusic && (
+                    <div className="absolute bottom-4 flex gap-1 items-end h-4">
+                      {[1,2,3,4].map(i => (
+                        <motion.div 
+                          key={i}
+                          animate={{ height: ['20%', '100%', '20%'] }}
+                          transition={{ repeat: Infinity, duration: 0.8 + (i * 0.2), ease: 'easeInOut' }}
+                          className="w-1 bg-white/50 rounded-full"
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Progress */}
@@ -610,12 +632,16 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {letter.images?.map((url, idx) => (
-                  <div key={`final-${idx}`} className="relative group aspect-square rounded-2xl overflow-hidden bg-black/20 border border-white/10">
-                    <img src={url} alt={`Memory ${idx+1}`} className="w-full h-full object-cover" />
-                  </div>
-                ))}
-              </div>
+                 {letter.images?.map((url, idx) => (
+                   <div 
+                     key={`final-${idx}`} 
+                     className="relative group aspect-square rounded-2xl overflow-hidden bg-black/20 border border-white/10 cursor-zoom-in"
+                     onClick={() => setLightboxImage(url)}
+                   >
+                     <img src={url} alt={`Memory ${idx+1}`} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                   </div>
+                 ))}
+               </div>
             </motion.div>
           </motion.div>
         )}
@@ -735,8 +761,12 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
               {embedGalleryType === 'images' && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                   {selectedMemory.images?.map((url, idx) => (
-                    <div key={`embed-img-${idx}`} className="relative group aspect-square rounded-2xl overflow-hidden bg-black/20 border border-white/10">
-                      <img src={url} alt={`Memory ${idx+1}`} className="w-full h-full object-cover" />
+                    <div 
+                      key={`embed-img-${idx}`} 
+                      className="relative group aspect-square rounded-2xl overflow-hidden bg-black/20 border border-white/10 cursor-zoom-in"
+                      onClick={() => setLightboxImage(url)}
+                    >
+                      <img src={url} alt={`Memory ${idx+1}`} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
                     </div>
                   ))}
                 </div>
@@ -763,6 +793,39 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
                   ))}
                 </div>
               )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Lightbox Modal */}
+      <AnimatePresence>
+        {lightboxImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setLightboxImage(null)}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md p-4 cursor-zoom-out"
+          >
+            <motion.div
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.95 }}
+              className="relative max-w-full max-h-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img 
+                src={lightboxImage} 
+                alt="Full view" 
+                className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl border border-white/10" 
+              />
+              <button 
+                onClick={() => setLightboxImage(null)}
+                className="absolute top-4 right-4 bg-black/60 hover:bg-black text-white p-2 rounded-full backdrop-blur-md transition-colors"
+              >
+                <X size={20} />
+              </button>
             </motion.div>
           </motion.div>
         )}
