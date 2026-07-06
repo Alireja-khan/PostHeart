@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation"
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Save, Loader2, Image as ImageIcon, CheckCircle2, Calendar, Send, Inbox, Archive, Heart, User, Shield, LayoutDashboard, Camera } from "lucide-react"
+import { uploadFile } from "@/lib/upload"
 
 type ProfileStats = {
   letters: number;
@@ -120,23 +121,13 @@ export default function Profile() {
     if (type === 'cover') setUploadingCover(true)
 
     try {
-      const formData = new FormData()
-      formData.append("file", file)
-
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: formData
-      })
-      
-      if (res.ok) {
-        const data = await res.json()
-        if (type === 'avatar') {
-          setAvatarUrl(data.url)
-          await handleSave(undefined, data.url)
-        } else {
-          setCoverUrl(data.url)
-          await handleSave(data.url, undefined)
-        }
+      const url = await uploadFile(file)
+      if (type === 'avatar') {
+        setAvatarUrl(url)
+        await handleSave(undefined, url)
+      } else {
+        setCoverUrl(url)
+        await handleSave(url, undefined)
       }
     } catch (err) {
       console.error(err)

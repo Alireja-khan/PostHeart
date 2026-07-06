@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Image as ImageIcon, Send, Music, Mic, X, Clock, Feather, Globe, Keyboard as KeyboardIcon, Loader2, Folder, Plus, Play, Pause, SkipBack, SkipForward, Edit2, Trash2, Volume2, VolumeX, Repeat, Repeat1 } from 'lucide-react';
 import Keyboard from 'react-simple-keyboard';
 import 'react-simple-keyboard/build/css/index.css';
+import { uploadFile } from '@/lib/upload';
 
 const LANGUAGES = [
   { code: 'en', name: 'English' },
@@ -420,17 +421,9 @@ export default function WriteLetterPage() {
 
     // 2. Upload them in the background
     filesArray.forEach(async (file, index) => {
-      const formData = new FormData();
-      formData.append('file', file);
       try {
-        const res = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData
-        });
-        const data = await res.json();
-        if (data.success) {
-          setUploadedImages(prev => [...prev, data.url]);
-        }
+        const url = await uploadFile(file);
+        setUploadedImages(prev => [...prev, url]);
       } catch (err) {
         console.error("Upload error", err);
       } finally {
@@ -450,18 +443,10 @@ export default function WriteLetterPage() {
     
     setIsUploadingMusic(true);
     const file = e.target.files[0];
-    const formData = new FormData();
-    formData.append('file', file);
     try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData
-      });
-      const data = await res.json();
-      if (data.success) {
-        setUploadedMusic(data.url);
-        setShowCoverPrompt(true);
-      }
+      const url = await uploadFile(file);
+      setUploadedMusic(url);
+      setShowCoverPrompt(true);
     } catch (err) {
       console.error("Music upload error", err);
     } finally {
@@ -474,15 +459,10 @@ export default function WriteLetterPage() {
     if (!e.target.files || e.target.files.length === 0) return;
     
     const file = e.target.files[0];
-    const formData = new FormData();
-    formData.append('file', file);
     try {
-      const res = await fetch('/api/upload', { method: 'POST', body: formData });
-      const data = await res.json();
-      if (data.success) {
-        setMusicCover(data.url);
-        setShowCoverPrompt(false);
-      }
+      const url = await uploadFile(file);
+      setMusicCover(url);
+      setShowCoverPrompt(false);
     } catch (err) {
       console.error("Music cover upload error", err);
     } finally {
@@ -512,18 +492,10 @@ export default function WriteLetterPage() {
         setIsVoicePopupOpen(false);
 
         // Upload in background
-        const formData = new FormData();
         const file = new File([audioBlob], `voice_${voiceId}.webm`, { type: 'audio/webm' });
-        formData.append('file', file);
         try {
-          const res = await fetch('/api/upload', {
-            method: 'POST',
-            body: formData,
-          });
-          const data = await res.json();
-          if (data.success) {
-            setRecordedVoices(prev => prev.map(v => v.id === voiceId ? { ...v, url: data.url } : v));
-          }
+          const url = await uploadFile(file);
+          setRecordedVoices(prev => prev.map(v => v.id === voiceId ? { ...v, url } : v));
         } catch (err) {
           console.error("Failed to upload voice note", err);
         }
@@ -572,20 +544,15 @@ export default function WriteLetterPage() {
       if (embedFileInputRef.current) embedFileInputRef.current.value = '';
 
       filesArray.forEach(async (file, index) => {
-        const formData = new FormData();
-        formData.append('file', file);
         try {
-          const res = await fetch('/api/upload', { method: 'POST', body: formData });
-          const data = await res.json();
-          if (data.success) {
-            setEmbeddedMemories(prev => {
-              const next = {...prev};
-              if (next[selectedEmbedId]) {
-                 next[selectedEmbedId].images = next[selectedEmbedId].images.map(url => url === localUrls[index] ? data.url : url);
-              }
-              return next;
-            });
-          }
+          const url = await uploadFile(file);
+          setEmbeddedMemories(prev => {
+            const next = {...prev};
+            if (next[selectedEmbedId]) {
+               next[selectedEmbedId].images = next[selectedEmbedId].images.map(imgUrl => imgUrl === localUrls[index] ? url : imgUrl);
+            }
+            return next;
+          });
         } catch(err) {
           console.error("Embed add upload error", err);
         }
@@ -657,20 +624,15 @@ export default function WriteLetterPage() {
 
     // Upload in background
     filesArray.forEach(async (file, index) => {
-      const formData = new FormData();
-      formData.append('file', file);
       try {
-        const res = await fetch('/api/upload', { method: 'POST', body: formData });
-        const data = await res.json();
-        if (data.success) {
-          setEmbeddedMemories(prev => {
-            const next = {...prev};
-            if (next[id]) {
-               next[id].images = next[id].images.map(url => url === localUrls[index] ? data.url : url);
-            }
-            return next;
-          });
-        }
+        const url = await uploadFile(file);
+        setEmbeddedMemories(prev => {
+          const next = {...prev};
+          if (next[id]) {
+             next[id].images = next[id].images.map(imgUrl => imgUrl === localUrls[index] ? url : imgUrl);
+          }
+          return next;
+        });
       } catch(err) {
         console.error("Embed new upload error", err);
       }
