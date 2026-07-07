@@ -19,6 +19,8 @@ interface Letter {
   images?: string[];
   music?: string | null;
   voices?: string[];
+  coverTitle?: string | null;
+  coverSubtitle?: string | null;
   deliverAt?: string;
 }
 
@@ -428,9 +430,9 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
             style={{ margin: "0 auto" }}
           >
             {/* Front Cover */}
-            <div data-density="hard" className="bg-[#0a0a0a] border border-white/10 p-6 md:p-8 h-full overflow-hidden flex flex-col justify-center items-center relative text-center">
-              <h1 className={`text-3xl md:text-5xl text-white/90 mb-4 ${activeFontClass}`}>Dear You.</h1>
-              <p className={`text-white/40 text-lg md:text-xl ${activeFontClass}`}>A Private Space</p>
+            <div data-density="hard" className="bg-[#0a0a0a] border border-white/10 p-8 h-full overflow-hidden flex flex-col justify-center items-center relative text-center">
+              <h1 className={`text-2xl md:text-4xl text-white/90 mb-3 mt-6 px-4 ${activeFontClass}`}>{letter.coverTitle || 'Dear You.'}</h1>
+              <p className={`text-white/40 text-sm md:text-base px-4 ${activeFontClass}`}>{letter.coverSubtitle || 'A Private Space'}</p>
               <div className="absolute bottom-8 opacity-20">
                 <Feather size={24} />
               </div>

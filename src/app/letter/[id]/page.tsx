@@ -45,6 +45,8 @@ export default async function LetterPage(props: { params: Promise<{ id: string }
     images: letter.images || [],
     music: letter.music || null,
     voices: letter.voices || [],
+    coverTitle: letter.coverTitle,
+    coverSubtitle: letter.coverSubtitle,
     deliverAt: letter.deliverAt?.toISOString(),
     createdAt: letter.createdAt.toISOString(),
     sender: {

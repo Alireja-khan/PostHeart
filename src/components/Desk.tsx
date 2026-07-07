@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Image as ImageIcon, Music, Mic, Grid, PackageOpen, ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { textureBase64 } from './TextureBase64';
 
 interface User {
   id: string;
@@ -37,6 +38,15 @@ export default function Desk({ initialLetters }: DeskProps) {
   const [viewMode, setViewMode] = useState<'envelope' | 'grid'>('envelope');
   const [flapZIndex, setFlapZIndex] = useState(30);
   const isFirstRender = useRef(true);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    // Delay mounting slightly to allow browser to decode base64 textures and Next.js dev server to inject CSS
+    const timer = setTimeout(() => {
+      setIsMounted(true);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (isFirstRender.current) {
@@ -93,12 +103,15 @@ export default function Desk({ initialLetters }: DeskProps) {
   };
 
   return (
-    <div className="w-full min-h-full bg-[#111111] p-8 lg:p-12 relative overflow-hidden flex flex-col items-center justify-center">
+    <div 
+      className="w-full min-h-full bg-[#111111] p-8 lg:p-12 relative overflow-hidden flex flex-col items-center justify-center"
+      style={{ opacity: isMounted ? 1 : 0, transition: 'opacity 0.7s ease-in-out' }}
+    >
       {/* Global SVG Texture Definition */}
       <svg style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden' }}>
         <defs>
           <pattern id="texture" patternUnits="userSpaceOnUse" width="100" height="100">
-            <image href="https://www.transparenttextures.com/patterns/black-paper.png" width="100" height="100" opacity="0.3" />
+            <image href={textureBase64} width="100" height="100" opacity="0.3" />
           </pattern>
         </defs>
       </svg>
@@ -146,12 +159,13 @@ export default function Desk({ initialLetters }: DeskProps) {
             
             {/* The Envelope Box */}
             <div 
-              className="relative w-[500px] h-[300px] cursor-pointer group z-20 shadow-[0_30px_60px_rgba(0,0,0,0.8)] mt-32"
+              className="relative w-[500px] h-[300px] cursor-pointer group z-20 mt-32"
+              style={{ boxShadow: '0 30px 60px rgba(0,0,0,0.8)' }}
               onClick={() => setIsEnvelopeOpen(true)}
             >
               {/* 1. Back of Envelope (z-10) */}
               <div className="absolute inset-0 bg-[#0d0d0d] rounded-sm overflow-hidden z-10 border border-[#222]">
-                 <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/black-paper.png')]" />
+                 <div className="absolute inset-0 opacity-20" style={{ backgroundImage: `url(${textureBase64})` }} />
                  <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black to-transparent" />
                  {/* Internal Text / Branding */}
                  {isEnvelopeOpen && (
@@ -198,8 +212,9 @@ export default function Desk({ initialLetters }: DeskProps) {
                               e.stopPropagation(); 
                               router.push(`/letter/${letter.id}`);
                             }}
-                            className="w-full max-w-[340px] shrink-0 h-[200px] rounded-2xl overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.8)] border border-white/20 cursor-pointer group hover:scale-[1.02] transition-transform duration-300 relative"
+                            className="w-full max-w-[340px] shrink-0 h-[200px] rounded-2xl overflow-hidden border border-white/20 cursor-pointer group hover:scale-[1.02] transition-transform duration-300 relative"
                             style={{ 
+                              boxShadow: '0 10px 30px rgba(0,0,0,0.8)',
                               backgroundColor: '#222',
                               backgroundImage: coverImage ? `url(${coverImage})` : 'none',
                               backgroundSize: 'cover',
@@ -254,7 +269,7 @@ export default function Desk({ initialLetters }: DeskProps) {
                 className="absolute top-0 left-0 right-0 h-[220px] origin-top drop-shadow-2xl"
               >
                 {/* SVG Flap mirroring the reference image */}
-                <svg viewBox="0 0 500 220" preserveAspectRatio="none" className="w-full h-full filter drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]">
+                <svg viewBox="0 0 500 220" preserveAspectRatio="none" className="w-full h-full filter" style={{ filter: 'drop-shadow(0 10px 10px rgba(0,0,0,0.5))' }}>
                   <path d="M0,0 L250,220 L500,0 Z" fill="#151515" />
                   <path d="M0,0 L250,220 L500,0 Z" fill="url(#texture)" />
                   {/* Flap Edge Highlight */}
@@ -263,7 +278,7 @@ export default function Desk({ initialLetters }: DeskProps) {
               </motion.div>
 
               {/* 4. Envelope Front Left Wing (z-20) */}
-              <div className="absolute inset-0 z-20 pointer-events-none drop-shadow-xl">
+              <div className="absolute inset-0 z-20 pointer-events-none" style={{ filter: 'drop-shadow(0 20px 20px rgba(0,0,0,0.5))' }}>
                 <svg viewBox="0 0 500 300" preserveAspectRatio="none" className="w-full h-full">
                   <path d="M0,0 L250,160 L0,300 Z" fill="#111" />
                   <path d="M0,0 L250,160 L0,300 Z" fill="url(#texture)" />
@@ -272,7 +287,7 @@ export default function Desk({ initialLetters }: DeskProps) {
               </div>
 
               {/* 5. Envelope Front Right Wing (z-20) */}
-              <div className="absolute inset-0 z-20 pointer-events-none drop-shadow-xl">
+              <div className="absolute inset-0 z-20 pointer-events-none" style={{ filter: 'drop-shadow(0 20px 20px rgba(0,0,0,0.5))' }}>
                 <svg viewBox="0 0 500 300" preserveAspectRatio="none" className="w-full h-full">
                   <path d="M500,0 L250,160 L500,300 Z" fill="#111" />
                   <path d="M500,0 L250,160 L500,300 Z" fill="url(#texture)" />
@@ -281,7 +296,7 @@ export default function Desk({ initialLetters }: DeskProps) {
               </div>
 
               {/* 6. Envelope Front Bottom (z-20) */}
-              <div className="absolute inset-0 z-20 pointer-events-none drop-shadow-2xl">
+              <div className="absolute inset-0 z-20 pointer-events-none" style={{ filter: 'drop-shadow(0 25px 25px rgba(0,0,0,0.6))' }}>
                 <svg viewBox="0 0 500 300" preserveAspectRatio="none" className="w-full h-full">
                   <path d="M0,300 L250,160 L500,300 Z" fill="#0a0a0a" />
                   <path d="M0,300 L250,160 L500,300 Z" fill="url(#texture)" />

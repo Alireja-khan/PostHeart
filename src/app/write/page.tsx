@@ -1,10 +1,10 @@
 // @ts-nocheck 
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Image as ImageIcon, Send, Music, Mic, X, Clock, Feather, Globe, Keyboard as KeyboardIcon, Loader2, Folder, Plus, Play, Pause, SkipBack, SkipForward, Edit2, Trash2, Volume2, VolumeX, Repeat, Repeat1 } from 'lucide-react';
+import { Image as ImageIcon, Send, Music, Mic, X, Clock, Feather, Globe, Keyboard as KeyboardIcon, Loader2, Folder, Plus, Play, Pause, SkipBack, SkipForward, Edit2, Trash2, Volume2, VolumeX, Repeat, Repeat1, Book } from 'lucide-react';
 import Keyboard from 'react-simple-keyboard';
 import 'react-simple-keyboard/build/css/index.css';
 import { uploadFile } from '@/lib/upload';
@@ -166,12 +166,15 @@ export default function WriteLetterPage() {
   const router = useRouter();
   const [content, setContent] = useState('');
   const [receiver, setReceiver] = useState('');
+  const [coverTitle, setCoverTitle] = useState('');
+  const [coverSubtitle, setCoverSubtitle] = useState('');
   const [delay, setDelay] = useState('1m');
   const [language, setLanguage] = useState('en');
   const [isMemoryOpen, setIsMemoryOpen] = useState(false);
   const [isDelayMenuOpen, setIsDelayMenuOpen] = useState(false);
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const [isCoverMenuOpen, setIsCoverMenuOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isTransliterating, setIsTransliterating] = useState(false);
   const [hasInTransitLetter, setHasInTransitLetter] = useState(false);
@@ -181,6 +184,7 @@ export default function WriteLetterPage() {
   const [uploadedMusic, setUploadedMusic] = useState<string | null>(null);
   const [isUploadingMusic, setIsUploadingMusic] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  
   const [embeddedMemories, setEmbeddedMemories] = useState<Record<number, { images: string[], music: string[], audio: string[] }>>({});
   const [nextEmbedId, setNextEmbedId] = useState(1);
   const [selectedEmbedId, setSelectedEmbedId] = useState<number | null>(null);
@@ -205,6 +209,7 @@ export default function WriteLetterPage() {
 
   const delayMenuRef = useRef<HTMLDivElement>(null);
   const langMenuRef = useRef<HTMLDivElement>(null);
+  const coverMenuRef = useRef<HTMLDivElement>(null);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const keyboardRef = useRef<any>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -231,6 +236,8 @@ export default function WriteLetterPage() {
         if (draft.uploadedImages) setUploadedImages(draft.uploadedImages);
         if (draft.uploadedMusic !== undefined) setUploadedMusic(draft.uploadedMusic);
         if (draft.musicCover !== undefined) setMusicCover(draft.musicCover);
+        if (draft.coverTitle !== undefined) setCoverTitle(draft.coverTitle);
+        if (draft.coverSubtitle !== undefined) setCoverSubtitle(draft.coverSubtitle);
         if (draft.recordedVoices) setRecordedVoices(draft.recordedVoices);
         if (draft.embeddedMemories) setEmbeddedMemories(draft.embeddedMemories);
         if (draft.nextEmbedId) setNextEmbedId(draft.nextEmbedId);
@@ -262,6 +269,8 @@ export default function WriteLetterPage() {
         uploadedImages,
         uploadedMusic,
         musicCover,
+        coverTitle,
+        coverSubtitle,
         recordedVoices,
         embeddedMemories,
         nextEmbedId
@@ -270,7 +279,7 @@ export default function WriteLetterPage() {
     } catch (e) {
       console.error('Error saving draft', e);
     }
-  }, [content, receiver, delay, language, uploadedImages, uploadedMusic, musicCover, recordedVoices, embeddedMemories, nextEmbedId]);
+  }, [content, receiver, delay, language, uploadedImages, uploadedMusic, musicCover, coverTitle, coverSubtitle, recordedVoices, embeddedMemories, nextEmbedId]);
 
   useEffect(() => {
     const checkActiveLetter = async () => {
@@ -295,6 +304,9 @@ export default function WriteLetterPage() {
       }
       if (langMenuRef.current && !langMenuRef.current.contains(event.target as Node)) {
         setIsLangMenuOpen(false);
+      }
+      if (coverMenuRef.current && !coverMenuRef.current.contains(event.target as Node)) {
+        setIsCoverMenuOpen(false);
       }
       if (galleryRef.current && !galleryRef.current.contains(event.target as Node)) {
         setIsGalleryOpen(false);
@@ -674,6 +686,8 @@ export default function WriteLetterPage() {
           voices: recordedVoices.map(v => v.url),
           receiverName: receiver || 'My Love',
           delayMinutes,
+          coverTitle: coverTitle || 'Dear You.',
+          coverSubtitle: coverSubtitle || 'A Private Space',
         }),
       });
 
@@ -681,6 +695,8 @@ export default function WriteLetterPage() {
       if (data.success) {
         setContent('');
         setReceiver('');
+        setCoverTitle('');
+        setCoverSubtitle('');
         setUploadedImages([]);
         setUploadedMusic(null);
         setRecordedVoices([]);
@@ -758,37 +774,38 @@ export default function WriteLetterPage() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-transparent text-white relative flex flex-col items-center pt-24 pb-48 px-6 font-sans">
+    <div className="w-full min-h-screen bg-transparent text-white relative flex flex-col items-center pt-24 pb-48 px-6 font-sans overflow-x-hidden">
       
-      {/* Ultra Minimal Boundless Writing Area */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         className="w-full max-w-2xl flex flex-col z-10 relative"
       >
-        <div className="flex items-center gap-4 mb-12">
-          <Feather size={20} className="text-white/20" strokeWidth={1} />
-          <input 
-            type="text" 
-            placeholder="To my love..." 
-            value={receiver}
-            onChange={(e) => setReceiver(e.target.value)}
-            disabled={hasInTransitLetter || isSubmitting}
-            spellCheck="false"
-            className="w-full bg-transparent border-none text-3xl md:text-5xl text-white/90 focus:outline-none placeholder-white/20 font-typewriter"
-          />
-        </div>
-        
-        <div 
-          className="relative w-full"
-          onMouseUp={(e) => {
-            if (textAreaRef.current && textAreaRef.current.selectionStart !== textAreaRef.current.selectionEnd) {
-              setMousePos({ x: e.clientX, y: e.clientY });
-            } else {
-              setMousePos(null);
-            }
-          }}
+          <div className="flex flex-col gap-2 mb-12">
+            <div className="flex items-center gap-4">
+              <Feather size={20} className="text-white/20" strokeWidth={1} />
+              <input 
+                type="text" 
+                placeholder="To my love..." 
+                value={receiver}
+                onChange={(e) => setReceiver(e.target.value)}
+                disabled={hasInTransitLetter || isSubmitting}
+                spellCheck="false"
+                className="w-full bg-transparent border-none text-3xl md:text-5xl text-white/90 focus:outline-none placeholder-white/20 font-typewriter"
+              />
+            </div>
+          </div>
+          
+          <div 
+            className="relative w-full"
+            onMouseUp={(e) => {
+              if (textAreaRef.current && textAreaRef.current.selectionStart !== textAreaRef.current.selectionEnd) {
+                setMousePos({ x: e.clientX, y: e.clientY });
+              } else {
+                setMousePos(null);
+              }
+            }}
         >
           {/* Backdrop for syntax highlighting inline images */}
           <div 
@@ -842,6 +859,50 @@ export default function WriteLetterPage() {
                 <KeyboardIcon size={16} strokeWidth={2} />
                 <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-medium">Virtual Keyboard</span>
               </button>
+
+              <div className="relative" ref={coverMenuRef}>
+                <button 
+                  onClick={() => setIsCoverMenuOpen(!isCoverMenuOpen)}
+                  className={`p-2.5 rounded-full transition-colors relative group ${isCoverMenuOpen ? 'text-black bg-black/5' : 'text-black/40 hover:text-black'}`}
+                >
+                  <Book size={16} strokeWidth={2} />
+                  <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-medium">Notebook Cover</span>
+                </button>
+
+                <AnimatePresence>
+                  {isCoverMenuOpen && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 bg-white border border-black/10 rounded-2xl shadow-xl flex flex-col p-4 min-w-[280px]"
+                    >
+                      <h4 className="text-black font-bold text-sm mb-3">Notebook Cover</h4>
+                      <div className="flex flex-col gap-3">
+                        <input 
+                          type="text" 
+                          placeholder="Title (e.g. Dear You.)" 
+                          value={coverTitle}
+                          onChange={(e) => setCoverTitle(e.target.value)}
+                          disabled={hasInTransitLetter || isSubmitting}
+                          spellCheck="false"
+                          className="w-full bg-black/5 rounded-xl border-none text-sm text-black focus:outline-none placeholder-black/40 font-serif px-3 py-2"
+                        />
+                        <input 
+                          type="text" 
+                          placeholder="Subtitle (e.g. A Private Space)" 
+                          value={coverSubtitle}
+                          onChange={(e) => setCoverSubtitle(e.target.value)}
+                          disabled={hasInTransitLetter || isSubmitting}
+                          spellCheck="false"
+                          className="w-full bg-black/5 rounded-xl border-none text-xs text-black focus:outline-none placeholder-black/40 font-mono uppercase tracking-widest px-3 py-2"
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
 
               <button 
                 onClick={() => musicInputRef.current?.click()}
@@ -965,7 +1026,7 @@ export default function WriteLetterPage() {
         )}
       </AnimatePresence>
 
-      {/* Virtual Keyboard Overlay
+    {/* Virtual Keyboard Overlay
       <AnimatePresence>
         {isKeyboardOpen ? (
           <motion.div 
