@@ -7,16 +7,12 @@ import { PackageOpen } from 'lucide-react'
 
 const prisma = new PrismaClient()
 
+import BirdLoader from "@/components/BirdLoader"
+
 function DeskSkeleton() {
   return (
-    <div className="w-full min-h-full bg-[#111111] p-8 lg:p-12 flex flex-col items-center justify-center">
-      <div className="animate-pulse flex flex-col items-center">
-        <div className="w-16 h-16 rounded-full bg-[#c2410c]/20 flex items-center justify-center mb-6">
-          <PackageOpen className="text-[#c2410c] opacity-50" size={32} />
-        </div>
-        <div className="h-4 w-48 bg-[#333] rounded mb-3"></div>
-        <div className="h-3 w-32 bg-[#222] rounded"></div>
-      </div>
+    <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#111111]">
+      <BirdLoader className="w-16 h-16 text-[#c2410c]" />
     </div>
   )
 }

@@ -1,4 +1,21 @@
+import imageCompression from 'browser-image-compression';
+
 export async function uploadFile(file: File): Promise<string> {
+  // Compress image if applicable
+  let fileToUpload = file;
+  if (file.type.startsWith('image/')) {
+    try {
+      const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+      };
+      fileToUpload = await imageCompression(file, options);
+    } catch (error) {
+      console.warn("Image compression failed, proceeding with original file:", error);
+    }
+  }
+
   // 1. Get signature from server
   const signRes = await fetch('/api/upload/sign', {
     method: 'POST',
@@ -19,7 +36,7 @@ export async function uploadFile(file: File): Promise<string> {
 
   // 2. Prepare Form Data for Cloudinary
   const formData = new FormData();
-  formData.append('file', file);
+  formData.append('file', fileToUpload);
   formData.append('api_key', signData.api_key);
   formData.append('timestamp', signData.timestamp.toString());
   formData.append('signature', signData.signature);

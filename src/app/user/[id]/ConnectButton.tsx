@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Users, ArrowRight, Loader2, Clock } from "lucide-react"
+import { Users, ArrowRight, Clock } from "lucide-react"
+import BirdLoader from "@/components/BirdLoader"
 
 export default function ConnectButton({ partnerId, initialPending = false }: { partnerId: string, initialPending?: boolean }) {
   const router = useRouter()
@@ -80,7 +81,7 @@ export default function ConnectButton({ partnerId, initialPending = false }: { p
         disabled={loading}
         className="w-full bg-[#c2410c] text-white rounded-xl py-3 font-medium hover:bg-[#a3360a] transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
       >
-        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+        {loading ? <BirdLoader className="w-6 h-6" /> : (
           <>
             <Users className="w-5 h-5" /> Connect Partner <ArrowRight className="w-5 h-5 ml-1" />
           </>

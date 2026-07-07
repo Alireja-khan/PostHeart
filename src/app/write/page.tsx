@@ -4,7 +4,8 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Image as ImageIcon, Send, Music, Mic, X, Clock, Feather, Globe, Keyboard as KeyboardIcon, Loader2, Folder, Plus, Play, Pause, SkipBack, SkipForward, Edit2, Trash2, Volume2, VolumeX, Repeat, Repeat1, Book } from 'lucide-react';
+import { Image as ImageIcon, Send, Music, Mic, X, Clock, Feather, Globe, Keyboard as KeyboardIcon, Folder, Plus, Play, Pause, SkipBack, SkipForward, Edit2, Trash2, Volume2, VolumeX, Repeat, Repeat1, Book } from 'lucide-react';
+import BirdLoader from "@/components/BirdLoader";
 import Keyboard from 'react-simple-keyboard';
 import 'react-simple-keyboard/build/css/index.css';
 import { uploadFile } from '@/lib/upload';
@@ -140,7 +141,7 @@ const VoiceNoteCard = ({
           disabled={isUploading}
           className="w-8 h-8 bg-white text-black rounded-full flex items-center justify-center hover:scale-105 transition-transform shadow-[0_0_15px_rgba(255,255,255,0.2)] disabled:opacity-50"
         >
-          {isUploading ? <Loader2 size={14} className="animate-spin text-black" /> : isPlaying ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" className="ml-0.5" />}
+          {isUploading ? <BirdLoader className="w-4 h-4 text-black" /> : isPlaying ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" className="ml-0.5" />}
         </button>
         {isTop && hasMultiple && (
            <button onClick={onNext} className="text-white/40 hover:text-white transition-colors">
@@ -183,6 +184,7 @@ export default function WriteLetterPage() {
   const [uploadingImages, setUploadingImages] = useState<string[]>([]);
   const [uploadedMusic, setUploadedMusic] = useState<string | null>(null);
   const [isUploadingMusic, setIsUploadingMusic] = useState(false);
+  const [isUploadingMusicCover, setIsUploadingMusicCover] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   
   const [embeddedMemories, setEmbeddedMemories] = useState<Record<number, { images: string[], music: string[], audio: string[] }>>({});
@@ -470,6 +472,7 @@ export default function WriteLetterPage() {
   const handleMusicCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
     
+    setIsUploadingMusicCover(true);
     const file = e.target.files[0];
     try {
       const url = await uploadFile(file);
@@ -478,6 +481,7 @@ export default function WriteLetterPage() {
     } catch (err) {
       console.error("Music cover upload error", err);
     } finally {
+      setIsUploadingMusicCover(false);
       if (musicCoverInputRef.current) musicCoverInputRef.current.value = '';
     }
   };
@@ -836,7 +840,7 @@ export default function WriteLetterPage() {
           />
           {isTransliterating && (
             <div className="absolute top-4 right-4 animate-spin text-white/20 z-20">
-              <Loader2 size={16} />
+              <BirdLoader className="w-5 h-5" />
             </div>
           )}
         </div>
@@ -908,7 +912,7 @@ export default function WriteLetterPage() {
                 onClick={() => musicInputRef.current?.click()}
                 className={`p-2.5 rounded-full transition-colors relative group hidden sm:block ${uploadedMusic ? 'text-[#ff9f1c]' : 'text-black/40 hover:text-black'}`}
               >
-                {isUploadingMusic ? <Loader2 size={16} className="animate-spin" /> : <Music size={16} strokeWidth={2} />}
+                {isUploadingMusic ? <BirdLoader className="w-5 h-5 text-black" /> : <Music size={16} strokeWidth={2} />}
                 <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-medium">
                   {uploadedMusic ? 'Music Added' : 'Add Music'}
                 </span>
@@ -1111,9 +1115,14 @@ export default function WriteLetterPage() {
                 </button>
                 <button 
                   onClick={() => musicCoverInputRef.current?.click()}
-                  className="px-6 py-2 rounded-full bg-white text-black hover:scale-105 transition-transform"
+                  disabled={isUploadingMusicCover}
+                  className="px-6 py-2 rounded-full bg-white text-black hover:scale-105 transition-transform flex items-center justify-center gap-2 disabled:opacity-80"
                 >
-                  Add Cover Art
+                  {isUploadingMusicCover ? (
+                    <><BirdLoader className="w-4 h-4 text-black" /> Adding...</>
+                  ) : (
+                    "Add Cover Art"
+                  )}
                 </button>
               </div>
             </div>
@@ -1306,7 +1315,9 @@ export default function WriteLetterPage() {
                 className="w-full aspect-square rounded-2xl bg-gradient-to-br from-orange-500/20 to-purple-500/20 mb-4 flex items-center justify-center border border-white/5 overflow-hidden relative z-10 cursor-pointer group/cover"
                 onClick={() => musicCoverInputRef.current?.click()}
               >
-                 {musicCover ? (
+                 {isUploadingMusicCover ? (
+                   <BirdLoader className="w-8 h-8 text-white" />
+                 ) : musicCover ? (
                    <img src={musicCover} alt="Cover" className="w-full h-full object-cover" />
                  ) : (
                    <>
@@ -1532,7 +1543,7 @@ export default function WriteLetterPage() {
                   <div key={`temp-${idx}`} className="relative group aspect-square rounded-2xl overflow-hidden bg-black/20 border border-white/10">
                     <img src={localUrl} alt={`Uploading ${idx+1}`} className="w-full h-full object-cover opacity-50 grayscale" />
                     <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[2px]">
-                      <Loader2 size={24} className="text-white animate-spin" />
+                      <BirdLoader className="w-8 h-8 text-white" />
                     </div>
                   </div>
                 ))}

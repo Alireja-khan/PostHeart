@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { UserMinus, Loader2, Clock } from "lucide-react"
+import { UserMinus, Clock } from "lucide-react"
+import BirdLoader from "@/components/BirdLoader"
 
 export default function DisconnectButton({ initialPending = false }: { initialPending?: boolean }) {
   const router = useRouter()
@@ -80,7 +81,7 @@ export default function DisconnectButton({ initialPending = false }: { initialPe
         disabled={loading}
         className="w-full mt-4 bg-[#1a1a1a] text-[#a0a0a0] border border-[#333333] rounded-xl py-3 font-medium hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
       >
-        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+        {loading ? <BirdLoader className="w-6 h-6" /> : (
           <>
             <UserMinus className="w-4 h-4" /> Request Disconnect
           </>

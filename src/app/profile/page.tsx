@@ -3,7 +3,8 @@ import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Save, Loader2, Image as ImageIcon, CheckCircle2, Calendar, Send, Inbox, Archive, Heart, User, Shield, LayoutDashboard, Camera } from "lucide-react"
+import { Save, Image as ImageIcon, CheckCircle2, Calendar, Send, Inbox, Archive, Heart, User, Shield, LayoutDashboard, Camera } from "lucide-react"
+import BirdLoader from "@/components/BirdLoader"
 import { uploadFile } from "@/lib/upload"
 
 type ProfileStats = {
@@ -139,7 +140,7 @@ export default function Profile() {
 
   if (status === "loading" || loading) {
     return <div className="min-h-screen p-8 flex items-center justify-center bg-[#111111]">
-      <Loader2 className="animate-spin text-[#f9f8f6] w-8 h-8" />
+      <BirdLoader className="text-[#f9f8f6] w-12 h-12" />
     </div>
   }
 
@@ -190,7 +191,7 @@ export default function Profile() {
                     
                     {uploadingAvatar && (
                       <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                        <Loader2 className="w-6 h-6 animate-spin text-white" />
+                        <BirdLoader className="w-8 h-8 text-white" />
                       </div>
                     )}
                   </div>
@@ -255,7 +256,7 @@ export default function Profile() {
                 disabled={uploadingCover}
                 className="bg-black/40 hover:bg-black/60 backdrop-blur-md text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center transition-colors border border-white/20 shadow-lg mb-4"
               >
-                {uploadingCover ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Camera className="w-4 h-4 mr-2" />}
+                {uploadingCover ? <BirdLoader className="w-5 h-5 mr-2" /> : <Camera className="w-4 h-4 mr-2" />}
                 <span className="hidden sm:inline">Change Cover</span>
               </button>
             </div>
@@ -401,7 +402,7 @@ export default function Profile() {
                         : "bg-[#111111] text-white hover:bg-black shadow-lg shadow-black/10"
                     } disabled:opacity-50`}
                   >
-                    {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : (saved ? <CheckCircle2 className="w-4 h-4 mr-2" /> : <Save className="w-4 h-4 mr-2" />)}
+                    {saving ? <BirdLoader className="w-5 h-5 mr-2" /> : (saved ? <CheckCircle2 className="w-4 h-4 mr-2" /> : <Save className="w-4 h-4 mr-2" />)}
                     {saved ? "Saved" : "Save"}
                   </button>
                 </div>
@@ -466,7 +467,7 @@ export default function Profile() {
                         : "bg-[#111111] text-white hover:bg-black shadow-lg shadow-black/10"
                     } disabled:opacity-50`}
                   >
-                    {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : (saved ? <CheckCircle2 className="w-4 h-4 mr-2" /> : <Save className="w-4 h-4 mr-2" />)}
+                    {saving ? <BirdLoader className="w-5 h-5 mr-2" /> : (saved ? <CheckCircle2 className="w-4 h-4 mr-2" /> : <Save className="w-4 h-4 mr-2" />)}
                     {saved ? "Saved" : "Save"}
                   </button>
                 </div>

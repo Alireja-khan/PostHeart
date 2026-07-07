@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Image as ImageIcon, Music, Mic, Grid, PackageOpen, ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import BirdLoader from './BirdLoader';
 import { textureBase64 } from './TextureBase64';
 
 interface User {
@@ -103,10 +104,22 @@ export default function Desk({ initialLetters }: DeskProps) {
   };
 
   return (
-    <div 
-      className="w-full min-h-full bg-[#111111] p-8 lg:p-12 relative overflow-hidden flex flex-col items-center justify-center"
-      style={{ opacity: isMounted ? 1 : 0, transition: 'opacity 0.7s ease-in-out' }}
-    >
+    <>
+      <AnimatePresence>
+        {!isMounted && (
+          <motion.div 
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-[100] flex items-center justify-center bg-[#111111]"
+          >
+            <BirdLoader className="w-16 h-16 text-[#c2410c]" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <div 
+        className="w-full min-h-full bg-[#111111] p-8 lg:p-12 relative overflow-hidden flex flex-col items-center justify-center"
+        style={{ opacity: isMounted ? 1 : 0, transition: 'opacity 0.7s ease-in-out' }}
+      >
       {/* Global SVG Texture Definition */}
       <svg style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden' }}>
         <defs>
@@ -402,5 +415,6 @@ export default function Desk({ initialLetters }: DeskProps) {
         )}
       </div>
     </div>
+    </>
   );
 }

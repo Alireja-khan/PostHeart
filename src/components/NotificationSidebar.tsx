@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Mail, Check, X, Loader2, UserPlus, Info } from "lucide-react"
+import { Mail, Check, X, UserPlus, Info } from "lucide-react"
+import BirdLoader from "@/components/BirdLoader"
 import { useNotification } from "@/contexts/NotificationContext"
 
 type Request = {
@@ -129,7 +130,7 @@ export default function NotificationSidebar() {
 
           {loading ? (
             <div className="flex justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-[#c2410c]" />
+              <BirdLoader className="w-12 h-12 text-[#c2410c]" />
             </div>
           ) : (
             <>
@@ -173,7 +174,7 @@ export default function NotificationSidebar() {
                               req.type === "DISCONNECT" ? "bg-red-600 hover:bg-red-700" : "bg-[#c2410c] hover:bg-[#a3360a]"
                             }`}
                           >
-                            {actionLoading === req.id ? <Loader2 className="w-4 h-4 animate-spin" /> : "Accept"}
+                            {actionLoading === req.id ? <BirdLoader className="w-5 h-5" /> : "Accept"}
                           </button>
                         </div>
                       </div>
