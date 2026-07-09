@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
-import { PenLine, Mailbox, Clock, Vault, Heart, Map, Settings, User, LogIn, UserPlus, LogOut, Users, Bell } from 'lucide-react';
+import { PenLine, Mailbox, Clock, Vault, Heart, Map, Settings, User, LogIn, UserPlus, LogOut, Users, Bell, Globe } from 'lucide-react';
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -37,6 +37,7 @@ export default function Sidebar() {
             <NavItem href="/timeline" icon={<Map size={18} />} label="Timeline" active={pathname === '/timeline'} />
             <NavItem href="/vault" icon={<Vault size={18} />} label="Keepsake Box" active={pathname === '/vault'} />
             <NavItem href="/mood" icon={<Heart size={18} />} label="Couple Board" active={pathname === '/mood'} />
+            <NavItem href="/world" icon={<Globe size={18} />} label="My World" active={pathname === '/world'} />
             <NavItem href="/connect" icon={<Users size={18} />} label="Partner" active={pathname === '/connect'} />
             
             <div className="my-6 border-t border-[#222] mx-6"></div>

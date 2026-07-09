@@ -21,6 +21,7 @@ model User {
   gender    String?
   isPublic  Boolean  @default(true)
   showEmail Boolean  @default(false)
+  worldImage String?
 
   letters   Letter[] @relation("SentLetters")
   received  Letter[] @relation("ReceivedLetters")
@@ -51,6 +52,10 @@ model Letter {
   delayHours  Int      @default(24)
   createdAt   DateTime @default(now())
   deliverAt   DateTime?
+  
+  isPinned    Boolean  @default(false)
+  isSpecial   Boolean  @default(false)
+  specialFor  String?  // 'sender' or 'receiver'
   
   senderId    String   @db.ObjectId
   sender      User     @relation("SentLetters", fields: [senderId], references: [id])
