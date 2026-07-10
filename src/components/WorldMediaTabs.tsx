@@ -5,6 +5,7 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useState, useEffect } from 'react';
 import { Plus, X } from 'lucide-react';
+import { useDialog } from '@/components/DialogProvider';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -24,6 +25,7 @@ interface CustomFolder {
 }
 
 export default function WorldMediaTabs({ years, partnerGender }: { years: string[], partnerGender?: string | null }) {
+  const { confirm } = useDialog();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -164,9 +166,9 @@ export default function WorldMediaTabs({ years, partnerGender }: { years: string
               {folder.name}
             </button>
             <button
-              onClick={(e) => {
+              onClick={async (e) => {
                 e.stopPropagation();
-                if (confirm('Are you sure you want to delete this folder?')) {
+                if (await confirm('Delete Folder', 'Are you sure you want to delete this folder?')) {
                   handleDeleteFolder(folder.id);
                 }
               }}

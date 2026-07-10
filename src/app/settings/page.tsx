@@ -3,22 +3,24 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Settings, User, Heart, Shield, RotateCcw, AlertTriangle } from 'lucide-react';
+import { useDialog } from '@/components/DialogProvider';
 
 export default function SettingsPage() {
   const [userName, setUserName] = useState('Sarah');
   const [partnerName, setPartnerName] = useState('Alex');
   const [accentColor, setAccentColor] = useState('rust');
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const { alert, confirm } = useDialog();
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert('Settings saved successfully (simulated).');
+    await alert('Success', 'Settings saved successfully (simulated).');
   };
 
-  const handleResetBoard = () => {
-    if (confirm('Are you sure you want to clear your Couple Board? This will delete all sticky notes and polaroids permanently.')) {
+  const handleResetBoard = async () => {
+    if (await confirm('Reset Board', 'Are you sure you want to clear your Couple Board? This will delete all sticky notes and polaroids permanently.')) {
       localStorage.removeItem('dear_you_corkboard_items');
-      alert('Couple Board has been reset to defaults.');
+      await alert('Success', 'Couple Board has been reset to defaults.');
       window.location.reload();
     }
   };

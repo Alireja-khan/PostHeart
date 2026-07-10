@@ -4,9 +4,11 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { UserMinus, Clock } from "lucide-react"
 import BirdLoader from "@/components/BirdLoader"
+import { useDialog } from "@/components/DialogProvider"
 
 export default function DisconnectButton({ initialPending = false }: { initialPending?: boolean }) {
   const router = useRouter()
+  const { confirm } = useDialog()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [isPending, setIsPending] = useState(initialPending)
@@ -36,7 +38,7 @@ export default function DisconnectButton({ initialPending = false }: { initialPe
   }, [isPending, router]);
 
   const handleDisconnect = async () => {
-    if (!confirm("Are you sure you want to request a disconnect? Your partner will have to approve this request.")) return;
+    if (!(await confirm("Disconnect Partner", "Are you sure you want to request a disconnect? Your partner will have to approve this request."))) return;
 
     setLoading(true)
     setError("")

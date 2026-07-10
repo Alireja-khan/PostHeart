@@ -20,6 +20,7 @@ import {
   PenTool
 } from 'lucide-react';
 import BirdLoader from '@/components/BirdLoader';
+import { useDialog } from '@/components/DialogProvider';
 import { uploadFile } from '@/lib/upload';
 import toast from 'react-hot-toast';
 
@@ -50,6 +51,7 @@ interface WorldData {
 }
 
 export default function MyWorld() {
+  const { confirm } = useDialog();
   const { data: session, status } = useSession();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -130,7 +132,7 @@ export default function MyWorld() {
   };
 
   const handleRemoveImage = async () => {
-    if (!confirm('Are you sure you want to remove this photo?')) return;
+    if (!(await confirm('Remove Photo', 'Are you sure you want to remove this photo?'))) return;
     
     setUploading(true);
     const toastId = toast.loading('Removing photo...');

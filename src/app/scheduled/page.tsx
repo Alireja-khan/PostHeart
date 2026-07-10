@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, MapPin, CheckCircle, ArrowRight, X } from 'lucide-react';
+import { useDialog } from '@/components/DialogProvider';
 
 interface TransitLetter {
   id: string;
@@ -18,6 +19,7 @@ interface TransitLetter {
 export default function ScheduledLettersPage() {
   const [letters, setLetters] = useState<TransitLetter[]>([]);
   const [selectedLetter, setSelectedLetter] = useState<TransitLetter | null>(null);
+  const { confirm } = useDialog();
 
   // Load transit letters from database
   useEffect(() => {
@@ -50,6 +52,13 @@ export default function ScheduledLettersPage() {
     };
     fetchTransitLetters();
   }, []);
+
+  const handleCancel = async (id: string) => {
+    const res = await fetch(`/api/letters/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+      window.location.reload();
+    }
+  };
 
   const calculateProgress = (letter: TransitLetter) => {
     const created = new Date(letter.createdAt).getTime();
@@ -146,6 +155,8 @@ export default function ScheduledLettersPage() {
             letter={selectedLetter} 
             progress={calculateProgress(selectedLetter)}
             onClose={() => setSelectedLetter(null)} 
+            onCancel={handleCancel}
+            confirm={confirm}
           />
         )}
       </AnimatePresence>
@@ -157,11 +168,15 @@ export default function ScheduledLettersPage() {
 function TransitTrackerModal({ 
   letter, 
   progress, 
-  onClose 
+  onClose,
+  onCancel,
+  confirm
 }: { 
   letter: TransitLetter; 
   progress: number;
   onClose: () => void;
+  onCancel: (id: string) => void;
+  confirm: (title: string, message: string) => Promise<boolean>;
 }) {
   
   // Define 4 minimalist checkpoints along the delivery route
@@ -208,13 +223,9 @@ function TransitTrackerModal({
           {letter.isSender && (
             <div className="absolute right-0 top-1/2 -translate-y-1/2">
               <button 
-                onClick={async (e) => {
-                  e.stopPropagation();
-                  if (confirm("Are you sure you want to cancel sending this letter? This action cannot be undone.")) {
-                    const res = await fetch('/api/letters/in-transit', { method: 'DELETE' });
-                    if (res.ok) {
-                      window.location.reload();
-                    }
+                onClick={async () => {
+                  if (await confirm('Cancel Letter', "Are you sure you want to cancel sending this letter? This action cannot be undone.")) {
+                    onCancel(letter.id);
                   }
                 }}
                 className="text-[10px] text-red-400 hover:text-red-300 transition-colors px-3 py-1.5 bg-red-900/20 hover:bg-red-900/40 rounded border border-red-900/50 uppercase tracking-wider font-semibold cursor-pointer"

@@ -9,6 +9,7 @@ import BirdLoader from "@/components/BirdLoader";
 import Keyboard from 'react-simple-keyboard';
 import 'react-simple-keyboard/build/css/index.css';
 import { uploadFile } from '@/lib/upload';
+import { useDialog } from '@/components/DialogProvider';
 
 const LANGUAGES = [
   { code: 'en', name: 'English' },
@@ -174,6 +175,7 @@ const VoiceNoteCard = ({
 };
 
 export default function WriteLetterPage() {
+  const { alert } = useDialog();
   const router = useRouter();
   const [content, setContent] = useState('');
   const [receiver, setReceiver] = useState('');
@@ -538,7 +540,7 @@ export default function WriteLetterPage() {
       }, 1000);
     } catch (err) {
       console.error("Error accessing microphone", err);
-      alert("Could not access microphone.");
+      await alert('Error', "Could not access microphone.");
       setIsVoicePopupOpen(false);
     }
   };
@@ -594,7 +596,7 @@ export default function WriteLetterPage() {
     const end = textAreaRef.current?.selectionEnd || 0;
     
     if (start === end) {
-      alert("Please highlight some text first to embed an image into it.");
+      await alert('Selection Required', "Please highlight some text first to embed an image into it.");
       if (embedFileInputRef.current) embedFileInputRef.current.value = '';
       return;
     }
@@ -726,11 +728,11 @@ export default function WriteLetterPage() {
         window.dispatchEvent(new Event('letter-posted'));
         router.push('/scheduled');
       } else {
-        alert(data.error || 'Failed to post letter');
+        await alert('Failed', data.error || 'Failed to post letter');
         setIsSubmitting(false);
       }
     } catch (err) {
-      alert('An error occurred.');
+      await alert('Error', 'An error occurred.');
       setIsSubmitting(false);
     }
   };

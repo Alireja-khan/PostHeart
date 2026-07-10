@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, Plus, Trash2, Heart, Star, Sparkles, Smile, RefreshCw, X } from 'lucide-react';
+import { useDialog } from '@/components/DialogProvider';
 
 interface CorkboardItem {
   id: string;
@@ -16,6 +17,7 @@ interface CorkboardItem {
 }
 
 export default function CoupleSpacePage() {
+  const { confirm } = useDialog();
   const boardRef = useRef<HTMLDivElement>(null);
   const [items, setItems] = useState<CorkboardItem[]>([]);
   const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
@@ -195,8 +197,8 @@ export default function CoupleSpacePage() {
     saveItems([...items, newItem]);
   };
 
-  const clearBoard = () => {
-    if (confirm('Are you sure you want to clear the board?')) {
+  const handleClearBoard = async () => {
+    if (await confirm('Clear Board', 'Are you sure you want to clear the board?')) {
       saveItems([]);
     }
   };
@@ -237,7 +239,7 @@ export default function CoupleSpacePage() {
             <span>Washi Tape</span>
           </button>
           <button 
-            onClick={clearBoard}
+            onClick={handleClearBoard}
             className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-red-200 hover:border-red-600 text-xs font-serif text-red-600 hover:bg-red-50/50 transition-all shadow-xs"
           >
             <Trash2 size={12} />

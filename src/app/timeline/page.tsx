@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, MapPin, Heart, X, ChevronRight, Plus, Trash2 } from 'lucide-react';
+import { useDialog } from '@/components/DialogProvider';
 
 interface Milestone {
   id: string;
@@ -15,6 +16,7 @@ interface Milestone {
 }
 
 export default function MemoryTimelinePage() {
+  const { confirm } = useDialog();
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [selectedMilestone, setSelectedMilestone] = useState<Milestone | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -139,7 +141,7 @@ export default function MemoryTimelinePage() {
   };
 
   const handleDeleteMilestone = async (id: string) => {
-    if (confirm('Are you sure you want to delete this memory milestone?')) {
+    if (await confirm('Delete Milestone', 'Are you sure you want to delete this memory milestone?')) {
       if (!id.startsWith('default-')) {
         await fetch(`/api/timeline?id=${id}`, { method: 'DELETE' });
       }
