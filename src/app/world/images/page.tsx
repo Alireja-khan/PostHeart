@@ -73,7 +73,7 @@ function WorldImagesPageContent() {
     const handleFolderItemUpdated = (e: any) => {
       const { folderId, action, itemId } = e.detail || {};
       if (currentTab === folderId && action === 'remove' && itemId) {
-        setImages(prev => prev.filter(img => img.letter.id !== itemId));
+        setImages(prev => prev.filter(img => img.url !== itemId));
       }
     };
     window.addEventListener('folderItemUpdated', handleFolderItemUpdated as EventListener);

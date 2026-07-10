@@ -83,7 +83,7 @@ function WorldVoicesPageContent() {
     const handleFolderItemUpdated = (e: any) => {
       const { folderId, action, itemId } = e.detail || {};
       if (currentTab === folderId && action === 'remove' && itemId) {
-        setVoices(prev => prev.filter(v => v.letter.id !== itemId));
+        setVoices(prev => prev.filter(v => v.url !== itemId));
       }
     };
     window.addEventListener('folderItemUpdated', handleFolderItemUpdated as EventListener);
