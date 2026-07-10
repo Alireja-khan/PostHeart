@@ -37,6 +37,7 @@ model User {
   milestones     TimelineMilestone[]
   keepsakes      KeepsakeItem[]
   corkboardItems CorkboardItem[]
+  folders        Folder[] @relation("UserFolders")
 }
 
 
@@ -138,4 +139,17 @@ model Notification {
   createdAt   DateTime @default(now())
   
   user        User     @relation(fields: [userId], references: [id])
+}
+
+model Folder {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  type      String   // 'letters', 'images', 'songs', 'voices'
+  order     Int      @default(0)
+  items     String[] @default([]) // Array of Letter IDs or Media URLs
+  
+  userId    String   @db.ObjectId
+  user      User     @relation("UserFolders", fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
 }

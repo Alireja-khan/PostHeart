@@ -81,7 +81,25 @@ export async function GET(request: Request) {
         }
         break;
       default:
-        whereClause = { senderId: user.id };
+        // Check if tab is a custom folder ID
+        if (tab.length === 24) { // MongoDB ObjectId length
+          const folder = await prisma.folder.findUnique({ where: { id: tab } });
+          if (folder && folder.userId === user.id) {
+            if (mediaType === 'letters') {
+              whereClause = { id: { in: folder.items } };
+            } else if (mediaType === 'images') {
+              whereClause = { images: { hasSome: folder.items } };
+            } else if (mediaType === 'songs') {
+              whereClause = { music: { in: folder.items } };
+            } else if (mediaType === 'voices') {
+              whereClause = { voices: { hasSome: folder.items } };
+            }
+          } else {
+             whereClause = { senderId: user.id };
+          }
+        } else {
+          whereClause = { senderId: user.id };
+        }
     }
 
     // Apply Year Filter

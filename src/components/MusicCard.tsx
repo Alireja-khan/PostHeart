@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Play, Pause, MoreHorizontal, Pin, Star, Volume2, VolumeX, Repeat, Repeat1, AlertCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import FolderDropdown from '@/components/FolderDropdown';
 
 function timeAgo(date: string | Date) {
   const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
@@ -224,7 +225,8 @@ export default function MusicCard({ letter, onUpdate, currentUserId }: MusicCard
             </div>
 
             {/* 3-Dot Menu */}
-            <div className="relative flex-shrink-0">
+            <div className="relative flex-shrink-0 flex items-center gap-1">
+              <FolderDropdown itemId={letter.id} mediaType="songs" />
               <button 
                 className="p-1.5 text-white/40 hover:text-white hover:bg-white/5 rounded-md transition-colors"
                 onClick={() => setShowMenu(!showMenu)}

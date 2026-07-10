@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { MoreHorizontal, Pin, Star, Maximize2, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import FolderDropdown from '@/components/FolderDropdown';
 
 function timeAgo(date: string | Date) {
   const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
@@ -111,6 +112,7 @@ export default function ImageCard({ letter, imageUrl, onUpdate }: ImageCardProps
                 <Star size={12} className="fill-current" />
               </div>
             )}
+            <FolderDropdown itemId={imageUrl} mediaType="images" />
           </div>
 
           <div className="flex gap-2 relative">

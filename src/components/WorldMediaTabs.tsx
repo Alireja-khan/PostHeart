@@ -3,12 +3,14 @@
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { useState, useEffect } from 'react';
+import { Plus } from 'lucide-react';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-const TABS = [
+const DEFAULT_TABS = [
   { id: 'sent', label: 'Sent' },
   { id: 'received', label: 'Received' },
   { id: 'pinned', label: 'Pinned' },
@@ -16,7 +18,65 @@ const TABS = [
   { id: 'special_them', label: 'Special from Them' },
 ];
 
+interface CustomFolder {
+  id: string;
+  name: string;
+}
+
 export default function WorldMediaTabs({ years, partnerGender }: { years: string[], partnerGender?: string | null }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  
+  const currentTab = searchParams.get('tab') || 'sent';
+  const currentYear = searchParams.get('year') || 'all';
+
+  const [customFolders, setCustomFolders] = useState<CustomFolder[]>([]);
+  const [isCreating, setIsCreating] = useState(false);
+  const [newTabName, setNewTabName] = useState('');
+
+  // Determine mediaType based on pathname
+  let mediaType = 'letters';
+  if (pathname.includes('/images')) mediaType = 'images';
+  if (pathname.includes('/songs')) mediaType = 'songs';
+  if (pathname.includes('/voices')) mediaType = 'voices';
+
+  useEffect(() => {
+    fetchFolders();
+  }, [mediaType]);
+
+  const fetchFolders = async () => {
+    try {
+      const res = await fetch(`/api/folders?type=${mediaType}`);
+      if (res.ok) {
+        const data = await res.json();
+        setCustomFolders(data);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleCreateFolder = async () => {
+    if (!newTabName.trim()) return;
+    try {
+      const res = await fetch('/api/folders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newTabName.trim(), type: mediaType })
+      });
+      if (res.ok) {
+        const newFolder = await res.json();
+        setCustomFolders([...customFolders, newFolder]);
+        setIsCreating(false);
+        setNewTabName('');
+        setParam('tab', newFolder.id);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const getTabLabel = (tabId: string, label: string) => {
     if (tabId === 'special_them') {
       if (partnerGender?.toLowerCase() === 'male') return 'Special from Him';
@@ -25,12 +85,6 @@ export default function WorldMediaTabs({ years, partnerGender }: { years: string
     }
     return label;
   };
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  
-  const currentTab = searchParams.get('tab') || 'sent';
-  const currentYear = searchParams.get('year') || 'all';
 
   const setParam = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -45,8 +99,8 @@ export default function WorldMediaTabs({ years, partnerGender }: { years: string
   return (
     <div className="w-full flex flex-col space-y-6 mb-12">
       {/* Primary Category Tabs */}
-      <div className="flex flex-wrap gap-2 pb-4 border-b border-white/10">
-        {TABS.map((tab) => (
+      <div className="flex flex-wrap gap-2 pb-4 border-b border-white/10 items-center">
+        {DEFAULT_TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setParam('tab', tab.id)}
@@ -60,9 +114,53 @@ export default function WorldMediaTabs({ years, partnerGender }: { years: string
             {getTabLabel(tab.id, tab.label)}
           </button>
         ))}
+
+        {customFolders.length > 0 && <div className="w-px h-6 bg-white/10 mx-2" />}
+
+        {customFolders.map((folder) => (
+          <button
+            key={folder.id}
+            onClick={() => setParam('tab', folder.id)}
+            className={cn(
+              "px-5 py-2.5 rounded-full text-xs font-mono uppercase tracking-widest transition-all duration-300",
+              currentTab === folder.id 
+                ? "bg-[#c2410c] text-white font-semibold shadow-lg shadow-[#c2410c]/20 scale-105 border-transparent" 
+                : "bg-[#111] text-[#c2410c]/70 hover:bg-[#c2410c]/10 hover:text-[#c2410c] border border-[#c2410c]/20"
+            )}
+          >
+            {folder.name}
+          </button>
+        ))}
+
+        {isCreating ? (
+          <div className="flex items-center gap-2 ml-2">
+            <input
+              autoFocus
+              type="text"
+              value={newTabName}
+              onChange={(e) => setNewTabName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleCreateFolder();
+                if (e.key === 'Escape') setIsCreating(false);
+              }}
+              placeholder="Tab name..."
+              className="bg-black/50 border border-white/10 rounded-full px-4 py-2 text-xs font-mono text-white focus:outline-none focus:border-[#c2410c] w-32 uppercase tracking-wider"
+            />
+            <button onClick={handleCreateFolder} className="text-[#c2410c] hover:text-white transition-colors text-xs font-mono uppercase tracking-widest font-bold">Save</button>
+            <button onClick={() => setIsCreating(false)} className="text-white/40 hover:text-white transition-colors text-xs font-mono uppercase tracking-widest">Cancel</button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setIsCreating(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-mono uppercase tracking-widest transition-all duration-300 bg-transparent text-white/40 hover:text-white hover:bg-white/5 border border-dashed border-white/20 ml-2"
+          >
+            <Plus size={14} />
+            <span>New Tab</span>
+          </button>
+        )}
       </div>
 
-      {/* Secondary Year Tabs (Only show if years exist) */}
+      {/* Secondary Year Tabs */}
       {years.length > 0 && (
         <div className="flex flex-wrap gap-2">
           <button

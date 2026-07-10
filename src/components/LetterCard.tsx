@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { MoreHorizontal, Image as ImageIcon, Music, Mic, Pin, Star } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import FolderDropdown from '@/components/FolderDropdown';
 
 function timeAgo(date: string | Date) {
   const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
@@ -123,10 +124,13 @@ export default function LetterCard({ letter, onUpdate, currentUserId }: LetterCa
         <div className="flex justify-between items-end relative">
           
           {/* Media Icons */}
-          <div className="flex items-center space-x-3 bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl border border-white/5 shadow-lg">
-            <ImageIcon size={14} className={letter.images?.length > 0 ? "text-white" : "text-white/20"} />
-            <Music size={14} className={letter.music ? "text-white" : "text-white/20"} />
-            <Mic size={14} className={letter.voices?.length > 0 ? "text-white" : "text-white/20"} />
+          <div className="flex items-center gap-2">
+            <div className="flex items-center space-x-3 bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl border border-white/5 shadow-lg">
+              <ImageIcon size={14} className={letter.images?.length > 0 ? "text-white" : "text-white/20"} />
+              <Music size={14} className={letter.music ? "text-white" : "text-white/20"} />
+              <Mic size={14} className={letter.voices?.length > 0 ? "text-white" : "text-white/20"} />
+            </div>
+            <FolderDropdown itemId={letter.id} mediaType="letters" />
           </div>
 
           {/* Three Dots Menu */}
