@@ -85,7 +85,9 @@ export async function GET(request: Request) {
         if (tab.length === 24) { // MongoDB ObjectId length
           const folder = await prisma.folder.findUnique({ where: { id: tab } });
           if (folder && folder.userId === user.id) {
-            if (mediaType === 'letters') {
+            if (folder.items.length === 0) {
+              whereClause = { id: '000000000000000000000000' }; // fake ObjectId to force empty
+            } else if (mediaType === 'letters') {
               whereClause = { id: { in: folder.items } };
             } else if (mediaType === 'images') {
               whereClause = { images: { hasSome: folder.items } };
@@ -113,12 +115,21 @@ export async function GET(request: Request) {
     }
 
     // Apply Media Filter: If they only want letters with images, we filter out letters with empty image arrays
+    let mediaFilter: any = null;
     if (mediaType === 'images') {
-      whereClause.images = { isEmpty: false };
+      mediaFilter = { images: { isEmpty: false } };
     } else if (mediaType === 'songs') {
-      whereClause.music = { not: null };
+      mediaFilter = { music: { not: null } };
     } else if (mediaType === 'voices') {
-      whereClause.voices = { isEmpty: false };
+      mediaFilter = { voices: { isEmpty: false } };
+    }
+    
+    if (mediaFilter) {
+      if (whereClause.AND) {
+        whereClause.AND.push(mediaFilter);
+      } else {
+        whereClause.AND = [mediaFilter];
+      }
     }
 
     const search = searchParams.get('search') || '';

@@ -4,7 +4,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { useState, useEffect } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -77,6 +77,22 @@ export default function WorldMediaTabs({ years, partnerGender }: { years: string
     }
   };
 
+  const handleDeleteFolder = async (folderId: string) => {
+    try {
+      const res = await fetch(`/api/folders?id=${folderId}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        setCustomFolders(customFolders.filter(f => f.id !== folderId));
+        if (currentTab === folderId) {
+          setParam('tab', 'sent');
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const getTabLabel = (tabId: string, label: string) => {
     if (tabId === 'special_them') {
       if (partnerGender?.toLowerCase() === 'male') return 'Special from Him';
@@ -118,18 +134,31 @@ export default function WorldMediaTabs({ years, partnerGender }: { years: string
         {customFolders.length > 0 && <div className="w-px h-6 bg-white/10 mx-2" />}
 
         {customFolders.map((folder) => (
-          <button
-            key={folder.id}
-            onClick={() => setParam('tab', folder.id)}
-            className={cn(
-              "px-5 py-2.5 rounded-full text-xs font-mono uppercase tracking-widest transition-all duration-300",
-              currentTab === folder.id 
-                ? "bg-[#c2410c] text-white font-semibold shadow-lg shadow-[#c2410c]/20 scale-105 border-transparent" 
-                : "bg-[#111] text-[#c2410c]/70 hover:bg-[#c2410c]/10 hover:text-[#c2410c] border border-[#c2410c]/20"
-            )}
-          >
-            {folder.name}
-          </button>
+          <div key={folder.id} className="relative group flex items-center">
+            <button
+              onClick={() => setParam('tab', folder.id)}
+              className={cn(
+                "px-5 py-2.5 rounded-full text-xs font-mono uppercase tracking-widest transition-all duration-300",
+                currentTab === folder.id 
+                  ? "bg-[#c2410c] text-white font-semibold shadow-lg shadow-[#c2410c]/20 scale-105 border-transparent" 
+                  : "bg-[#111] text-[#c2410c]/70 hover:bg-[#c2410c]/10 hover:text-[#c2410c] border border-[#c2410c]/20"
+              )}
+            >
+              {folder.name}
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (confirm('Are you sure you want to delete this folder?')) {
+                  handleDeleteFolder(folder.id);
+                }
+              }}
+              className="absolute -top-1 -right-1 bg-red-500/90 hover:bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10 shadow-lg"
+              title="Delete Folder"
+            >
+              <X size={10} strokeWidth={3} />
+            </button>
+          </div>
         ))}
 
         {isCreating ? (
