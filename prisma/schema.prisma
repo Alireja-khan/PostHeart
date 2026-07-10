@@ -45,7 +45,9 @@ model Letter {
   content     String
   images      String[] @default([])
   music       String?
+  musicTitle  String?
   voices      String[] @default([])
+  voiceTitles String[] @default([])
   coverTitle  String?
   coverSubtitle String?
   status      String   @default("DRAFT") // DRAFT, SCHEDULED, IN_TRANSIT, DELIVERED

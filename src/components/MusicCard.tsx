@@ -48,7 +48,7 @@ export default function MusicCard({ letter, onUpdate, currentUserId }: MusicCard
 
   const [musicUrl, musicCoverUrl] = letter.music ? letter.music.split('|') : [null, null];
   const bgImage = musicCoverUrl || (letter.images && letter.images.length > 0 ? letter.images[0] : null);
-  const titleText = letter.coverTitle || (letter.content.substring(0, 50) + '...');
+  const titleText = letter.musicTitle || letter.coverTitle || (letter.content.substring(0, 50) + '...');
 
   // Optimize Cloudinary URLs to force .mp3 delivery for better browser support
   let optimizedUrl = musicUrl;

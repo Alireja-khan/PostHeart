@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Mic } from 'lucide-react';
+import { ArrowLeft, Mic, Search } from 'lucide-react';
 import BirdLoader from '@/components/BirdLoader';
 import WorldMediaTabs from '@/components/WorldMediaTabs';
 import VoiceCard from '@/components/VoiceCard';
@@ -25,6 +25,13 @@ function WorldVoicesPageContent() {
   const [years, setYears] = useState<string[]>([]);
   const [playingAll, setPlayingAll] = useState(false);
   const [currentPlayIndex, setCurrentPlayIndex] = useState(-1);
+  const [searchInput, setSearchInput] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    const timer = setTimeout(() => setSearchQuery(searchInput), 500);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login');
@@ -36,7 +43,7 @@ function WorldVoicesPageContent() {
     const fetchVoices = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/world/media?media=voices&tab=${currentTab}&year=${currentYear}`);
+        const res = await fetch(`/api/world/media?media=voices&tab=${currentTab}&year=${currentYear}&search=${encodeURIComponent(searchQuery)}`);
         if (res.ok) {
           const json = await res.json();
           setYears(json.years);
@@ -72,7 +79,7 @@ function WorldVoicesPageContent() {
     };
 
     fetchVoices();
-  }, [status, currentTab, currentYear]);
+  }, [status, currentTab, currentYear, searchQuery]);
 
   const handlePlayAll = () => {
     if (voices.length === 0) return;
@@ -156,20 +163,33 @@ function WorldVoicesPageContent() {
           </h1>
         </div>
 
-        {voices.length > 0 && !loading && (
-          <button 
-            onClick={handlePlayAll}
-            disabled={playingAll}
-            className={`flex items-center gap-2 px-6 py-3 rounded-full font-serif text-sm transition-all ${
-              playingAll 
-                ? 'bg-[#c2410c]/20 text-[#c2410c] cursor-not-allowed' 
-                : 'bg-[#c2410c] text-white hover:bg-[#c2410c]/90 hover:shadow-lg hover:shadow-[#c2410c]/20 hover:-translate-y-0.5'
-            }`}
-          >
-            <Play size={16} className={playingAll ? 'animate-pulse' : 'fill-current'} />
-            {playingAll ? 'Playing All...' : 'Play All Notes'}
-          </button>
-        )}
+        <div className="flex flex-col sm:flex-row gap-4 items-end">
+          <div className="relative w-full sm:w-64 flex-shrink-0">
+            <input 
+              type="text"
+              placeholder="Search voice notes..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 rounded-full px-4 py-2.5 pl-10 text-sm text-white placeholder-white/40 focus:outline-none focus:border-white/30 transition-colors"
+            />
+            <Search className="absolute left-4 top-3 text-white/40" size={16} />
+          </div>
+
+          {voices.length > 0 && !loading && (
+            <button 
+              onClick={handlePlayAll}
+              disabled={playingAll}
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-serif text-sm transition-all whitespace-nowrap ${
+                playingAll 
+                  ? 'bg-[#c2410c]/20 text-[#c2410c] cursor-not-allowed' 
+                  : 'bg-[#c2410c] text-white hover:bg-[#c2410c]/90 hover:shadow-lg hover:shadow-[#c2410c]/20 hover:-translate-y-0.5'
+              }`}
+            >
+              <Play size={16} className={playingAll ? 'animate-pulse' : 'fill-current'} />
+              {playingAll ? 'Playing All...' : 'Play All'}
+            </button>
+          )}
+        </div>
       </div>
 
       <WorldMediaTabs years={years} />

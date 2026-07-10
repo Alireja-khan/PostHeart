@@ -46,7 +46,13 @@ export default function VoiceCard({ letter, voiceUrl, onUpdate }: VoiceCardProps
   
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  const titleText = letter.coverTitle || (letter.content.substring(0, 50) + '...');
+  let titleText = letter.coverTitle || (letter.content.substring(0, 50) + '...');
+  if (letter.voices && letter.voiceTitles) {
+    const voiceIndex = letter.voices.indexOf(voiceUrl);
+    if (voiceIndex !== -1 && letter.voiceTitles[voiceIndex] && letter.voiceTitles[voiceIndex] !== 'Voice Note') {
+      titleText = letter.voiceTitles[voiceIndex];
+    }
+  }
 
   let optimizedUrl = voiceUrl;
   if (optimizedUrl && optimizedUrl.includes('res.cloudinary.com') && optimizedUrl.includes('/video/upload/')) {

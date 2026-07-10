@@ -19,15 +19,17 @@ interface Letter {
   images?: string[];
   music?: string | null;
   voices?: string[];
+  voiceTitles?: string[];
+  musicTitle?: string | null;
   coverTitle?: string | null;
   coverSubtitle?: string | null;
   deliverAt?: string;
 }
 
 const VoiceNoteCard = ({ 
-  id, url, isTop, hasMultiple, onNext, onPrev, activePlayingVoice, setActivePlayingVoice
+  id, url, title, isTop, hasMultiple, onNext, onPrev, activePlayingVoice, setActivePlayingVoice
 }: { 
-  id: string, url: string, isTop?: boolean, hasMultiple?: boolean, onNext?: () => void, onPrev?: () => void, activePlayingVoice: string | null, setActivePlayingVoice: (url: string | null) => void
+  id: string, url: string, title?: string, isTop?: boolean, hasMultiple?: boolean, onNext?: () => void, onPrev?: () => void, activePlayingVoice: string | null, setActivePlayingVoice: (url: string | null) => void
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -59,7 +61,7 @@ const VoiceNoteCard = ({
             <Mic size={12} className="text-white/60" />
           </div>
           <div className="flex flex-col">
-            <span className="text-white text-[10px] font-bold leading-tight">Voice Note</span>
+            <span className="text-white text-[10px] font-bold leading-tight">{title || 'Voice Note'}</span>
           </div>
         </div>
       </div>
@@ -279,8 +281,12 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
   };
 
   // Rotate list of voices
-  const [voiceList, setVoiceList] = useState<{ id: string, url: string }[]>(
-    letter.voices?.map((url, i) => ({ id: i.toString(), url })) || []
+  const [voiceList, setVoiceList] = useState<{ id: string, url: string, title?: string }[]>(
+    letter.voices?.map((url, i) => ({ 
+      id: i.toString(), 
+      url,
+      title: letter.voiceTitles && letter.voiceTitles[i] !== 'Voice Note' ? letter.voiceTitles[i] : undefined
+    })) || []
   );
 
   useEffect(() => {
@@ -519,6 +525,7 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
                       <VoiceNoteCard
                         id={voice.id}
                         url={voice.url}
+                        title={voice.title}
                         isTop={isTop}
                         hasMultiple={voiceList.length > 1}
                         activePlayingVoice={playingVoice}
@@ -565,7 +572,7 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
                       <Music size={12} className="text-white/60" />
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-white text-[10px] font-bold leading-tight">Audio Track</span>
+                      <span className="text-white text-[10px] font-bold leading-tight truncate max-w-[100px]">{letter.musicTitle || 'Audio Track'}</span>
                     </div>
                   </div>
                 </div>

@@ -63,7 +63,11 @@ async function MailboxData() {
     content: letter.content,
     images: letter.images || [],
     music: letter.music || null,
+    musicTitle: letter.musicTitle || null,
     voices: letter.voices || [],
+    voiceTitles: letter.voiceTitles || [],
+    coverTitle: letter.coverTitle || null,
+    coverSubtitle: letter.coverSubtitle || null,
     deliverAt: letter.deliverAt?.toISOString() || letter.createdAt.toISOString(),
     createdAt: letter.createdAt.toISOString(),
     sender: {

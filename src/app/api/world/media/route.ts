@@ -103,8 +103,10 @@ export async function GET(request: Request) {
       whereClause.voices = { isEmpty: false };
     }
 
+    const search = searchParams.get('search') || '';
+
     // Fetch the raw letters
-    const letters = await prisma.letter.findMany({
+    let letters = await prisma.letter.findMany({
       where: whereClause,
       orderBy: { createdAt: 'desc' },
       include: {
@@ -112,6 +114,17 @@ export async function GET(request: Request) {
         receiver: { select: { name: true, avatarUrl: true } }
       }
     });
+
+    if (search) {
+      const s = search.toLowerCase();
+      letters = letters.filter(l => 
+        (l.content && l.content.toLowerCase().includes(s)) ||
+        (l.coverTitle && l.coverTitle.toLowerCase().includes(s)) ||
+        (l.coverSubtitle && l.coverSubtitle.toLowerCase().includes(s)) ||
+        (l.musicTitle && l.musicTitle.toLowerCase().includes(s)) ||
+        (l.voiceTitles && l.voiceTitles.some(vt => vt.toLowerCase().includes(s)))
+      );
+    }
 
     // Extract available years for the tabs
     // Note: In a production app with huge data, this should be a distinct query.

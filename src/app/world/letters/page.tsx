@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, MailOpen } from 'lucide-react';
+import { ArrowLeft, MailOpen, Search } from 'lucide-react';
 import BirdLoader from '@/components/BirdLoader';
 import WorldMediaTabs from '@/components/WorldMediaTabs';
 import LetterCard from '@/components/LetterCard';
@@ -24,6 +24,13 @@ function WorldLettersPageContent() {
   const [years, setYears] = useState<string[]>([]);
   const [partnerGender, setPartnerGender] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [searchInput, setSearchInput] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    const timer = setTimeout(() => setSearchQuery(searchInput), 500);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login');
@@ -35,7 +42,7 @@ function WorldLettersPageContent() {
     const fetchLetters = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/world/media?media=letters&tab=${currentTab}&year=${currentYear}`);
+        const res = await fetch(`/api/world/media?media=letters&tab=${currentTab}&year=${currentYear}&search=${encodeURIComponent(searchQuery)}`);
         if (res.ok) {
           const json = await res.json();
           setLetters(json.data);
@@ -51,7 +58,7 @@ function WorldLettersPageContent() {
     };
 
     fetchLetters();
-  }, [status, currentTab, currentYear]);
+  }, [status, currentTab, currentYear, searchQuery]);
 
   const handleUpdateLetter = (id: string, data: any) => {
     setLetters(prev => {
@@ -77,15 +84,28 @@ function WorldLettersPageContent() {
     <div className="max-w-6xl mx-auto px-6 py-12 md:py-20 min-h-screen">
       
       {/* Header */}
-      <div className="mb-12">
-        <Link href="/world" className="inline-flex items-center space-x-2 text-white/40 hover:text-white transition-colors font-mono text-[10px] uppercase tracking-widest mb-6">
-          <ArrowLeft size={14} />
-          <span>Back to My World</span>
-        </Link>
-        <h1 className="font-serif text-4xl font-light text-white tracking-wide flex items-center gap-4">
-          <MailOpen className="text-[#c2410c]" size={36} strokeWidth={1.5} />
-          Letters Collection<span className="text-[#c2410c]">.</span>
-        </h1>
+      <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <Link href="/world" className="inline-flex items-center space-x-2 text-white/40 hover:text-white transition-colors font-mono text-[10px] uppercase tracking-widest mb-6">
+            <ArrowLeft size={14} />
+            <span>Back to My World</span>
+          </Link>
+          <h1 className="font-serif text-4xl font-light text-white tracking-wide flex items-center gap-4">
+            <MailOpen className="text-[#c2410c]" size={36} strokeWidth={1.5} />
+            Letters Collection<span className="text-[#c2410c]">.</span>
+          </h1>
+        </div>
+
+        <div className="relative w-full md:w-64 flex-shrink-0">
+          <input 
+            type="text"
+            placeholder="Search letters..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            className="w-full bg-white/5 border border-white/10 rounded-full px-4 py-2.5 pl-10 text-sm text-white placeholder-white/40 focus:outline-none focus:border-white/30 transition-colors"
+          />
+          <Search className="absolute left-4 top-3 text-white/40" size={16} />
+        </div>
       </div>
 
       <WorldMediaTabs years={years} partnerGender={partnerGender} />

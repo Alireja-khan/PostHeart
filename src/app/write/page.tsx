@@ -22,9 +22,9 @@ const LANGUAGES = [
 // Global in-memory cache for maximum speed on repeated words
 const transliterationCache = new Map<string, string>();
 const VoiceNoteCard = ({ 
-  id, url, onRemove, onAdd, isTop, hasMultiple, onNext, onPrev 
+  id, url, title, onRemove, onAdd, isTop, hasMultiple, onNext, onPrev, onTitleChange 
 }: { 
-  id: string, url: string, onRemove: (id: string) => void, onAdd?: () => void, isTop?: boolean, hasMultiple?: boolean, onNext?: () => void, onPrev?: () => void 
+  id: string, url: string, title?: string, onRemove: (id: string) => void, onAdd?: () => void, isTop?: boolean, hasMultiple?: boolean, onNext?: () => void, onPrev?: () => void, onTitleChange?: (val: string) => void
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -51,7 +51,17 @@ const VoiceNoteCard = ({
             <Mic size={12} className="text-white/60" />
           </div>
           <div className="flex flex-col">
-            <span className="text-white text-[10px] font-bold leading-tight">Voice Note</span>
+            {onTitleChange ? (
+              <input 
+                type="text" 
+                value={title || ''} 
+                onChange={(e) => onTitleChange(e.target.value)} 
+                placeholder="Voice Note Title"
+                className="bg-transparent text-white text-[10px] font-bold leading-tight border-b border-white/20 focus:border-white focus:outline-none w-24 placeholder-white/30"
+              />
+            ) : (
+              <span className="text-white text-[10px] font-bold leading-tight">{title || 'Voice Note'}</span>
+            )}
           </div>
         </div>
         
@@ -183,6 +193,7 @@ export default function WriteLetterPage() {
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [uploadingImages, setUploadingImages] = useState<string[]>([]);
   const [uploadedMusic, setUploadedMusic] = useState<string | null>(null);
+  const [musicTitle, setMusicTitle] = useState('');
   const [isUploadingMusic, setIsUploadingMusic] = useState(false);
   const [isUploadingMusicCover, setIsUploadingMusicCover] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
@@ -207,7 +218,7 @@ export default function WriteLetterPage() {
   const [isVoicePopupOpen, setIsVoicePopupOpen] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
-  const [recordedVoices, setRecordedVoices] = useState<{ id: string, url: string }[]>([]);
+  const [recordedVoices, setRecordedVoices] = useState<{ id: string, url: string, title?: string }[]>([]);
 
   const delayMenuRef = useRef<HTMLDivElement>(null);
   const langMenuRef = useRef<HTMLDivElement>(null);
@@ -237,6 +248,7 @@ export default function WriteLetterPage() {
         if (draft.language) setLanguage(draft.language);
         if (draft.uploadedImages) setUploadedImages(draft.uploadedImages);
         if (draft.uploadedMusic !== undefined) setUploadedMusic(draft.uploadedMusic);
+        if (draft.musicTitle !== undefined) setMusicTitle(draft.musicTitle);
         if (draft.musicCover !== undefined) setMusicCover(draft.musicCover);
         if (draft.coverTitle !== undefined) setCoverTitle(draft.coverTitle);
         if (draft.coverSubtitle !== undefined) setCoverSubtitle(draft.coverSubtitle);
@@ -270,6 +282,7 @@ export default function WriteLetterPage() {
         language,
         uploadedImages,
         uploadedMusic,
+        musicTitle,
         musicCover,
         coverTitle,
         coverSubtitle,
@@ -281,7 +294,7 @@ export default function WriteLetterPage() {
     } catch (e) {
       console.error('Error saving draft', e);
     }
-  }, [content, receiver, delay, language, uploadedImages, uploadedMusic, musicCover, coverTitle, coverSubtitle, recordedVoices, embeddedMemories, nextEmbedId]);
+  }, [content, receiver, delay, language, uploadedImages, uploadedMusic, musicTitle, musicCover, coverTitle, coverSubtitle, recordedVoices, embeddedMemories, nextEmbedId]);
 
   useEffect(() => {
     const checkActiveLetter = async () => {
@@ -687,7 +700,9 @@ export default function WriteLetterPage() {
           content: `[To: ${receiver || 'my love'}]\n\n${finalContent}`,
           images: uploadedImages,
           music: uploadedMusic ? (musicCover ? `${uploadedMusic}|${musicCover}` : uploadedMusic) : null,
+          musicTitle: musicTitle || null,
           voices: recordedVoices.map(v => v.url),
+          voiceTitles: recordedVoices.map(v => v.title || 'Voice Note'),
           receiverName: receiver || 'My Love',
           delayMinutes,
           coverTitle: coverTitle || 'Dear You.',
@@ -703,6 +718,7 @@ export default function WriteLetterPage() {
         setCoverSubtitle('');
         setUploadedImages([]);
         setUploadedMusic(null);
+        setMusicTitle('');
         setRecordedVoices([]);
         setEmbeddedMemories({});
         sessionStorage.removeItem('writeLetterDraft');
@@ -1105,7 +1121,16 @@ export default function WriteLetterPage() {
           >
             <div className="bg-[#1a1a1a] border border-white/20 p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center">
               <h3 className="text-white text-xl font-serif mb-2">Music Uploaded</h3>
-              <p className="text-white/60 mb-6 text-sm">Would you like to add a cover art image for this music card?</p>
+              <p className="text-white/60 mb-4 text-sm">Would you like to add a title and cover art?</p>
+              
+              <input 
+                type="text"
+                placeholder="Music Title (Optional)"
+                value={musicTitle}
+                onChange={(e) => setMusicTitle(e.target.value)}
+                className="w-full bg-black/40 border border-white/20 rounded-xl px-4 py-3 text-white text-sm mb-6 focus:outline-none focus:border-white transition-colors"
+              />
+
               <div className="flex gap-4 justify-center">
                 <button 
                   onClick={() => setShowCoverPrompt(false)}
@@ -1240,6 +1265,10 @@ export default function WriteLetterPage() {
                       <VoiceNoteCard
                         id={voice.id}
                         url={voice.url}
+                        title={voice.title}
+                        onTitleChange={(newTitle) => {
+                          setRecordedVoices(prev => prev.map(v => v.id === voice.id ? { ...v, title: newTitle } : v));
+                        }}
                         onRemove={(id) => setRecordedVoices(prev => prev.filter(v => v.id !== id))}
                         onAdd={() => setIsVoicePopupOpen(true)}
                         isTop={isTop}
