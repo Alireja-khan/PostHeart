@@ -89,15 +89,18 @@ export default function ImageCard({ letter, imageUrl, onUpdate }: ImageCardProps
   return (
     <div 
       onClick={handleCardClick}
-      className="relative aspect-square group overflow-hidden bg-[#1a1a1a] border border-white/5 rounded-xl block cursor-pointer hover:border-[#c2410c]/50 transition-colors"
+      className="relative aspect-square group bg-[#1a1a1a] border border-white/5 rounded-xl block cursor-pointer hover:border-[#c2410c]/50 transition-colors"
     >
-      <img 
-        src={imageUrl} 
-        alt="Letter attachment" 
-        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-40"
-      />
+      <div className="absolute inset-0 rounded-xl overflow-hidden pointer-events-none">
+        <img 
+          src={imageUrl} 
+          alt="Letter attachment" 
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-40"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 opacity-0 group-hover:opacity-100 transition-opacity" />
+      </div>
       
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-4">
+      <div className="absolute inset-0 flex flex-col justify-between p-4 rounded-xl">
         
         {/* Top bar with menu and badges */}
         <div className="flex justify-between items-start w-full">

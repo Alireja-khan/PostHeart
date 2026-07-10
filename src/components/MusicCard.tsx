@@ -188,7 +188,7 @@ export default function MusicCard({ letter, onUpdate, currentUserId }: MusicCard
   if (!letter.music) return null;
 
   return (
-    <div className={`bg-[#111] border ${hasError ? 'border-red-900/50' : 'border-[#222]'} rounded-2xl p-4 flex flex-col gap-4 relative group hover:border-[#c2410c]/40 transition-all shadow-lg hover:shadow-xl hover:shadow-[#c2410c]/5 overflow-hidden`}>
+    <div className={`bg-[#111] border ${hasError ? 'border-red-900/50' : 'border-[#222]'} rounded-2xl p-4 flex flex-col gap-4 relative group hover:border-[#c2410c]/40 transition-all shadow-lg hover:shadow-xl hover:shadow-[#c2410c]/5`}>
       <audio ref={audioRef} src={optimizedUrl} preload="metadata" />
       
       <div className="flex gap-4">

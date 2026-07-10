@@ -74,9 +74,10 @@ export default function LetterCard({ letter, onUpdate, currentUserId }: LetterCa
   return (
     <div 
       onClick={handleCardClick}
-      className="relative block w-full aspect-[16/10] bg-[#1a1a1a] border border-[#333333] rounded-xl overflow-hidden group hover:border-[#c2410c]/50 transition-colors cursor-pointer"
+      className="relative block w-full aspect-[16/10] bg-[#1a1a1a] border border-[#333333] rounded-xl group hover:border-[#c2410c]/50 transition-colors cursor-pointer"
     >
-      {/* Background Image & Gradient */}
+      <div className="absolute inset-0 rounded-xl overflow-hidden pointer-events-none">
+        {/* Background Image & Gradient */}
       {bgImage && (
         <>
           <img src={bgImage} alt="Cover" className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity" />
@@ -86,9 +87,10 @@ export default function LetterCard({ letter, onUpdate, currentUserId }: LetterCa
       {!bgImage && (
         <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a1a] to-[#111111]" />
       )}
+      </div>
 
       {/* Content Container */}
-      <div className="absolute inset-0 p-5 flex flex-col justify-between z-10">
+      <div className="absolute inset-0 p-5 flex flex-col justify-between z-10 rounded-xl">
         
         {/* Top Row: From & Date */}
         <div className="flex justify-between items-start">

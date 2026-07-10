@@ -206,7 +206,7 @@ export default function VoiceCard({ letter, voiceUrl, onUpdate }: VoiceCardProps
   };
 
   return (
-    <div className={`py-6 flex flex-col md:flex-row gap-6 relative group border-b border-white/5 last:border-0 transition-all overflow-hidden`}>
+    <div className={`py-6 flex flex-col md:flex-row gap-6 relative group border-b border-white/5 last:border-0 transition-all`}>
       <audio id={`voice-audio-${voiceUrl}`} ref={audioRef} src={optimizedUrl} preload="metadata" />
 
       {/* Voice Icon Button */}
