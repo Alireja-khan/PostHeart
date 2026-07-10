@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { MoreHorizontal, Pin, Star } from 'lucide-react';
+import { MoreHorizontal, Pin, Star, Maximize2, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -28,22 +28,31 @@ interface ImageCardProps {
 
 export default function ImageCard({ letter, imageUrl, onUpdate }: ImageCardProps) {
   const [showMenu, setShowMenu] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const router = useRouter();
   
   const titleText = letter.coverTitle || (letter.content.substring(0, 50) + '...');
+  const isImagePinned = letter.pinnedImages?.includes(imageUrl) || false;
+  const isImageSpecial = letter.specialImages?.includes(imageUrl) || false;
 
   const handleTogglePin = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setShowMenu(false);
     
-    const newPinnedStatus = !letter.isPinned;
-    onUpdate(letter.id, { isPinned: newPinnedStatus });
+    let newPinnedImages = letter.pinnedImages || [];
+    if (isImagePinned) {
+      newPinnedImages = newPinnedImages.filter((url: string) => url !== imageUrl);
+    } else {
+      newPinnedImages = [...newPinnedImages, imageUrl];
+    }
+    
+    onUpdate(letter.id, { pinnedImages: newPinnedImages });
     
     await fetch('/api/world/media', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: letter.id, isPinned: newPinnedStatus })
+      body: JSON.stringify({ id: letter.id, togglePinImage: true, imageUrl })
     });
   };
 
@@ -52,13 +61,19 @@ export default function ImageCard({ letter, imageUrl, onUpdate }: ImageCardProps
     e.stopPropagation();
     setShowMenu(false);
     
-    const newSpecialStatus = !letter.isSpecial;
-    onUpdate(letter.id, { isSpecial: newSpecialStatus });
+    let newSpecialImages = letter.specialImages || [];
+    if (isImageSpecial) {
+      newSpecialImages = newSpecialImages.filter((url: string) => url !== imageUrl);
+    } else {
+      newSpecialImages = [...newSpecialImages, imageUrl];
+    }
+    
+    onUpdate(letter.id, { specialImages: newSpecialImages });
     
     await fetch('/api/world/media', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: letter.id, isSpecial: newSpecialStatus })
+      body: JSON.stringify({ id: letter.id, toggleSpecialImage: true, imageUrl })
     });
   };
 
@@ -86,19 +101,30 @@ export default function ImageCard({ letter, imageUrl, onUpdate }: ImageCardProps
         {/* Top bar with menu and badges */}
         <div className="flex justify-between items-start w-full">
           <div className="flex items-center gap-2">
-            {letter.isPinned && (
+            {isImagePinned && (
               <div className="bg-black/50 backdrop-blur-sm p-1.5 rounded border border-white/5 text-[#c2410c]" title="Pinned">
                 <Pin size={12} className="fill-current" />
               </div>
             )}
-            {letter.isSpecial && (
+            {isImageSpecial && (
               <div className="bg-black/50 backdrop-blur-sm p-1.5 rounded border border-white/5 text-[#c2410c]" title="Special">
                 <Star size={12} className="fill-current" />
               </div>
             )}
           </div>
 
-          <div className="relative">
+          <div className="flex gap-2 relative">
+            <button 
+              className="bg-black/60 backdrop-blur-md p-2 rounded-xl border border-white/5 hover:bg-[#c2410c]/20 hover:border-[#c2410c]/50 transition-colors cursor-pointer text-white/80"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsFullscreen(true);
+              }}
+              title="View Fullscreen"
+            >
+              <Maximize2 size={16} />
+            </button>
             <button 
               className="bg-black/60 backdrop-blur-md p-2 rounded-xl border border-white/5 hover:bg-[#c2410c]/20 hover:border-[#c2410c]/50 transition-colors cursor-pointer text-white/80"
               onClick={(e) => {
@@ -125,15 +151,15 @@ export default function ImageCard({ letter, imageUrl, onUpdate }: ImageCardProps
                     onClick={handleTogglePin}
                     className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-white/70 hover:text-white hover:bg-[#333333] rounded-md transition-colors relative z-50"
                   >
-                    <Pin size={14} className={letter.isPinned ? "text-[#c2410c]" : ""} />
-                    <span>{letter.isPinned ? 'Unpin image' : 'Pin image'}</span>
+                    <Pin size={14} className={isImagePinned ? "text-[#c2410c]" : ""} />
+                    <span>{isImagePinned ? 'Unpin image' : 'Pin image'}</span>
                   </button>
                   <button 
                     onClick={handleToggleSpecial}
                     className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-white/70 hover:text-white hover:bg-[#333333] rounded-md transition-colors relative z-50"
                   >
-                    <Star size={14} className={letter.isSpecial ? "text-[#c2410c]" : ""} />
-                    <span className="whitespace-nowrap">{letter.isSpecial ? 'Remove special' : 'Put as special'}</span>
+                    <Star size={14} className={isImageSpecial ? "text-[#c2410c]" : ""} />
+                    <span className="whitespace-nowrap">{isImageSpecial ? 'Remove special' : 'Put as special'}</span>
                   </button>
                 </div>
               </>
@@ -154,6 +180,32 @@ export default function ImageCard({ letter, imageUrl, onUpdate }: ImageCardProps
           </p>
         </div>
       </div>
+
+      {isFullscreen && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsFullscreen(false);
+          }}
+        >
+          <button 
+            className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors border border-white/10"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsFullscreen(false);
+            }}
+          >
+            <X size={24} />
+          </button>
+          <img 
+            src={imageUrl} 
+            alt="Fullscreen view" 
+            className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl border border-white/10"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 }

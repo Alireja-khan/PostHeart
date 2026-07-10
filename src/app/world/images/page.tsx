@@ -42,10 +42,20 @@ function WorldImagesPageContent() {
           json.data.forEach((letter: any) => {
             if (letter.images && Array.isArray(letter.images)) {
               letter.images.forEach((url: string) => {
-                allImages.push({
-                  url,
-                  letter
-                });
+                let shouldAdd = true;
+                
+                if (currentTab === 'pinned') {
+                  shouldAdd = letter.pinnedImages && letter.pinnedImages.includes(url);
+                } else if (currentTab === 'special_me' || currentTab === 'special_them') {
+                  shouldAdd = letter.specialImages && letter.specialImages.includes(url);
+                }
+
+                if (shouldAdd) {
+                  allImages.push({
+                    url,
+                    letter
+                  });
+                }
               });
             }
           });
@@ -63,19 +73,21 @@ function WorldImagesPageContent() {
 
   const handleUpdateLetter = (id: string, data: any) => {
     setImages(prev => {
-      if (currentTab === 'pinned' && data.isPinned === false) {
-        return prev.filter(img => img.letter.id !== id);
-      }
-      if ((currentTab === 'special_me' || currentTab === 'special_them') && data.isSpecial === false) {
-        return prev.filter(img => img.letter.id !== id);
-      }
-      
-      return prev.map(img => {
+      let next = prev.map(img => {
         if (img.letter.id === id) {
           return { ...img, letter: { ...img.letter, ...data } };
         }
         return img;
       });
+
+      if (currentTab === 'pinned') {
+        next = next.filter(img => img.letter.pinnedImages && img.letter.pinnedImages.includes(img.url));
+      }
+      if (currentTab === 'special_me' || currentTab === 'special_them') {
+        next = next.filter(img => img.letter.specialImages && img.letter.specialImages.includes(img.url));
+      }
+      
+      return next;
     });
   };
 

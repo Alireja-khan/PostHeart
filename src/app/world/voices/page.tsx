@@ -8,6 +8,7 @@ import { ArrowLeft, Mic } from 'lucide-react';
 import BirdLoader from '@/components/BirdLoader';
 import WorldMediaTabs from '@/components/WorldMediaTabs';
 import VoiceCard from '@/components/VoiceCard';
+import { Play } from 'lucide-react';
 
 import { Suspense } from 'react';
 
@@ -22,6 +23,8 @@ function WorldVoicesPageContent() {
   const [loading, setLoading] = useState(true);
   const [voices, setVoices] = useState<{url: string, letter: any}[]>([]);
   const [years, setYears] = useState<string[]>([]);
+  const [playingAll, setPlayingAll] = useState(false);
+  const [currentPlayIndex, setCurrentPlayIndex] = useState(-1);
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login');
@@ -42,10 +45,20 @@ function WorldVoicesPageContent() {
           json.data.forEach((letter: any) => {
             if (letter.voices && Array.isArray(letter.voices)) {
               letter.voices.forEach((url: string) => {
-                allVoices.push({
-                  url,
-                  letter
-                });
+                let shouldAdd = true;
+                
+                if (currentTab === 'pinned') {
+                  shouldAdd = letter.pinnedVoices && letter.pinnedVoices.includes(url);
+                } else if (currentTab === 'special_me' || currentTab === 'special_them') {
+                  shouldAdd = letter.specialVoices && letter.specialVoices.includes(url);
+                }
+
+                if (shouldAdd) {
+                  allVoices.push({
+                    url,
+                    letter
+                  });
+                }
               });
             }
           });
@@ -61,21 +74,61 @@ function WorldVoicesPageContent() {
     fetchVoices();
   }, [status, currentTab, currentYear]);
 
+  const handlePlayAll = () => {
+    if (voices.length === 0) return;
+    setPlayingAll(true);
+    setCurrentPlayIndex(0);
+  };
+
+  useEffect(() => {
+    if (!playingAll || currentPlayIndex < 0 || currentPlayIndex >= voices.length) {
+       setPlayingAll(false);
+       return;
+    }
+    const currentVoice = voices[currentPlayIndex];
+    const audioEl = document.getElementById(`voice-audio-${currentVoice.url}`) as HTMLAudioElement;
+    if (audioEl) {
+      const handleEnded = () => {
+        setCurrentPlayIndex(prev => prev + 1);
+        audioEl.removeEventListener('ended', handleEnded);
+      };
+      audioEl.addEventListener('ended', handleEnded);
+      
+      const allAudios = document.querySelectorAll('audio');
+      allAudios.forEach(a => {
+        if (a !== audioEl && !a.paused) a.pause();
+      });
+      
+      audioEl.play().catch(e => {
+        setCurrentPlayIndex(prev => prev + 1);
+        audioEl.removeEventListener('ended', handleEnded);
+      });
+      
+      return () => {
+        audioEl.removeEventListener('ended', handleEnded);
+      };
+    } else {
+      setCurrentPlayIndex(prev => prev + 1);
+    }
+  }, [currentPlayIndex, playingAll, voices]);
+
   const handleUpdateLetter = (id: string, data: any) => {
     setVoices(prev => {
-      if (currentTab === 'pinned' && data.isPinned === false) {
-        return prev.filter(v => v.letter.id !== id);
-      }
-      if ((currentTab === 'special_me' || currentTab === 'special_them') && data.isSpecial === false) {
-        return prev.filter(v => v.letter.id !== id);
-      }
-      
-      return prev.map(v => {
+      let next = prev.map(v => {
         if (v.letter.id === id) {
           return { ...v, letter: { ...v.letter, ...data } };
         }
         return v;
       });
+
+      if (currentTab === 'pinned') {
+        next = next.filter(img => img.letter.pinnedVoices && img.letter.pinnedVoices.includes(img.url));
+      }
+      if (currentTab === 'special_me' || currentTab === 'special_them') {
+        next = next.filter(img => img.letter.specialVoices && img.letter.specialVoices.includes(img.url));
+      }
+      
+      return next;
     });
   };
 
@@ -91,15 +144,32 @@ function WorldVoicesPageContent() {
     <div className="max-w-6xl mx-auto px-6 py-12 md:py-20 min-h-screen">
       
       {/* Header */}
-      <div className="mb-12">
-        <Link href="/world" className="inline-flex items-center space-x-2 text-white/40 hover:text-white transition-colors font-mono text-[10px] uppercase tracking-widest mb-6">
-          <ArrowLeft size={14} />
-          <span>Back to My World</span>
-        </Link>
-        <h1 className="font-serif text-4xl font-light text-white tracking-wide flex items-center gap-4">
-          <Mic className="text-[#c2410c]" size={36} strokeWidth={1.5} />
-          Voice Notes<span className="text-[#c2410c]">.</span>
-        </h1>
+      <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <Link href="/world" className="inline-flex items-center space-x-2 text-white/40 hover:text-white transition-colors font-mono text-[10px] uppercase tracking-widest mb-6">
+            <ArrowLeft size={14} />
+            <span>Back to My World</span>
+          </Link>
+          <h1 className="font-serif text-4xl font-light text-white tracking-wide flex items-center gap-4">
+            <Mic className="text-[#c2410c]" size={36} strokeWidth={1.5} />
+            Voice Notes<span className="text-[#c2410c]">.</span>
+          </h1>
+        </div>
+
+        {voices.length > 0 && !loading && (
+          <button 
+            onClick={handlePlayAll}
+            disabled={playingAll}
+            className={`flex items-center gap-2 px-6 py-3 rounded-full font-serif text-sm transition-all ${
+              playingAll 
+                ? 'bg-[#c2410c]/20 text-[#c2410c] cursor-not-allowed' 
+                : 'bg-[#c2410c] text-white hover:bg-[#c2410c]/90 hover:shadow-lg hover:shadow-[#c2410c]/20 hover:-translate-y-0.5'
+            }`}
+          >
+            <Play size={16} className={playingAll ? 'animate-pulse' : 'fill-current'} />
+            {playingAll ? 'Playing All...' : 'Play All Notes'}
+          </button>
+        )}
       </div>
 
       <WorldMediaTabs years={years} />

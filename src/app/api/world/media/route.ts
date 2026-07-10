@@ -39,18 +39,46 @@ export async function GET(request: Request) {
         whereClause = { receiverId: user.id };
         break;
       case 'pinned':
-        whereClause = { 
-          OR: [
-            { senderId: user.id, isPinned: true },
-            { receiverId: user.id, isPinned: true }
-          ]
-        };
+        if (mediaType === 'images') {
+          whereClause = { 
+            OR: [
+              { senderId: user.id, pinnedImages: { isEmpty: false } },
+              { receiverId: user.id, pinnedImages: { isEmpty: false } }
+            ]
+          };
+        } else if (mediaType === 'voices') {
+          whereClause = { 
+            OR: [
+              { senderId: user.id, pinnedVoices: { isEmpty: false } },
+              { receiverId: user.id, pinnedVoices: { isEmpty: false } }
+            ]
+          };
+        } else {
+          whereClause = { 
+            OR: [
+              { senderId: user.id, isPinned: true },
+              { receiverId: user.id, isPinned: true }
+            ]
+          };
+        }
         break;
       case 'special_me':
-        whereClause = { senderId: user.id, isSpecial: true };
+        if (mediaType === 'images') {
+          whereClause = { senderId: user.id, specialImages: { isEmpty: false } };
+        } else if (mediaType === 'voices') {
+          whereClause = { senderId: user.id, specialVoices: { isEmpty: false } };
+        } else {
+          whereClause = { senderId: user.id, isSpecial: true };
+        }
         break;
       case 'special_them':
-        whereClause = { receiverId: user.id, isSpecial: true };
+        if (mediaType === 'images') {
+          whereClause = { receiverId: user.id, specialImages: { isEmpty: false } };
+        } else if (mediaType === 'voices') {
+          whereClause = { receiverId: user.id, specialVoices: { isEmpty: false } };
+        } else {
+          whereClause = { receiverId: user.id, isSpecial: true };
+        }
         break;
       default:
         whereClause = { senderId: user.id };
@@ -122,7 +150,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id, isPinned, isSpecial, specialFor } = await request.json();
+    const { id, isPinned, isSpecial, specialFor, imageUrl, togglePinImage, toggleSpecialImage, voiceUrl, togglePinVoice, toggleSpecialVoice } = await request.json();
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
@@ -145,13 +173,51 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'Letter not found or unauthorized' }, { status: 404 });
     }
 
+    let updateData: any = {
+      isPinned: isPinned !== undefined ? isPinned : letter.isPinned,
+      isSpecial: isSpecial !== undefined ? isSpecial : letter.isSpecial,
+      specialFor: specialFor !== undefined ? specialFor : letter.specialFor
+    };
+
+    if (togglePinImage && imageUrl) {
+      const currentPinned = letter.pinnedImages || [];
+      if (currentPinned.includes(imageUrl)) {
+        updateData.pinnedImages = currentPinned.filter((url: string) => url !== imageUrl);
+      } else {
+        updateData.pinnedImages = [...currentPinned, imageUrl];
+      }
+    }
+
+    if (toggleSpecialImage && imageUrl) {
+      const currentSpecial = letter.specialImages || [];
+      if (currentSpecial.includes(imageUrl)) {
+        updateData.specialImages = currentSpecial.filter((url: string) => url !== imageUrl);
+      } else {
+        updateData.specialImages = [...currentSpecial, imageUrl];
+      }
+    }
+
+    if (togglePinVoice && voiceUrl) {
+      const currentPinned = letter.pinnedVoices || [];
+      if (currentPinned.includes(voiceUrl)) {
+        updateData.pinnedVoices = currentPinned.filter((url: string) => url !== voiceUrl);
+      } else {
+        updateData.pinnedVoices = [...currentPinned, voiceUrl];
+      }
+    }
+
+    if (toggleSpecialVoice && voiceUrl) {
+      const currentSpecial = letter.specialVoices || [];
+      if (currentSpecial.includes(voiceUrl)) {
+        updateData.specialVoices = currentSpecial.filter((url: string) => url !== voiceUrl);
+      } else {
+        updateData.specialVoices = [...currentSpecial, voiceUrl];
+      }
+    }
+
     const updated = await prisma.letter.update({
       where: { id: id },
-      data: {
-        isPinned: isPinned !== undefined ? isPinned : letter.isPinned,
-        isSpecial: isSpecial !== undefined ? isSpecial : letter.isSpecial,
-        specialFor: specialFor !== undefined ? specialFor : letter.specialFor
-      }
+      data: updateData
     });
 
     return NextResponse.json({ success: true, data: updated });

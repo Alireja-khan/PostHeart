@@ -157,33 +157,50 @@ export default function VoiceCard({ letter, voiceUrl, onUpdate }: VoiceCardProps
     }
   };
 
+  const isVoicePinned = letter.pinnedVoices?.includes(voiceUrl) || false;
+  const isVoiceSpecial = letter.specialVoices?.includes(voiceUrl) || false;
+
   const handleTogglePin = async () => {
     setShowMenu(false);
-    const newPinnedStatus = !letter.isPinned;
-    onUpdate(letter.id, { isPinned: newPinnedStatus });
+    
+    let newPinnedVoices = letter.pinnedVoices || [];
+    if (isVoicePinned) {
+      newPinnedVoices = newPinnedVoices.filter((url: string) => url !== voiceUrl);
+    } else {
+      newPinnedVoices = [...newPinnedVoices, voiceUrl];
+    }
+    
+    onUpdate(letter.id, { pinnedVoices: newPinnedVoices });
     
     await fetch('/api/world/media', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: letter.id, isPinned: newPinnedStatus })
+      body: JSON.stringify({ id: letter.id, togglePinVoice: true, voiceUrl })
     });
   };
 
   const handleToggleSpecial = async () => {
     setShowMenu(false);
-    const newSpecialStatus = !letter.isSpecial;
-    onUpdate(letter.id, { isSpecial: newSpecialStatus });
+    
+    let newSpecialVoices = letter.specialVoices || [];
+    if (isVoiceSpecial) {
+      newSpecialVoices = newSpecialVoices.filter((url: string) => url !== voiceUrl);
+    } else {
+      newSpecialVoices = [...newSpecialVoices, voiceUrl];
+    }
+    
+    onUpdate(letter.id, { specialVoices: newSpecialVoices });
     
     await fetch('/api/world/media', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: letter.id, isSpecial: newSpecialStatus })
+      body: JSON.stringify({ id: letter.id, toggleSpecialVoice: true, voiceUrl })
     });
   };
 
   return (
-    <div className={`bg-[#111] border ${hasError ? 'border-red-900/50' : 'border-[#222]'} rounded-2xl p-4 md:p-6 flex flex-col md:flex-row gap-6 relative group hover:border-[#c2410c]/40 transition-all shadow-lg hover:shadow-xl hover:shadow-[#c2410c]/5 overflow-hidden`}>
-      <audio ref={audioRef} src={optimizedUrl} preload="metadata" />
+    <div className={`py-6 flex flex-col md:flex-row gap-6 relative group border-b border-white/5 last:border-0 transition-all overflow-hidden`}>
+      <audio id={`voice-audio-${voiceUrl}`} ref={audioRef} src={optimizedUrl} preload="metadata" />
 
       {/* Voice Icon Button */}
       <div 
@@ -200,8 +217,8 @@ export default function VoiceCard({ letter, voiceUrl, onUpdate }: VoiceCardProps
             <div className="text-[9px] uppercase font-mono tracking-widest text-white/40 mb-1 flex items-center gap-2">
               <Mic size={10} className="text-[#c2410c]" />
               <span className="truncate">Voice Note • {timeAgo(letter.createdAt)}</span>
-              {letter.isPinned && <Pin size={10} className="text-[#c2410c] fill-current flex-shrink-0" />}
-              {letter.isSpecial && <Star size={10} className="text-[#c2410c] fill-current flex-shrink-0" />}
+              {isVoicePinned && <Pin size={10} className="text-[#c2410c] fill-current flex-shrink-0" />}
+              {isVoiceSpecial && <Star size={10} className="text-[#c2410c] fill-current flex-shrink-0" />}
             </div>
             <Link href={`/letter/${letter.id}`} className="font-serif text-xl text-white hover:text-[#c2410c] transition-colors truncate block w-full" title={titleText}>
               From: {titleText}
@@ -226,15 +243,15 @@ export default function VoiceCard({ letter, voiceUrl, onUpdate }: VoiceCardProps
                     onClick={handleTogglePin}
                     className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-white/70 hover:text-white hover:bg-white/5 rounded-md transition-colors"
                   >
-                    <Pin size={14} className={letter.isPinned ? "text-[#c2410c]" : ""} />
-                    <span>{letter.isPinned ? 'Unpin voice' : 'Pin voice'}</span>
+                    <Pin size={14} className={isVoicePinned ? "text-[#c2410c]" : ""} />
+                    <span>{isVoicePinned ? 'Unpin voice' : 'Pin voice'}</span>
                   </button>
                   <button 
                     onClick={handleToggleSpecial}
                     className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-white/70 hover:text-white hover:bg-white/5 rounded-md transition-colors"
                   >
-                    <Star size={14} className={letter.isSpecial ? "text-[#c2410c]" : ""} />
-                    <span className="whitespace-nowrap">{letter.isSpecial ? 'Remove special' : 'Put as special'}</span>
+                    <Star size={14} className={isVoiceSpecial ? "text-[#c2410c]" : ""} />
+                    <span className="whitespace-nowrap">{isVoiceSpecial ? 'Remove special' : 'Put as special'}</span>
                   </button>
                 </div>
               </>

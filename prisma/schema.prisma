@@ -55,6 +55,10 @@ model Letter {
   
   isPinned    Boolean  @default(false)
   isSpecial   Boolean  @default(false)
+  pinnedImages String[] @default([])
+  specialImages String[] @default([])
+  pinnedVoices String[] @default([])
+  specialVoices String[] @default([])
   specialFor  String?  // 'sender' or 'receiver'
   
   senderId    String   @db.ObjectId
