@@ -79,6 +79,18 @@ function WorldVoicesPageContent() {
     };
 
     fetchVoices();
+
+    const handleFolderItemUpdated = (e: any) => {
+      const { folderId, action } = e.detail || {};
+      if (currentTab === folderId && action === 'remove') {
+        fetchVoices();
+      }
+    };
+    window.addEventListener('folderItemUpdated', handleFolderItemUpdated as EventListener);
+    
+    return () => {
+      window.removeEventListener('folderItemUpdated', handleFolderItemUpdated as EventListener);
+    };
   }, [status, currentTab, currentYear, searchQuery]);
 
   const handlePlayAll = () => {

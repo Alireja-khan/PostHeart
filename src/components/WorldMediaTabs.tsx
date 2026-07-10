@@ -43,6 +43,13 @@ export default function WorldMediaTabs({ years, partnerGender }: { years: string
 
   useEffect(() => {
     fetchFolders();
+
+    const handleFolderUpdated = () => {
+      fetchFolders();
+    };
+
+    window.addEventListener('folderUpdated', handleFolderUpdated);
+    return () => window.removeEventListener('folderUpdated', handleFolderUpdated);
   }, [mediaType]);
 
   const fetchFolders = async () => {

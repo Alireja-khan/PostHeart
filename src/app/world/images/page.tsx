@@ -69,6 +69,18 @@ function WorldImagesPageContent() {
     };
 
     fetchImages();
+
+    const handleFolderItemUpdated = (e: any) => {
+      const { folderId, action } = e.detail || {};
+      if (currentTab === folderId && action === 'remove') {
+        fetchImages();
+      }
+    };
+    window.addEventListener('folderItemUpdated', handleFolderItemUpdated as EventListener);
+    
+    return () => {
+      window.removeEventListener('folderItemUpdated', handleFolderItemUpdated as EventListener);
+    };
   }, [status, currentTab, currentYear]);
 
   const handleUpdateLetter = (id: string, data: any) => {

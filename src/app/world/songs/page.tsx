@@ -56,6 +56,18 @@ function WorldSongsPageContent() {
     };
 
     fetchSongs();
+
+    const handleFolderItemUpdated = (e: any) => {
+      const { folderId, action } = e.detail || {};
+      if (currentTab === folderId && action === 'remove') {
+        fetchSongs();
+      }
+    };
+    window.addEventListener('folderItemUpdated', handleFolderItemUpdated as EventListener);
+    
+    return () => {
+      window.removeEventListener('folderItemUpdated', handleFolderItemUpdated as EventListener);
+    };
   }, [status, currentTab, currentYear, searchQuery]);
 
   const handleUpdateLetter = (id: string, data: any) => {

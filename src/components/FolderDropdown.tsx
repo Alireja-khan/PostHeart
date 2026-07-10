@@ -75,6 +75,7 @@ export default function FolderDropdown({ itemId, mediaType }: FolderDropdownProp
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ folderId: folder.id, itemId, action })
       });
+      window.dispatchEvent(new CustomEvent('folderItemUpdated', { detail: { folderId: folder.id, action, itemId } }));
     } catch (e) {
       console.error(e);
       fetchFolders(); // revert
@@ -97,6 +98,9 @@ export default function FolderDropdown({ itemId, mediaType }: FolderDropdownProp
         setIsCreating(false);
         // auto add this item to the new folder
         await handleToggleFolder(newFolder);
+        
+        // Notify other components that a new folder was created
+        window.dispatchEvent(new Event('folderUpdated'));
       }
     } catch (error) {
       console.error(error);
