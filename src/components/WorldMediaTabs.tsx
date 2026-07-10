@@ -44,12 +44,22 @@ export default function WorldMediaTabs({ years, partnerGender }: { years: string
   useEffect(() => {
     fetchFolders();
 
-    const handleFolderUpdated = () => {
-      fetchFolders();
+    const handleFolderUpdated = (e: any) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail?.newFolder) {
+        setCustomFolders(prev => {
+          if (!prev.find(f => f.id === customEvent.detail.newFolder.id)) {
+            return [...prev, customEvent.detail.newFolder];
+          }
+          return prev;
+        });
+      } else {
+        fetchFolders();
+      }
     };
 
-    window.addEventListener('folderUpdated', handleFolderUpdated);
-    return () => window.removeEventListener('folderUpdated', handleFolderUpdated);
+    window.addEventListener('folderUpdated', handleFolderUpdated as EventListener);
+    return () => window.removeEventListener('folderUpdated', handleFolderUpdated as EventListener);
   }, [mediaType]);
 
   const fetchFolders = async () => {

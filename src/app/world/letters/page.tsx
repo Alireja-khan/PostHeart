@@ -60,9 +60,9 @@ function WorldLettersPageContent() {
     fetchLetters();
 
     const handleFolderItemUpdated = (e: any) => {
-      const { folderId, action } = e.detail || {};
-      if (currentTab === folderId && action === 'remove') {
-        fetchLetters();
+      const { folderId, action, itemId } = e.detail || {};
+      if (currentTab === folderId && action === 'remove' && itemId) {
+        setLetters(prev => prev.filter(l => l.id !== itemId));
       }
     };
     window.addEventListener('folderItemUpdated', handleFolderItemUpdated as EventListener);

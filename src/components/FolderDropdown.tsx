@@ -100,7 +100,7 @@ export default function FolderDropdown({ itemId, mediaType }: FolderDropdownProp
         await handleToggleFolder(newFolder);
         
         // Notify other components that a new folder was created
-        window.dispatchEvent(new Event('folderUpdated'));
+        window.dispatchEvent(new CustomEvent('folderUpdated', { detail: { newFolder } }));
       }
     } catch (error) {
       console.error(error);

@@ -81,9 +81,9 @@ function WorldVoicesPageContent() {
     fetchVoices();
 
     const handleFolderItemUpdated = (e: any) => {
-      const { folderId, action } = e.detail || {};
-      if (currentTab === folderId && action === 'remove') {
-        fetchVoices();
+      const { folderId, action, itemId } = e.detail || {};
+      if (currentTab === folderId && action === 'remove' && itemId) {
+        setVoices(prev => prev.filter(v => v.letter.id !== itemId));
       }
     };
     window.addEventListener('folderItemUpdated', handleFolderItemUpdated as EventListener);
