@@ -110,14 +110,14 @@ export default function Desk({ initialLetters }: DeskProps) {
           <motion.div 
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-[100] flex items-center justify-center bg-[#111111]"
+            className="absolute inset-0 z-[100] flex items-center justify-center bg-bg-primary"
           >
             <BirdLoader className="w-16 h-16 text-[#c2410c]" />
           </motion.div>
         )}
       </AnimatePresence>
       <div 
-        className="w-full min-h-full bg-[#111111] p-8 lg:p-12 relative overflow-hidden flex flex-col items-center justify-center"
+        className="w-full min-h-full bg-bg-primary p-8 lg:p-12 relative overflow-hidden flex flex-col items-center justify-center"
         style={{ opacity: isMounted ? 1 : 0, transition: 'opacity 0.7s ease-in-out' }}
       >
       {/* Global SVG Texture Definition */}
@@ -143,7 +143,7 @@ export default function Desk({ initialLetters }: DeskProps) {
                 setViewMode('envelope');
               }
             }}
-            className={`font-serif text-sm uppercase tracking-widest transition-all px-6 py-3 rounded-full border shadow-lg ${activeTab === 'received' ? 'text-[#c2410c] font-bold bg-[#1a1a1a] border-[#333]' : 'text-[#a0a0a0] hover:text-[#f9f8f6] border-transparent'}`}
+            className={`font-serif text-sm uppercase tracking-widest transition-all px-6 py-3 rounded-full border shadow-lg ${activeTab === 'received' ? 'text-[#c2410c] font-bold bg-bg-secondary border-[#333]' : 'text-text-secondary hover:text-text-primary border-transparent'}`}
           >
             Whispers Received
           </button>
@@ -158,7 +158,7 @@ export default function Desk({ initialLetters }: DeskProps) {
                 setViewMode('envelope');
               }
             }}
-            className={`font-serif text-sm uppercase tracking-widest transition-all px-6 py-3 rounded-full border shadow-lg ${activeTab === 'sent' ? 'text-[#c2410c] font-bold bg-[#1a1a1a] border-[#333]' : 'text-[#a0a0a0] hover:text-[#f9f8f6] border-transparent'}`}
+            className={`font-serif text-sm uppercase tracking-widest transition-all px-6 py-3 rounded-full border shadow-lg ${activeTab === 'sent' ? 'text-[#c2410c] font-bold bg-bg-secondary border-[#333]' : 'text-text-secondary hover:text-text-primary border-transparent'}`}
           >
             Echoes Sent
           </button>
@@ -177,7 +177,7 @@ export default function Desk({ initialLetters }: DeskProps) {
               onClick={() => setIsEnvelopeOpen(true)}
             >
               {/* 1. Back of Envelope (z-10) */}
-              <div className="absolute inset-0 bg-[#0d0d0d] rounded-sm overflow-hidden z-10 border border-[#222]">
+              <div className="absolute inset-0 bg-[#0d0d0d] rounded-sm overflow-hidden z-10 border border-border-primary">
                  <div className="absolute inset-0 opacity-20" style={{ backgroundImage: `url(${textureBase64})` }} />
                  <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black to-transparent" />
                  {/* Internal Text / Branding */}
@@ -211,12 +211,13 @@ export default function Desk({ initialLetters }: DeskProps) {
                     >
                       <div className="h-[280px] shrink-0" /> {/* Spacer for top fading */}
                       {filteredLetters.length === 0 && (
-                        <div className="text-center mt-20 text-[#a0a0a0] font-serif italic">
+                        <div className="text-center mt-20 text-text-secondary font-serif italic">
                           No letters found in this mailbox.
                         </div>
                       )}
                       {filteredLetters.map((letter) => {
-                        const coverImage = letter.images && letter.images.length > 0 ? letter.images[0] : null;
+                        const rawCoverImage = letter.images && letter.images.length > 0 ? letter.images[0] : null;
+                        const coverImage = rawCoverImage?.includes('res.cloudinary.com') ? rawCoverImage.replace('/upload/', '/upload/q_auto,f_auto,w_800/') : rawCoverImage;
 
                         return (
                           <div
@@ -225,7 +226,7 @@ export default function Desk({ initialLetters }: DeskProps) {
                               e.stopPropagation(); 
                               router.push(`/letter/${letter.id}`);
                             }}
-                            className="w-full max-w-[340px] shrink-0 h-[200px] rounded-2xl overflow-hidden border border-white/20 cursor-pointer group hover:scale-[1.02] transition-transform duration-300 relative"
+                            className="w-full max-w-[340px] shrink-0 h-[200px] rounded-2xl overflow-hidden border border-text-primary/20 cursor-pointer group hover:scale-[1.02] transition-transform duration-300 relative"
                             style={{ 
                               boxShadow: '0 10px 30px rgba(0,0,0,0.8)',
                               backgroundColor: '#222',
@@ -238,26 +239,26 @@ export default function Desk({ initialLetters }: DeskProps) {
                             
                             <div className="relative z-10 h-full p-5 flex flex-col justify-between">
                               <div className="flex justify-between items-start">
-                                <span className="text-[10px] uppercase tracking-widest text-[#a0a0a0] font-bold bg-black/60 px-2 py-1 rounded backdrop-blur-md">
+                                <span className="text-[10px] uppercase tracking-widest text-text-secondary font-bold bg-bg-primary/60 px-2 py-1 rounded backdrop-blur-md">
                                   From {letter.sender.name}
                                 </span>
-                                <span className="text-[10px] font-mono text-white/80 bg-black/60 px-2 py-1 rounded backdrop-blur-md">
+                                <span className="text-[10px] font-mono text-text-primary/80 bg-bg-primary/60 px-2 py-1 rounded backdrop-blur-md">
                                   {formatTime(letter.deliverAt)}
                                 </span>
                               </div>
 
                               <div className="my-auto">
-                                <p className="font-serif text-white text-lg leading-snug line-clamp-2 drop-shadow-lg">
+                                <p className="font-serif text-text-primary text-lg leading-snug line-clamp-2 drop-shadow-lg">
                                   "{cleanContent(letter.content)}"
                                 </p>
                               </div>
 
-                              <div className="flex items-center gap-3 bg-black/60 backdrop-blur-md p-2 px-3 rounded-lg border border-white/10 w-fit mt-auto">
-                                {letter.images && letter.images.length > 0 && <ImageIcon size={14} className="text-white/70" />}
-                                {letter.music && <Music size={14} className="text-white/70" />}
-                                {letter.voices && letter.voices.length > 0 && <Mic size={14} className="text-white/70" />}
+                              <div className="flex items-center gap-3 bg-bg-primary/60 backdrop-blur-md p-2 px-3 rounded-lg border border-text-primary/10 w-fit mt-auto">
+                                {letter.images && letter.images.length > 0 && <ImageIcon size={14} className="text-text-primary/70" />}
+                                {letter.music && <Music size={14} className="text-text-primary/70" />}
+                                {letter.voices && letter.voices.length > 0 && <Mic size={14} className="text-text-primary/70" />}
                                 {!letter.images?.length && !letter.music && !letter.voices?.length && (
-                                  <span className="text-[10px] text-white/50 italic">Text</span>
+                                  <span className="text-[10px] text-text-primary/50 italic">Text</span>
                                 )}
                               </div>
                             </div>
@@ -324,8 +325,8 @@ export default function Desk({ initialLetters }: DeskProps) {
                   animate={{ opacity: 0 }}
                   className="absolute z-40 top-[60%] left-1/2 -translate-x-1/2 -translate-y-1/2"
                 >
-                  <div className="w-14 h-14 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm flex items-center justify-center shadow-xl transform group-hover:scale-110 transition-transform hover:bg-[#c2410c] hover:border-transparent">
-                    <PackageOpen className="text-white/80" />
+                  <div className="w-14 h-14 rounded-full bg-text-primary/5 border border-text-primary/10 backdrop-blur-sm flex items-center justify-center shadow-xl transform group-hover:scale-110 transition-transform hover:bg-[#c2410c] hover:border-transparent">
+                    <PackageOpen className="text-text-primary/80" />
                   </div>
                 </motion.div>
               )}
@@ -348,7 +349,7 @@ export default function Desk({ initialLetters }: DeskProps) {
             {isEnvelopeOpen && (
               <button 
                 onClick={() => setViewMode('grid')}
-                className="absolute -left-32 top-1/2 flex items-center gap-2 text-[#555] hover:text-[#f9f8f6] transition-colors bg-[#111] px-4 py-2 rounded-full border border-[#222]"
+                className="absolute -left-32 top-1/2 flex items-center gap-2 text-[#555] hover:text-text-primary transition-colors bg-bg-primary px-4 py-2 rounded-full border border-border-primary"
               >
                 <Grid size={14} />
                 <span className="text-xs uppercase tracking-widest font-bold">Grid</span>
@@ -365,7 +366,7 @@ export default function Desk({ initialLetters }: DeskProps) {
             <div className="flex justify-between items-center mb-6">
               <button 
                 onClick={() => setViewMode('envelope')}
-                className="flex items-center gap-2 text-[#a0a0a0] hover:text-[#f9f8f6] transition-colors"
+                className="flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors"
               >
                 <ArrowLeft size={16} />
                 <span className="text-xs uppercase tracking-widest font-bold">Back to Envelope</span>
@@ -374,7 +375,8 @@ export default function Desk({ initialLetters }: DeskProps) {
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full pb-20">
               {filteredLetters.map((letter) => {
-                 const coverImage = letter.images && letter.images.length > 0 ? letter.images[0] : null;
+                 const rawCoverImage = letter.images && letter.images.length > 0 ? letter.images[0] : null;
+                 const coverImage = rawCoverImage?.includes('res.cloudinary.com') ? rawCoverImage.replace('/upload/', '/upload/q_auto,f_auto,w_800/') : rawCoverImage;
                  return (
                   <div
                     key={letter.id}
@@ -390,16 +392,16 @@ export default function Desk({ initialLetters }: DeskProps) {
                     <div className={`absolute inset-0 bg-gradient-to-r ${coverImage ? 'from-black/95 via-black/70 to-black/40' : 'from-[#111] to-[#222]'}`} />
                     <div className="relative z-10 h-full p-5 flex flex-col justify-between">
                       <div className="flex justify-between items-start">
-                        <span className="text-[10px] tracking-wider text-[#a0a0a0] uppercase font-bold">From {letter.sender.name}</span>
-                        <span className="text-[10px] text-white/70 font-mono bg-black/40 px-2 py-1 rounded">{formatTime(letter.deliverAt)}</span>
+                        <span className="text-[10px] tracking-wider text-text-secondary uppercase font-bold">From {letter.sender.name}</span>
+                        <span className="text-[10px] text-text-primary/70 font-mono bg-bg-primary/40 px-2 py-1 rounded">{formatTime(letter.deliverAt)}</span>
                       </div>
 
-                      <h3 className="font-serif text-xl font-bold text-[#f9f8f6] mb-1 group-hover:text-[#c2410c] transition-colors line-clamp-2">
+                      <h3 className="font-serif text-xl font-bold text-text-primary mb-1 group-hover:text-[#c2410c] transition-colors line-clamp-2">
                         "{cleanContent(letter.content).substring(0, 60)}..."
                       </h3>
 
-                      <div className="border-t border-white/10 pt-3 mt-auto flex justify-between items-center text-[10px] text-[#a0a0a0]">
-                        <div className="flex gap-2 bg-black/40 p-1.5 rounded border border-white/5">
+                      <div className="border-t border-text-primary/10 pt-3 mt-auto flex justify-between items-center text-[10px] text-text-secondary">
+                        <div className="flex gap-2 bg-bg-primary/40 p-1.5 rounded border border-text-primary/5">
                           {letter.images && letter.images.length > 0 && <ImageIcon size={12} />}
                           {letter.music && <Music size={12} />}
                           {letter.voices && letter.voices.length > 0 && <Mic size={12} />}

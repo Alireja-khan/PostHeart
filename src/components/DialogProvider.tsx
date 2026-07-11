@@ -82,7 +82,7 @@ export function DialogProvider({ children }: { children: ReactNode }) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-bg-primary/60 backdrop-blur-sm"
               onClick={dialog.onCancel}
             />
             
@@ -91,20 +91,20 @@ export function DialogProvider({ children }: { children: ReactNode }) {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: 'spring', duration: 0.5, bounce: 0.3 }}
-              className="relative w-full max-w-sm bg-[#111111] border border-white/10 rounded-2xl shadow-2xl overflow-hidden"
+              className="relative w-full max-w-sm bg-bg-primary border border-text-primary/10 rounded-2xl shadow-2xl overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="p-6">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className={`p-3 rounded-xl flex-shrink-0 ${dialog.type === 'confirm' ? 'bg-[#c2410c]/20 text-[#c2410c]' : 'bg-white/10 text-white'}`}>
+                  <div className={`p-3 rounded-xl flex-shrink-0 ${dialog.type === 'confirm' ? 'bg-[#c2410c]/20 text-[#c2410c]' : 'bg-text-primary/10 text-text-primary'}`}>
                     {dialog.type === 'confirm' ? <AlertTriangle size={24} /> : <Info size={24} />}
                   </div>
-                  <h3 className="font-serif text-2xl text-white tracking-wide leading-tight">
+                  <h3 className="font-serif text-2xl text-text-primary tracking-wide leading-tight">
                     {dialog.title}
                   </h3>
                 </div>
                 
-                <p className="text-white/60 text-sm leading-relaxed mb-8">
+                <p className="text-text-primary/60 text-sm leading-relaxed mb-8">
                   {dialog.message}
                 </p>
 
@@ -112,7 +112,7 @@ export function DialogProvider({ children }: { children: ReactNode }) {
                   {dialog.type === 'confirm' && (
                     <button
                       onClick={dialog.onCancel}
-                      className="px-5 py-2.5 rounded-full text-xs font-mono uppercase tracking-widest text-white/60 hover:text-white hover:bg-white/5 transition-colors border border-transparent"
+                      className="px-5 py-2.5 rounded-full text-xs font-mono uppercase tracking-widest text-text-primary/60 hover:text-text-primary hover:bg-text-primary/5 transition-colors border border-transparent"
                     >
                       {dialog.cancelText}
                     </button>
@@ -121,8 +121,8 @@ export function DialogProvider({ children }: { children: ReactNode }) {
                     onClick={dialog.onConfirm}
                     className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-mono uppercase tracking-widest transition-all ${
                       dialog.type === 'confirm' 
-                        ? 'bg-[#c2410c] text-white hover:bg-[#c2410c]/90 shadow-lg shadow-[#c2410c]/20'
-                        : 'bg-white/10 text-white hover:bg-white/20'
+                        ? 'bg-[#c2410c] text-text-primary hover:bg-[#c2410c]/90 shadow-lg shadow-[#c2410c]/20'
+                        : 'bg-text-primary/10 text-text-primary hover:bg-text-primary/20'
                     }`}
                   >
                     {dialog.type === 'confirm' ? <Check size={14} /> : null}

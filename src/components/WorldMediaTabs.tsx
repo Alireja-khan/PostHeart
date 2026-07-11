@@ -134,7 +134,7 @@ export default function WorldMediaTabs({ years, partnerGender }: { years: string
   return (
     <div className="w-full flex flex-col space-y-6 mb-12">
       {/* Primary Category Tabs */}
-      <div className="flex flex-wrap gap-2 pb-4 border-b border-white/10 items-center">
+      <div className="flex flex-wrap gap-2 pb-4 border-b border-text-primary/10 items-center">
         {DEFAULT_TABS.map((tab) => (
           <button
             key={tab.id}
@@ -142,15 +142,15 @@ export default function WorldMediaTabs({ years, partnerGender }: { years: string
             className={cn(
               "px-5 py-2.5 rounded-full text-xs font-mono uppercase tracking-widest transition-all duration-300",
               currentTab === tab.id 
-                ? "bg-white text-black font-semibold shadow-lg shadow-white/10 scale-105" 
-                : "bg-[#111] text-white/40 hover:bg-[#222] hover:text-white border border-white/5"
+                ? "bg-text-primary text-bg-primary font-semibold shadow-lg shadow-text-primary/10 scale-105" 
+                : "bg-bg-primary text-text-primary/40 hover:bg-bg-tertiary hover:text-text-primary border border-text-primary/5"
             )}
           >
             {getTabLabel(tab.id, tab.label)}
           </button>
         ))}
 
-        {customFolders.length > 0 && <div className="w-px h-6 bg-white/10 mx-2" />}
+        {customFolders.length > 0 && <div className="w-px h-6 bg-text-primary/10 mx-2" />}
 
         {customFolders.map((folder) => (
           <div key={folder.id} className="relative group flex items-center">
@@ -159,8 +159,8 @@ export default function WorldMediaTabs({ years, partnerGender }: { years: string
               className={cn(
                 "px-5 py-2.5 rounded-full text-xs font-mono uppercase tracking-widest transition-all duration-300",
                 currentTab === folder.id 
-                  ? "bg-[#c2410c] text-white font-semibold shadow-lg shadow-[#c2410c]/20 scale-105 border-transparent" 
-                  : "bg-[#111] text-[#c2410c]/70 hover:bg-[#c2410c]/10 hover:text-[#c2410c] border border-[#c2410c]/20"
+                  ? "bg-[#c2410c] text-text-primary font-semibold shadow-lg shadow-[#c2410c]/20 scale-105 border-transparent" 
+                  : "bg-bg-primary text-[#c2410c]/70 hover:bg-[#c2410c]/10 hover:text-[#c2410c] border border-[#c2410c]/20"
               )}
             >
               {folder.name}
@@ -172,7 +172,7 @@ export default function WorldMediaTabs({ years, partnerGender }: { years: string
                   handleDeleteFolder(folder.id);
                 }
               }}
-              className="absolute -top-1 -right-1 bg-red-500/90 hover:bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10 shadow-lg"
+              className="absolute -top-1 -right-1 bg-red-500/90 hover:bg-red-500 text-text-primary rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10 shadow-lg"
               title="Delete Folder"
             >
               <X size={10} strokeWidth={3} />
@@ -192,15 +192,15 @@ export default function WorldMediaTabs({ years, partnerGender }: { years: string
                 if (e.key === 'Escape') setIsCreating(false);
               }}
               placeholder="Tab name..."
-              className="bg-black/50 border border-white/10 rounded-full px-4 py-2 text-xs font-mono text-white focus:outline-none focus:border-[#c2410c] w-32 uppercase tracking-wider"
+              className="bg-bg-primary/50 border border-text-primary/10 rounded-full px-4 py-2 text-xs font-mono text-text-primary focus:outline-none focus:border-[#c2410c] w-32 uppercase tracking-wider"
             />
-            <button onClick={handleCreateFolder} className="text-[#c2410c] hover:text-white transition-colors text-xs font-mono uppercase tracking-widest font-bold">Save</button>
-            <button onClick={() => setIsCreating(false)} className="text-white/40 hover:text-white transition-colors text-xs font-mono uppercase tracking-widest">Cancel</button>
+            <button onClick={handleCreateFolder} className="text-[#c2410c] hover:text-text-primary transition-colors text-xs font-mono uppercase tracking-widest font-bold">Save</button>
+            <button onClick={() => setIsCreating(false)} className="text-text-primary/40 hover:text-text-primary transition-colors text-xs font-mono uppercase tracking-widest">Cancel</button>
           </div>
         ) : (
           <button
             onClick={() => setIsCreating(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-mono uppercase tracking-widest transition-all duration-300 bg-transparent text-white/40 hover:text-white hover:bg-white/5 border border-dashed border-white/20 ml-2"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-mono uppercase tracking-widest transition-all duration-300 bg-transparent text-text-primary/40 hover:text-text-primary hover:bg-text-primary/5 border border-dashed border-text-primary/20 ml-2"
           >
             <Plus size={14} />
             <span>New Tab</span>
@@ -217,7 +217,7 @@ export default function WorldMediaTabs({ years, partnerGender }: { years: string
               "px-4 py-1.5 rounded-full text-[10px] font-mono uppercase tracking-wider transition-all",
               currentYear === 'all'
                 ? "bg-[#c2410c]/20 text-[#c2410c] border border-[#c2410c]/30"
-                : "bg-transparent text-white/30 hover:text-white/60"
+                : "bg-transparent text-text-primary/30 hover:text-text-primary/60"
             )}
           >
             All Time
@@ -231,7 +231,7 @@ export default function WorldMediaTabs({ years, partnerGender }: { years: string
                 "px-4 py-1.5 rounded-full text-[10px] font-mono uppercase tracking-wider transition-all",
                 currentYear === year
                   ? "bg-[#c2410c]/20 text-[#c2410c] border border-[#c2410c]/30"
-                  : "bg-transparent text-white/30 hover:text-white/60"
+                  : "bg-transparent text-text-primary/30 hover:text-text-primary/60"
               )}
             >
               {year}

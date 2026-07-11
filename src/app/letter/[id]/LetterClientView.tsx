@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import HTMLFlipBook from 'react-pageflip';
 import { Image as ImageIcon, Music, Mic, X, Folder, Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Repeat, Repeat1, ArrowLeft, Feather } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useAudio } from '@/contexts/AudioContext';
 
 interface User {
   id: string;
@@ -27,139 +28,98 @@ interface Letter {
 }
 
 const VoiceNoteCard = ({ 
-  id, url, title, isTop, hasMultiple, onNext, onPrev, activePlayingVoice, setActivePlayingVoice
+  id, url, title, isTop, hasMultiple, onNext, onPrev
 }: { 
-  id: string, url: string, title?: string, isTop?: boolean, hasMultiple?: boolean, onNext?: () => void, onPrev?: () => void, activePlayingVoice: string | null, setActivePlayingVoice: (url: string | null) => void
+  id: string, url: string, title?: string, isTop?: boolean, hasMultiple?: boolean, onNext?: () => void, onPrev?: () => void
 }) => {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(1);
-  const [isMuted, setIsMuted] = useState(false);
-  const [isRepeat, setIsRepeat] = useState(false);
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const { currentTrack, isPlaying: globalIsPlaying, togglePlayPause, playTrack, progress, duration, seek } = useAudio();
+  
+  let optimizedUrl = url;
+  if (optimizedUrl.includes('res.cloudinary.com') && optimizedUrl.includes('/video/upload/')) {
+    optimizedUrl = optimizedUrl.replace(/\.[^/.]+$/, ".mp3");
+  }
 
-  useEffect(() => {
-    if (audioRef.current) audioRef.current.volume = isMuted ? 0 : volume;
-  }, [volume, isMuted]);
+  const isThisTrack = currentTrack?.url === optimizedUrl;
+  const isThisPlaying = isThisTrack && globalIsPlaying;
+  
+  const localProgress = isThisTrack ? progress : 0;
+  const localDuration = isThisTrack ? duration : 0;
 
-  useEffect(() => {
-    if (activePlayingVoice !== url && isPlaying) {
-      audioRef.current?.pause();
-      setIsPlaying(false);
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isThisTrack) {
+      seek(Number(e.target.value));
     }
-  }, [activePlayingVoice, url, isPlaying]);
+  };
+
+  const toggle = () => {
+    if (isThisTrack) {
+      togglePlayPause();
+    } else {
+      playTrack({ url: optimizedUrl, title: title || 'Voice Note', type: 'voice' });
+    }
+  };
 
   return (
-    <div className="relative w-52 bg-[#1a1a1a] rounded-3xl p-4 shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-white/10 overflow-hidden group">
+    <div className="relative w-52 bg-bg-secondary rounded-3xl p-4 shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-text-primary/10 overflow-hidden group">
       <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
       
       {/* Header */}
       <div className="flex justify-between items-start mb-4 relative z-10">
-        <div className="flex items-center gap-2 bg-black/40 rounded-full pr-2 p-1">
-          <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center overflow-hidden">
-            <Mic size={12} className="text-white/60" />
+        <div className="flex items-center gap-2 bg-bg-primary/40 rounded-full pr-2 p-1">
+          <div className="w-6 h-6 rounded-full bg-text-primary/10 flex items-center justify-center overflow-hidden">
+            <Mic size={12} className="text-text-primary/60" />
           </div>
           <div className="flex flex-col">
-            <span className="text-white text-[10px] font-bold leading-tight">{title || 'Voice Note'}</span>
+            <span className="text-text-primary text-[10px] font-bold leading-tight">{title || 'Voice Note'}</span>
           </div>
         </div>
       </div>
 
       {/* Progress */}
       <div className="mb-3 relative z-10">
-        <div className="flex justify-between text-[9px] text-white/50 mb-1 font-mono">
-          <span>{Math.floor(currentTime / 60)}:{(Math.floor(currentTime % 60)).toString().padStart(2, '0')}</span>
-          <span>{Math.floor(duration / 60)}:{(Math.floor(duration % 60)).toString().padStart(2, '0')}</span>
-        </div>
-        <div 
-          className="w-full h-1 bg-white/10 rounded-full overflow-hidden cursor-pointer"
-          onClick={(e) => {
-             if (!audioRef.current || !duration) return;
-             const rect = e.currentTarget.getBoundingClientRect();
-             const pos = (e.clientX - rect.left) / rect.width;
-             audioRef.current.currentTime = pos * duration;
-          }}
-        >
-          <div 
-            className="h-full bg-white transition-all duration-100 ease-linear"
-            style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
-          />
-        </div>
-      </div>
-
-      {/* Volume and Extra Controls */}
-      <div className="flex justify-between items-center mb-3 relative z-10">
-        <div className="flex items-center gap-2 w-1/2">
-          <button onClick={() => setIsMuted(!isMuted)} className="text-white/50 hover:text-white transition-colors">
-            {isMuted || volume === 0 ? <VolumeX size={12} /> : <Volume2 size={12} />}
-          </button>
-          <div 
-            className="w-full h-1 bg-white/10 rounded-full overflow-hidden cursor-pointer flex-1"
-            onClick={(e) => {
-              const rect = e.currentTarget.getBoundingClientRect();
-              const pos = (e.clientX - rect.left) / rect.width;
-              setVolume(Math.max(0, Math.min(1, pos)));
-              setIsMuted(false);
-            }}
-          >
-            <div className="h-full bg-white transition-all" style={{ width: `${isMuted ? 0 : volume * 100}%` }} />
+        {/* Compact Slider & Time */}
+        <div className="flex items-center gap-2 mb-2 w-full">
+          <span className="text-[9px] font-mono opacity-50 w-6">{Math.floor(localProgress / 60)}:{(Math.floor(localProgress % 60)).toString().padStart(2, '0')}</span>
+          <div className="flex-1 relative h-1 bg-text-primary/20 rounded-full group">
+            <div className="absolute top-0 left-0 h-full bg-text-primary rounded-full pointer-events-none" style={{ width: `${localDuration ? (localProgress / localDuration) * 100 : 0}%` }} />
+            <input 
+              type="range"
+              min="0"
+              max={localDuration || 100}
+              value={localProgress}
+              onChange={handleSeek}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            />
           </div>
+          <span className="text-[9px] font-mono opacity-50 w-6 text-right">{Math.floor(localDuration / 60)}:{(Math.floor(localDuration % 60)).toString().padStart(2, '0')}</span>
         </div>
-        <button 
-          onClick={() => setIsRepeat(!isRepeat)}
-          className={`transition-colors ${isRepeat ? 'text-white' : 'text-white/30 hover:text-white/60'}`}
-        >
-          {isRepeat ? <Repeat1 size={12} /> : <Repeat size={12} />}
-        </button>
       </div>
 
       {/* Main Controls */}
-      <div className="flex justify-center items-center gap-4 relative z-10">
+      <div className="flex justify-center items-center gap-4 relative z-10 mt-1">
         {isTop && hasMultiple && (
            <button 
              onClick={(e) => { e.stopPropagation(); onPrev?.(); }}
-             className="text-white/40 hover:text-white transition-colors"
+             className="text-text-primary/40 hover:text-text-primary transition-colors"
            >
              <SkipBack size={14} fill="currentColor" />
            </button>
         )}
         <button 
-          onClick={(e) => {
-            e.stopPropagation();
-            if (isPlaying) {
-              audioRef.current?.pause();
-              setIsPlaying(false);
-              setActivePlayingVoice(null);
-            } else {
-              setActivePlayingVoice(url);
-              audioRef.current?.play();
-              setIsPlaying(true);
-            }
-          }}
-          className="w-8 h-8 bg-white text-black rounded-full flex items-center justify-center hover:scale-105 transition-transform shadow-[0_0_15px_rgba(255,255,255,0.2)]"
+          onClick={(e) => { e.stopPropagation(); toggle(); }}
+          className="w-8 h-8 bg-text-primary text-bg-primary rounded-full flex items-center justify-center hover:scale-105 transition-transform shadow-[0_0_15px_rgba(255,255,255,0.2)]"
         >
-          {isPlaying ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" className="ml-0.5" />}
+          {isThisPlaying ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" className="ml-0.5" />}
         </button>
         {isTop && hasMultiple && (
            <button 
              onClick={(e) => { e.stopPropagation(); onNext?.(); }}
-             className="text-white/40 hover:text-white transition-colors"
+             className="text-text-primary/40 hover:text-text-primary transition-colors"
            >
              <SkipForward size={14} fill="currentColor" />
            </button>
         )}
       </div>
-
-      <audio 
-        ref={audioRef}
-        src={url}
-        loop={isRepeat}
-        onTimeUpdate={() => setCurrentTime(audioRef.current?.currentTime || 0)}
-        onLoadedMetadata={() => setDuration(audioRef.current?.duration || 0)}
-        onEnded={() => !isRepeat && setIsPlaying(false)}
-        className="hidden"
-      />
     </div>
   );
 };
@@ -182,7 +142,7 @@ const AudioPlayerRow = ({ url }: { url: string }) => {
     <div className="flex items-center gap-2">
       <button 
         onClick={toggle}
-        className="w-8 h-8 bg-white text-black rounded-full flex items-center justify-center hover:scale-105 transition-transform"
+        className="w-8 h-8 bg-text-primary text-bg-primary rounded-full flex items-center justify-center hover:scale-105 transition-transform"
       >
         {isPlaying ? <Pause size={12} fill="currentColor" /> : <Play size={12} fill="currentColor" className="ml-0.5" />}
       </button>
@@ -214,16 +174,23 @@ const getPaginatedContent = (text: string, charsPerPage: number = 380) => {
 
 export default function LetterClientView({ letter }: { letter: Letter }) {
   const router = useRouter();
-  const [playingVoice, setPlayingVoice] = useState<string | null>(null);
-  const [playingMusic, setPlayingMusic] = useState(false);
   
-  // Music states
-  const [musicCurrentTime, setMusicCurrentTime] = useState(0);
-  const [musicDuration, setMusicDuration] = useState(0);
-  const [musicVolume, setMusicVolume] = useState(1);
-  const [musicIsMuted, setMusicIsMuted] = useState(false);
-  const [musicIsRepeat, setMusicIsRepeat] = useState(false);
-  const musicRef = useRef<HTMLAudioElement | null>(null);
+  // Global audio context for background music and voice notes
+  const { 
+    currentTrack, 
+    isPlaying: globalIsPlaying, 
+    togglePlayPause, 
+    playTrack,
+    progress,
+    duration,
+    volume,
+    isMuted,
+    isLooping,
+    seek,
+    setVolumeLevel,
+    toggleMute,
+    toggleLoop
+  } = useAudio();
 
   // Gallery and Embed States
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
@@ -236,6 +203,16 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
 
   // Parse music cover
   const [musicUrl, musicCoverUrl] = letter.music ? letter.music.split('|') : [null, null];
+  
+  let optimizedMusicUrl = musicUrl;
+  if (optimizedMusicUrl && optimizedMusicUrl.includes('res.cloudinary.com') && optimizedMusicUrl.includes('/video/upload/')) {
+    optimizedMusicUrl = optimizedMusicUrl.replace(/\.[^/.]+$/, ".mp3");
+  }
+
+  const isMusicPlaying = currentTrack?.url === optimizedMusicUrl && globalIsPlaying;
+  const isMusicTrack = currentTrack?.url === optimizedMusicUrl;
+  const localMusicProgress = isMusicTrack ? progress : 0;
+  const localMusicDuration = isMusicTrack ? duration : 0;
 
   // Parse receiver name header out of content
   let displayReceiver = `To ${letter.receiver?.name || "my love"}...`;
@@ -289,10 +266,6 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
     })) || []
   );
 
-  useEffect(() => {
-    if (musicRef.current) musicRef.current.volume = musicIsMuted ? 0 : musicVolume;
-  }, [musicVolume, musicIsMuted]);
-
   // Parse DB finalContent to rich layout link components
   const renderParsedContent = (text: string) => {
     if (!text) return null;
@@ -332,7 +305,7 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
         >
           {linkText}
           {currentMemory && (
-            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-3 py-1.5 bg-[#f9f8f6] text-black text-[10px] font-bold uppercase tracking-wider rounded opacity-0 group-hover:opacity-100 transition-opacity delay-100 pointer-events-none shadow-2xl z-50 animate-fade">
+            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-3 py-1.5 bg-text-primary text-bg-primary text-[10px] font-bold uppercase tracking-wider rounded opacity-0 group-hover:opacity-100 transition-opacity delay-100 pointer-events-none shadow-2xl z-50 animate-fade">
               See Memory
             </span>
           )}
@@ -364,40 +337,30 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
   }
 
   return (
-    <div className="w-full h-screen overflow-hidden bg-transparent text-white relative flex flex-col items-center pt-32 pb-12 px-6 font-sans">
+    <div className="w-full h-screen overflow-hidden bg-transparent text-text-primary relative flex flex-col items-center pt-32 pb-12 px-6 font-sans">
       
       {/* Back Button (Ultra Minimal, matches top left back style of Details page screenshot) */}
       <div className="absolute top-56 left-8 z-50">
         <button 
           onClick={() => router.back()}
-          className="flex items-center gap-2 border border-white/10 px-4 py-2 rounded-full bg-white/5 backdrop-blur-md text-[10px] uppercase tracking-widest text-[#a0a0a0] hover:text-[#f9f8f6] transition-colors font-bold"
+          className="flex items-center gap-2 border border-text-primary/10 px-4 py-2 rounded-full bg-text-primary/5 backdrop-blur-md text-[10px] uppercase tracking-widest text-text-secondary hover:text-text-primary transition-colors font-bold"
         >
           <ArrowLeft size={12} />
           <span>Back</span>
         </button>
       </div>
 
-      {musicUrl && (
-        <audio 
-          ref={musicRef} 
-          src={musicUrl} 
-          loop={musicIsRepeat}
-          onTimeUpdate={() => setMusicCurrentTime(musicRef.current?.currentTime || 0)}
-          onLoadedMetadata={() => setMusicDuration(musicRef.current?.duration || 0)}
-          onEnded={() => !musicIsRepeat && setPlayingMusic(false)}
-          className="hidden" 
-        />
-      )}
+      {/* Removed local background audio element */}
 
       {/* Ultra Minimal Boundless Content Area with Realistic Page Turn */}
       <div className="w-full max-w-5xl flex flex-col items-center justify-start z-10 relative mt-0 pt-0 px-4 h-full max-h-[85vh]">
         
         {/* Pagination Controls */}
-        <div className="flex items-center justify-between w-full max-w-md mb-4 opacity-50 text-[#a0a0a0] text-[10px] uppercase tracking-widest font-bold">
+        <div className="flex items-center justify-between w-full max-w-md mb-4 opacity-50 text-text-secondary text-[10px] uppercase tracking-widest font-bold">
           <button 
             onClick={() => turnPage('prev')} 
             disabled={currentPage === 0}
-            className="hover:text-white disabled:opacity-30 transition-colors py-2 px-4 -ml-4"
+            className="hover:text-text-primary disabled:opacity-30 transition-colors py-2 px-4 -ml-4"
           >
             &larr; Prev
           </button>
@@ -405,7 +368,7 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
           <button 
             onClick={() => turnPage('next')} 
             disabled={currentPage === pages.length - 1}
-            className="hover:text-white disabled:opacity-30 transition-colors py-2 px-4 -mr-4"
+            className="hover:text-text-primary disabled:opacity-30 transition-colors py-2 px-4 -mr-4"
           >
             Next &rarr;
           </button>
@@ -436,34 +399,34 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
             style={{ margin: "0 auto" }}
           >
             {/* Front Cover */}
-            <div data-density="hard" className="bg-[#0a0a0a] border border-white/10 p-8 h-full overflow-hidden flex flex-col justify-center items-center relative text-center">
-              <h1 className={`text-2xl md:text-4xl text-white/90 mb-3 mt-6 px-4 ${activeFontClass}`}>{letter.coverTitle || 'Dear You.'}</h1>
-              <p className={`text-white/40 text-sm md:text-base px-4 ${activeFontClass}`}>{letter.coverSubtitle || 'A Private Space'}</p>
+            <div data-density="hard" className="bg-[#0a0a0a] border border-text-primary/10 p-8 h-full overflow-hidden flex flex-col justify-center items-center relative text-center">
+              <h1 className={`text-2xl md:text-4xl text-text-primary/90 mb-3 mt-6 px-4 ${activeFontClass}`}>{letter.coverTitle || 'Dear You.'}</h1>
+              <p className={`text-text-primary/40 text-sm md:text-base px-4 ${activeFontClass}`}>{letter.coverSubtitle || 'A Private Space'}</p>
               <div className="absolute bottom-8 opacity-20">
                 <Feather size={24} />
               </div>
             </div>
 
             {/* Inside Front Cover (Blank) */}
-            <div data-density="hard" className="bg-[#111111] border border-white/5 h-full"></div>
+            <div data-density="hard" className="bg-bg-primary border border-text-primary/5 h-full"></div>
 
             {/* Inner Pages */}
             {pages.map((pageText, index) => (
-              <div key={`inner-${index}`} className="bg-[#111111] border border-white/5 p-6 md:p-8 h-full overflow-hidden flex flex-col justify-center relative text-left">
+              <div key={`inner-${index}`} className="bg-bg-primary border border-text-primary/5 p-6 md:p-8 h-full overflow-hidden flex flex-col justify-center relative text-left">
                 {index === 0 && displayReceiver && (
                   <div className="flex flex-col mb-4">
-                    <h2 className={`w-full bg-transparent text-2xl md:text-4xl text-white/90 mb-4 text-left ${activeFontClass}`}>
+                    <h2 className={`w-full bg-transparent text-2xl md:text-4xl text-text-primary/90 mb-4 text-left ${activeFontClass}`}>
                       {displayReceiver}
                     </h2>
                   </div>
                 )}
                 <div 
-                  className={`w-full text-lg md:text-xl leading-relaxed md:leading-loose whitespace-pre-wrap break-words text-white/90 text-left ${activeFontClass}`}
+                  className={`w-full text-lg md:text-xl leading-relaxed md:leading-loose whitespace-pre-wrap break-words text-text-primary/90 text-left ${activeFontClass}`}
                 >
                   {renderParsedContent(pageText)}
                 </div>
                 
-                <div className="absolute bottom-4 right-8 text-[#a0a0a0] opacity-30 text-xs font-sans">
+                <div className="absolute bottom-4 right-8 text-text-secondary opacity-30 text-xs font-sans">
                   {index + 1}
                 </div>
               </div>
@@ -471,18 +434,18 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
 
             {/* Blank page to ensure even text page count if needed */}
             {pages.length % 2 !== 0 && (
-              <div data-density="soft" className="bg-[#111111] border border-white/5 h-full"></div>
+              <div data-density="soft" className="bg-bg-primary border border-text-primary/5 h-full"></div>
             )}
 
             {/* Inside Back Cover (Blank) */}
-            <div data-density="hard" className="bg-[#111111] border border-white/5 h-full"></div>
+            <div data-density="hard" className="bg-bg-primary border border-text-primary/5 h-full"></div>
 
             {/* Back Cover */}
-            <div data-density="hard" className="bg-[#0a0a0a] border border-white/10 p-6 md:p-8 h-full overflow-hidden flex flex-col justify-center items-center relative text-center">
-              <div className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center opacity-30 mb-4">
+            <div data-density="hard" className="bg-[#0a0a0a] border border-text-primary/10 p-6 md:p-8 h-full overflow-hidden flex flex-col justify-center items-center relative text-center">
+              <div className="w-12 h-12 rounded-full border border-text-primary/20 flex items-center justify-center opacity-30 mb-4">
                 <Feather size={20} />
               </div>
-              <p className="text-white/20 text-xs tracking-widest uppercase font-bold">PostHeart</p>
+              <p className="text-text-primary/20 text-xs tracking-widest uppercase font-bold">PostHeart</p>
             </div>
           </HTMLFlipBook>
         </div>
@@ -528,8 +491,6 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
                         title={voice.title}
                         isTop={isTop}
                         hasMultiple={voiceList.length > 1}
-                        activePlayingVoice={playingVoice}
-                        setActivePlayingVoice={setPlayingVoice}
                         onNext={() => {
                           setVoiceList(prev => {
                             const arr = [...prev];
@@ -562,39 +523,39 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
               exit={{ opacity: 0, x: 50 }}
               className="pointer-events-auto"
             >
-              <div className="relative w-52 bg-[#1a1a1a] rounded-3xl p-4 shadow-2xl border border-white/10 overflow-hidden group">
+              <div className="relative w-52 bg-bg-secondary rounded-3xl p-4 shadow-2xl border border-text-primary/10 overflow-hidden group">
                 <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
                 
                 {/* Header */}
                 <div className="flex justify-between items-start mb-4 relative z-10">
-                  <div className="flex items-center gap-2 bg-black/40 rounded-full pr-2 p-1">
-                    <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center overflow-hidden">
-                      <Music size={12} className="text-white/60" />
+                  <div className="flex items-center gap-2 bg-bg-primary/40 rounded-full pr-2 p-1">
+                    <div className="w-6 h-6 rounded-full bg-text-primary/10 flex items-center justify-center overflow-hidden">
+                      <Music size={12} className="text-text-primary/60" />
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-white text-[10px] font-bold leading-tight truncate max-w-[100px]">{letter.musicTitle || 'Audio Track'}</span>
+                      <span className="text-text-primary text-[10px] font-bold leading-tight truncate max-w-[100px]">{letter.musicTitle || 'Audio Track'}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Cover Art */}
-                <div className="w-full aspect-square rounded-2xl bg-gradient-to-br from-orange-500/20 to-purple-500/20 mb-4 flex items-center justify-center border border-white/5 overflow-hidden relative z-10 cursor-pointer">
+                <div className="w-full aspect-square rounded-2xl bg-gradient-to-br from-orange-500/20 to-purple-500/20 mb-4 flex items-center justify-center border border-text-primary/5 overflow-hidden relative z-10 cursor-pointer">
                   {musicCoverUrl ? (
                     <img src={musicCoverUrl} alt="Cover" className="w-full h-full object-cover" />
                   ) : (
                     <>
                       <div className="absolute inset-0 backdrop-blur-3xl opacity-50" />
-                      <Music size={32} className="text-white/20" />
+                      <Music size={32} className="text-text-primary/20" />
                     </>
                   )}
-                  {playingMusic && (
+                  {isMusicPlaying && (
                     <div className="absolute bottom-4 flex gap-1 items-end h-4">
                       {[1,2,3,4].map(i => (
                         <motion.div 
                           key={i}
                           animate={{ height: ['20%', '100%', '20%'] }}
                           transition={{ repeat: Infinity, duration: 0.8 + (i * 0.2), ease: 'easeInOut' }}
-                          className="w-1 bg-white/50 rounded-full"
+                          className="w-1 bg-text-primary/50 rounded-full"
                         />
                       ))}
                     </div>
@@ -603,22 +564,26 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
 
                 {/* Progress */}
                 <div className="mb-3 relative z-10">
-                  <div className="flex justify-between text-[9px] text-white/50 mb-1 font-mono">
-                    <span>{Math.floor(musicCurrentTime / 60)}:{(Math.floor(musicCurrentTime % 60)).toString().padStart(2, '0')}</span>
-                    <span>{Math.floor(musicDuration / 60)}:{(Math.floor(musicDuration % 60)).toString().padStart(2, '0')}</span>
+                  <div className="flex justify-between text-[9px] text-text-primary/50 mb-1 font-mono">
+                    <span>{Math.floor(localMusicProgress / 60)}:{(Math.floor(localMusicProgress % 60)).toString().padStart(2, '0')}</span>
+                    <span>{Math.floor(localMusicDuration / 60)}:{(Math.floor(localMusicDuration % 60)).toString().padStart(2, '0')}</span>
                   </div>
-                  <div 
-                    className="w-full h-1 bg-white/10 rounded-full overflow-hidden cursor-pointer"
-                    onClick={(e) => {
-                       if (!musicRef.current || !musicDuration) return;
-                       const rect = e.currentTarget.getBoundingClientRect();
-                       const pos = (e.clientX - rect.left) / rect.width;
-                       musicRef.current.currentTime = pos * musicDuration;
-                    }}
-                  >
+                  <div className="w-full h-1 bg-text-primary/10 rounded-full overflow-hidden relative group">
                     <div 
-                      className="h-full bg-white transition-all duration-100 ease-linear"
-                      style={{ width: `${musicDuration ? (musicCurrentTime / musicDuration) * 100 : 0}%` }}
+                      className="absolute top-0 left-0 h-full bg-[#ff9f1c] pointer-events-none"
+                      style={{ width: `${localMusicDuration ? (localMusicProgress / localMusicDuration) * 100 : 0}%` }}
+                    />
+                    <input 
+                      type="range"
+                      min="0"
+                      max={localMusicDuration || 100}
+                      value={localMusicProgress}
+                      onChange={(e) => {
+                        if (isMusicTrack) {
+                          seek(Number(e.target.value));
+                        }
+                      }}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     />
                   </div>
                 </div>
@@ -626,25 +591,29 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
                 {/* Volume and Extra Controls */}
                 <div className="flex justify-between items-center mb-3 relative z-10">
                   <div className="flex items-center gap-2 w-1/2">
-                    <button onClick={() => setMusicIsMuted(!musicIsMuted)} className="text-white/50 hover:text-white transition-colors">
-                      {musicIsMuted || musicVolume === 0 ? <VolumeX size={12} /> : <Volume2 size={12} />}
+                    <button onClick={toggleMute} className="text-text-primary/50 hover:text-text-primary transition-colors">
+                      {isMuted || volume === 0 ? <VolumeX size={12} /> : <Volume2 size={12} />}
                     </button>
-                    <div 
-                      className="w-full h-1 bg-white/10 rounded-full overflow-hidden cursor-pointer flex-1"
-                      onClick={(e) => {
-                        const rect = e.currentTarget.getBoundingClientRect();
-                        const pos = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-                        setMusicVolume(pos);
-                        if (pos > 0) setMusicIsMuted(false);
-                      }}
-                    >
-                      <div className="h-full bg-white transition-all duration-100 ease-linear" style={{ width: `${musicIsMuted ? 0 : musicVolume * 100}%` }} />
+                    <div className="w-full h-1 bg-text-primary/10 rounded-full overflow-hidden relative group">
+                      <div 
+                        className="absolute top-0 left-0 h-full bg-text-primary transition-all duration-100 ease-linear pointer-events-none" 
+                        style={{ width: `${isMuted ? 0 : volume * 100}%` }} 
+                      />
+                      <input 
+                        type="range" 
+                        min="0" 
+                        max="1" 
+                        step="0.01"
+                        value={isMuted ? 0 : volume}
+                        onChange={(e) => setVolumeLevel(Number(e.target.value))}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      />
                     </div>
                   </div>
                   
                   <button 
-                    onClick={() => setMusicIsRepeat(!musicIsRepeat)}
-                    className={`transition-colors ${musicIsRepeat ? 'text-[#ff9f1c]' : 'text-white/50 hover:text-white'}`}
+                    onClick={toggleLoop}
+                    className={`transition-colors ${isLooping ? 'text-[#ff9f1c]' : 'text-text-primary/50 hover:text-text-primary'}`}
                   >
                     <Repeat size={12} />
                   </button>
@@ -653,27 +622,31 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
                 {/* Main Controls */}
                 <div className="flex justify-center items-center gap-5 relative z-10">
                   <button 
-                     onClick={() => { if(musicRef.current) musicRef.current.currentTime = Math.max(0, musicCurrentTime - 10) }}
-                     className="text-white/50 hover:text-white transition-colors"
+                     onClick={() => { if(isMusicTrack) seek(Math.max(0, localMusicProgress - 10)) }}
+                     className="text-text-primary/50 hover:text-text-primary transition-colors"
                   >
                     <SkipBack size={14} fill="currentColor" />
                   </button>
                   <button 
                     onClick={() => {
-                      if (playingMusic) {
-                        musicRef.current?.pause();
+                      if (!optimizedMusicUrl) return;
+                      if (isMusicTrack) {
+                        togglePlayPause();
                       } else {
-                        musicRef.current?.play();
+                        playTrack({ url: optimizedMusicUrl, title: letter.musicTitle || 'Audio Track', coverUrl: musicCoverUrl || undefined, type: 'music' });
                       }
-                      setPlayingMusic(!playingMusic);
                     }}
-                    className="w-8 h-8 bg-white text-black rounded-full flex items-center justify-center hover:scale-105 transition-transform"
+                    className="w-10 h-10 bg-text-primary text-bg-primary rounded-full flex items-center justify-center hover:scale-105 transition-transform shadow-lg"
                   >
-                    {playingMusic ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" className="ml-0.5" />}
+                    {isMusicPlaying ? (
+                       <Pause size={16} fill="currentColor" />
+                    ) : (
+                       <Play size={16} fill="currentColor" className="ml-1" />
+                    )}
                   </button>
                   <button 
-                     onClick={() => { if(musicRef.current) musicRef.current.currentTime = Math.min(musicDuration, musicCurrentTime + 10) }}
-                     className="text-white/50 hover:text-white transition-colors"
+                     onClick={() => { if(isMusicTrack) seek(Math.min(localMusicDuration, localMusicProgress + 10)) }}
+                     className="text-text-primary/50 hover:text-text-primary transition-colors"
                   >
                     <SkipForward size={14} fill="currentColor" />
                   </button>
@@ -693,21 +666,21 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
               onClick={() => setIsGalleryOpen(true)}
               className="pointer-events-auto cursor-pointer group"
             >
-              <div className="relative w-52 bg-[#1a1a1a] rounded-3xl p-4 shadow-2xl border border-white/10 overflow-hidden">
+              <div className="relative w-52 bg-bg-secondary rounded-3xl p-4 shadow-2xl border border-text-primary/10 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
                 
                 {/* Header */}
                 <div className="flex justify-between items-start mb-4 relative z-10">
-                  <div className="flex items-center gap-2 bg-black/40 rounded-full pr-2 p-1">
-                    <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center overflow-hidden">
-                      <Folder size={12} className="text-white/60" />
+                  <div className="flex items-center gap-2 bg-bg-primary/40 rounded-full pr-2 p-1">
+                    <div className="w-6 h-6 rounded-full bg-text-primary/10 flex items-center justify-center overflow-hidden">
+                      <Folder size={12} className="text-text-primary/60" />
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-white text-[10px] font-bold leading-tight">Gallery</span>
+                      <span className="text-text-primary text-[10px] font-bold leading-tight">Gallery</span>
                     </div>
                   </div>
                   
-                  <div className="bg-white/10 text-white text-[10px] font-bold px-2 py-1 rounded-full border border-white/10">
+                  <div className="bg-text-primary/10 text-text-primary text-[10px] font-bold px-2 py-1 rounded-full border border-text-primary/10">
                     {totalAttachments} items
                   </div>
                 </div>
@@ -716,37 +689,37 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
                 <div className="flex justify-center mt-2 relative z-10">
                   <div className="relative w-24 h-[72px] transition-transform duration-300 group-hover:scale-105">
                     {/* Folder Back (Dark) */}
-                    <div className="absolute bottom-0 left-0 w-full h-[85%] bg-gradient-to-b from-[#2a2a2a] to-[#111] rounded-xl rounded-tl-none shadow-2xl border border-white/10" />
+                    <div className="absolute bottom-0 left-0 w-full h-[85%] bg-gradient-to-b from-[#2a2a2a] to-[#111] rounded-xl rounded-tl-none shadow-2xl border border-text-primary/10" />
                     {/* Folder Back Tab */}
-                    <div className="absolute top-0 left-0 w-[40%] h-[25%] bg-[#2a2a2a] rounded-t-lg border-t border-l border-white/10" />
+                    <div className="absolute top-0 left-0 w-[40%] h-[25%] bg-[#2a2a2a] rounded-t-lg border-t border-l border-text-primary/10" />
 
                     {/* Document 1 */}
-                    <div className="absolute top-2 left-4 w-12 h-[50px] bg-[#e5e5e5] rounded shadow-sm transform -rotate-6 origin-bottom-left transition-transform duration-300 group-hover:-translate-y-3 group-hover:-rotate-12 overflow-hidden border border-white/20">
+                    <div className="absolute top-2 left-4 w-12 h-[50px] bg-[#e5e5e5] rounded shadow-sm transform -rotate-6 origin-bottom-left transition-transform duration-300 group-hover:-translate-y-3 group-hover:-rotate-12 overflow-hidden border border-text-primary/20">
                       {secondLastImage ? (
                         <img src={secondLastImage} alt="Preview 1" className="w-full h-full object-cover opacity-90" />
                       ) : (
                         <>
-                          <div className="mt-2 ml-2 w-8 h-[2px] bg-black/10 rounded-full" />
-                          <div className="mt-1.5 ml-2 w-5 h-[2px] bg-black/10 rounded-full" />
+                          <div className="mt-2 ml-2 w-8 h-[2px] bg-bg-primary/10 rounded-full" />
+                          <div className="mt-1.5 ml-2 w-5 h-[2px] bg-bg-primary/10 rounded-full" />
                         </>
                       )}
                     </div>
                     
                     {/* Document 2 */}
-                    <div className="absolute top-3 left-8 w-12 h-[48px] bg-white rounded shadow-sm transform rotate-6 origin-bottom-right transition-transform duration-300 group-hover:-translate-y-2 group-hover:rotate-12 overflow-hidden border border-white/20">
+                    <div className="absolute top-3 left-8 w-12 h-[48px] bg-text-primary rounded shadow-sm transform rotate-6 origin-bottom-right transition-transform duration-300 group-hover:-translate-y-2 group-hover:rotate-12 overflow-hidden border border-text-primary/20">
                       {lastImage ? (
                         <img src={lastImage} alt="Preview 2" className="w-full h-full object-cover" />
                       ) : (
                         <>
-                          <div className="mt-2 ml-2 w-6 h-[2px] bg-black/10 rounded-full" />
-                          <div className="mt-1.5 ml-2 w-8 h-[2px] bg-black/10 rounded-full" />
-                          <div className="mt-1.5 ml-2 w-4 h-[2px] bg-black/10 rounded-full" />
+                          <div className="mt-2 ml-2 w-6 h-[2px] bg-bg-primary/10 rounded-full" />
+                          <div className="mt-1.5 ml-2 w-8 h-[2px] bg-bg-primary/10 rounded-full" />
+                          <div className="mt-1.5 ml-2 w-4 h-[2px] bg-bg-primary/10 rounded-full" />
                         </>
                       )}
                     </div>
 
                     {/* Front Glass layer (Translucent Frosted) */}
-                    <div className="absolute bottom-0 left-0 w-full h-[70%] bg-white/[0.15] backdrop-blur-md rounded-xl border border-white/30 shadow-[0_-4px_16px_rgba(0,0,0,0.2)] overflow-hidden">
+                    <div className="absolute bottom-0 left-0 w-full h-[70%] bg-text-primary/[0.15] backdrop-blur-md rounded-xl border border-text-primary/30 shadow-[0_-4px_16px_rgba(0,0,0,0.2)] overflow-hidden">
                       <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent" />
                     </div>
                   </div>
@@ -764,17 +737,17 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-6"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-bg-primary/40 backdrop-blur-sm p-6"
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-3xl shadow-2xl w-full max-w-3xl max-h-[80vh] overflow-y-auto"
+              className="bg-text-primary/10 backdrop-blur-xl border border-text-primary/20 p-6 rounded-3xl shadow-2xl w-full max-w-3xl max-h-[80vh] overflow-y-auto"
             >
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-white text-xl font-serif">Attached Memories</h3>
-                <button onClick={() => setIsGalleryOpen(false)} className="text-white/60 hover:text-white p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors">
+                <h3 className="text-text-primary text-xl font-serif">Attached Memories</h3>
+                <button onClick={() => setIsGalleryOpen(false)} className="text-text-primary/60 hover:text-text-primary p-2 rounded-full bg-text-primary/5 hover:bg-text-primary/10 transition-colors">
                   <X size={20} />
                 </button>
               </div>
@@ -783,10 +756,10 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
                  {letter.images?.map((url, idx) => (
                    <div 
                      key={`final-${idx}`} 
-                     className="relative group aspect-square rounded-2xl overflow-hidden bg-black/20 border border-white/10 cursor-zoom-in"
+                     className="relative group aspect-square rounded-2xl overflow-hidden bg-bg-primary/20 border border-text-primary/10 cursor-zoom-in"
                      onClick={() => setLightboxImage(url)}
                    >
-                     <img src={url} alt={`Memory ${idx+1}`} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                     <img src={url.includes('res.cloudinary.com') ? url.replace('/upload/', '/upload/q_auto,f_auto,w_500/') : url} alt={`Memory ${idx+1}`} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
                    </div>
                  ))}
                </div>
@@ -802,14 +775,14 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-6"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-bg-primary/40 backdrop-blur-sm p-6"
             onClick={() => setSelectedMemory(null)}
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-[#1a1a1a] border border-white/20 p-8 rounded-3xl shadow-2xl flex gap-6"
+              className="bg-bg-secondary border border-text-primary/20 p-8 rounded-3xl shadow-2xl flex gap-6"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Images Folder */}
@@ -825,11 +798,11 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
                     <div className="w-16 h-12 bg-blue-500/20 rounded-lg border border-blue-500/40 flex items-center justify-center group-hover:bg-blue-500/30 transition-colors">
                       <ImageIcon className="text-blue-400" />
                     </div>
-                    <div className="absolute -top-2 -right-2 bg-black text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full border border-white/20">
+                    <div className="absolute -top-2 -right-2 bg-bg-primary text-text-primary text-[10px] w-5 h-5 flex items-center justify-center rounded-full border border-text-primary/20">
                       {selectedMemory.images.length}
                     </div>
                   </div>
-                  <span className="text-white/60 text-xs font-bold uppercase tracking-wider group-hover:text-white transition-colors">Images</span>
+                  <span className="text-text-primary/60 text-xs font-bold uppercase tracking-wider group-hover:text-text-primary transition-colors">Images</span>
                 </div>
               )}
               
@@ -846,11 +819,11 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
                     <div className="w-16 h-12 bg-purple-500/20 rounded-lg border border-purple-500/40 flex items-center justify-center group-hover:bg-purple-500/30 transition-colors">
                       <Music className="text-purple-400" />
                     </div>
-                    <div className="absolute -top-2 -right-2 bg-black text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full border border-white/20">
+                    <div className="absolute -top-2 -right-2 bg-bg-primary text-text-primary text-[10px] w-5 h-5 flex items-center justify-center rounded-full border border-text-primary/20">
                       {selectedMemory.music.length}
                     </div>
                   </div>
-                  <span className="text-white/60 text-xs font-bold uppercase tracking-wider group-hover:text-white transition-colors">Music</span>
+                  <span className="text-text-primary/60 text-xs font-bold uppercase tracking-wider group-hover:text-text-primary transition-colors">Music</span>
                 </div>
               )}
               
@@ -867,11 +840,11 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
                     <div className="w-16 h-12 bg-green-500/20 rounded-lg border border-green-500/40 flex items-center justify-center group-hover:bg-green-500/30 transition-colors">
                       <Mic className="text-green-400" />
                     </div>
-                    <div className="absolute -top-2 -right-2 bg-black text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full border border-white/20">
+                    <div className="absolute -top-2 -right-2 bg-bg-primary text-text-primary text-[10px] w-5 h-5 flex items-center justify-center rounded-full border border-text-primary/20">
                       {selectedMemory.audio.length}
                     </div>
                   </div>
-                  <span className="text-white/60 text-xs font-bold uppercase tracking-wider group-hover:text-white transition-colors">Voice</span>
+                  <span className="text-text-primary/60 text-xs font-bold uppercase tracking-wider group-hover:text-text-primary transition-colors">Voice</span>
                 </div>
               )}
             </motion.div>
@@ -886,22 +859,22 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-6"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-bg-primary/40 backdrop-blur-sm p-6"
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-3xl shadow-2xl w-full max-w-3xl max-h-[80vh] overflow-y-auto"
+              className="bg-text-primary/10 backdrop-blur-xl border border-text-primary/20 p-6 rounded-3xl shadow-2xl w-full max-w-3xl max-h-[80vh] overflow-y-auto"
             >
               <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-4">
-                  <button onClick={() => setIsEmbedGalleryOpen(false)} className="text-white/60 hover:text-white p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors">
+                  <button onClick={() => setIsEmbedGalleryOpen(false)} className="text-text-primary/60 hover:text-text-primary p-2 rounded-full bg-text-primary/5 hover:bg-text-primary/10 transition-colors">
                     <ArrowLeft size={16} />
                   </button>
-                  <h3 className="text-white text-xl font-serif capitalize">Memory {embedGalleryType}</h3>
+                  <h3 className="text-text-primary text-xl font-serif capitalize">Memory {embedGalleryType}</h3>
                 </div>
-                <button onClick={() => { setIsEmbedGalleryOpen(false); setSelectedMemory(null); }} className="text-white/60 hover:text-white p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors">
+                <button onClick={() => { setIsEmbedGalleryOpen(false); setSelectedMemory(null); }} className="text-text-primary/60 hover:text-text-primary p-2 rounded-full bg-text-primary/5 hover:bg-text-primary/10 transition-colors">
                   <X size={20} />
                 </button>
               </div>
@@ -911,7 +884,7 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
                   {selectedMemory.images?.map((url, idx) => (
                     <div 
                       key={`embed-img-${idx}`} 
-                      className="relative group aspect-square rounded-2xl overflow-hidden bg-black/20 border border-white/10 cursor-zoom-in"
+                      className="relative group aspect-square rounded-2xl overflow-hidden bg-bg-primary/20 border border-text-primary/10 cursor-zoom-in"
                       onClick={() => setLightboxImage(url)}
                     >
                       <img src={url} alt={`Memory ${idx+1}`} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
@@ -923,8 +896,8 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
               {embedGalleryType === 'music' && (
                 <div className="flex flex-col gap-4">
                   {selectedMemory.music?.map((url, idx) => (
-                    <div key={`embed-music-${idx}`} className="flex items-center justify-between bg-[#1a1a1a] p-4 rounded-2xl border border-white/10">
-                      <span className="text-white text-sm font-mono">Embedded Track {idx + 1}</span>
+                    <div key={`embed-music-${idx}`} className="flex items-center justify-between bg-bg-secondary p-4 rounded-2xl border border-text-primary/10">
+                      <span className="text-text-primary text-sm font-mono">Embedded Track {idx + 1}</span>
                       <AudioPlayerRow url={url} />
                     </div>
                   ))}
@@ -934,8 +907,8 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
               {embedGalleryType === 'audio' && (
                 <div className="flex flex-col gap-4">
                   {selectedMemory.audio?.map((url, idx) => (
-                    <div key={`embed-audio-${idx}`} className="flex items-center justify-between bg-[#1a1a1a] p-4 rounded-2xl border border-white/10">
-                      <span className="text-white text-sm font-mono">Embedded Voice {idx + 1}</span>
+                    <div key={`embed-audio-${idx}`} className="flex items-center justify-between bg-bg-secondary p-4 rounded-2xl border border-text-primary/10">
+                      <span className="text-text-primary text-sm font-mono">Embedded Voice {idx + 1}</span>
                       <AudioPlayerRow url={url} />
                     </div>
                   ))}
@@ -954,7 +927,7 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setLightboxImage(null)}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md p-4 cursor-zoom-out"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-bg-primary/95 backdrop-blur-md p-4 cursor-zoom-out"
           >
             <motion.div
               initial={{ scale: 0.95 }}
@@ -966,11 +939,11 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
               <img 
                 src={lightboxImage} 
                 alt="Full view" 
-                className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl border border-white/10" 
+                className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl border border-text-primary/10" 
               />
               <button 
                 onClick={() => setLightboxImage(null)}
-                className="absolute top-4 right-4 bg-black/60 hover:bg-black text-white p-2 rounded-full backdrop-blur-md transition-colors"
+                className="absolute top-4 right-4 bg-bg-primary/60 hover:bg-bg-primary text-text-primary p-2 rounded-full backdrop-blur-md transition-colors"
               >
                 <X size={20} />
               </button>

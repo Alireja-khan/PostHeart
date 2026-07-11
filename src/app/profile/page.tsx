@@ -139,8 +139,8 @@ export default function Profile() {
   }
 
   if (status === "loading" || loading) {
-    return <div className="min-h-screen p-8 flex items-center justify-center bg-[#111111]">
-      <BirdLoader className="text-[#f9f8f6] w-12 h-12" />
+    return <div className="min-h-screen p-8 flex items-center justify-center bg-bg-primary">
+      <BirdLoader className="text-text-primary w-12 h-12" />
     </div>
   }
 
@@ -161,19 +161,19 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-[#111111] relative">
+    <div className="min-h-screen bg-bg-primary relative">
       
       {/* Hidden File Inputs */}
       <input type="file" ref={avatarInputRef} onChange={(e) => handleFileUpload(e, 'avatar')} className="hidden" accept="image/*" />
       <input type="file" ref={coverInputRef} onChange={(e) => handleFileUpload(e, 'cover')} className="hidden" accept="image/*" />
 
       {/* Global Header with Cover Photo */}
-      <div className="relative h-[400px] md:h-[450px] lg:h-[500px] w-full overflow-hidden group border-b border-[#333333]">
+      <div className="relative h-[400px] md:h-[450px] lg:h-[500px] w-full overflow-hidden group border-b border-border-primary">
         {/* Cover Image */}
         <div className="absolute inset-0 overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={currentCover} alt="Cover" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-          <div className="absolute inset-0 bg-black/30"></div>
+          <div className="absolute inset-0 bg-bg-primary/30"></div>
           <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-black/95 via-black/60 to-transparent"></div>
         </div>
         
@@ -185,41 +185,41 @@ export default function Profile() {
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-6">
               <div className="flex items-end gap-6 relative z-10">
                 <div className="relative group/avatar">
-                  <div className="h-24 w-24 bg-[#1a1a1a] rounded-full flex items-center justify-center border-4 border-[#111111] overflow-hidden shrink-0 shadow-xl relative">
+                  <div className="h-24 w-24 bg-bg-secondary rounded-full flex items-center justify-center border-4 border-bg-primary overflow-hidden shrink-0 shadow-xl relative">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={currentAvatar} alt="Profile" className="w-full h-full object-cover" />
                     
                     {uploadingAvatar && (
-                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                        <BirdLoader className="w-8 h-8 text-white" />
+                      <div className="absolute inset-0 bg-bg-primary/50 flex items-center justify-center">
+                        <BirdLoader className="w-8 h-8 text-text-primary" />
                       </div>
                     )}
                   </div>
                   <button 
                     onClick={() => avatarInputRef.current?.click()}
-                    className="absolute bottom-0 right-0 bg-[#111111] text-white p-2 rounded-full border-2 border-white shadow-lg hover:bg-black transition-colors"
+                    className="absolute bottom-0 right-0 bg-bg-primary text-text-primary p-2 rounded-full border-2 border-text-primary shadow-lg hover:bg-bg-primary transition-colors"
                   >
                     <Camera className="w-4 h-4" />
                   </button>
                 </div>
                 <div className="mb-2">
-                  <h1 className="text-3xl md:text-4xl font-semibold text-white tracking-tight">{name || "Anonymous User"}</h1>
-                  <p className="text-white/70 text-sm mt-1">{session?.user?.email}</p>
+                  <h1 className="text-3xl md:text-4xl font-semibold text-text-primary tracking-tight">{name || "Anonymous User"}</h1>
+                  <p className="text-text-primary/70 text-sm mt-1">{session?.user?.email}</p>
                 </div>
               </div>
               
               <div className="flex items-center gap-3 relative z-10 mb-2">
                 {partnerId ? (
-                  <span className="inline-flex items-center px-4 py-1.5 bg-[#1a1a1a]/10 backdrop-blur-md text-white text-xs font-semibold rounded-full border border-white/20 shadow-sm">
+                  <span className="inline-flex items-center px-4 py-1.5 bg-bg-secondary/10 backdrop-blur-md text-text-primary text-xs font-semibold rounded-full border border-text-primary/20 shadow-sm">
                     <Heart className="w-3 h-3 mr-1.5 text-red-400" /> Partnered
                   </span>
                 ) : (
-                  <span className="inline-flex items-center px-4 py-1.5 bg-[#1a1a1a]/10 backdrop-blur-md text-white/80 text-xs font-semibold rounded-full border border-white/20 shadow-sm">
+                  <span className="inline-flex items-center px-4 py-1.5 bg-bg-secondary/10 backdrop-blur-md text-text-primary/80 text-xs font-semibold rounded-full border border-text-primary/20 shadow-sm">
                     Solo Account
                   </span>
                 )}
                 {memberSince && (
-                  <span className="inline-flex items-center px-4 py-1.5 bg-[#1a1a1a]/10 backdrop-blur-md text-white/80 text-xs font-semibold rounded-full border border-white/20 shadow-sm">
+                  <span className="inline-flex items-center px-4 py-1.5 bg-bg-secondary/10 backdrop-blur-md text-text-primary/80 text-xs font-semibold rounded-full border border-text-primary/20 shadow-sm">
                     <Calendar className="w-3 h-3 mr-1.5" /> {memberSince}
                   </span>
                 )}
@@ -235,15 +235,15 @@ export default function Profile() {
                     onClick={() => setActiveTab(tab.id)}
                     className={`pb-4 text-sm font-medium transition-colors relative ${
                       activeTab === tab.id 
-                        ? "text-[#f9f8f6]" 
-                        : "text-white/60 hover:text-[#f9f8f6]"
+                        ? "text-text-primary" 
+                        : "text-text-primary/60 hover:text-text-primary"
                     }`}
                   >
                     {tab.label}
                     {activeTab === tab.id && (
                       <motion.div 
                         layoutId="activeTabIndicator"
-                        className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#f9f8f6]"
+                        className="absolute bottom-0 left-0 right-0 h-[2px] bg-text-primary"
                       />
                     )}
                   </button>
@@ -254,7 +254,7 @@ export default function Profile() {
               <button 
                 onClick={() => coverInputRef.current?.click()}
                 disabled={uploadingCover}
-                className="bg-black/40 hover:bg-black/60 backdrop-blur-md text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center transition-colors border border-white/20 shadow-lg mb-4"
+                className="bg-bg-primary/40 hover:bg-bg-primary/60 backdrop-blur-md text-text-primary px-4 py-2 rounded-lg text-sm font-medium flex items-center transition-colors border border-text-primary/20 shadow-lg mb-4"
               >
                 {uploadingCover ? <BirdLoader className="w-5 h-5 mr-2" /> : <Camera className="w-4 h-4 mr-2" />}
                 <span className="hidden sm:inline">Change Cover</span>
@@ -276,46 +276,46 @@ export default function Profile() {
               initial="hidden" animate="visible" exit="exit"
               className="space-y-8"
             >
-              <h2 className="text-xl font-semibold text-[#f9f8f6]">Activity Ledger</h2>
+              <h2 className="text-xl font-semibold text-text-primary">Activity Ledger</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-[#1a1a1a] border border-[#333333] rounded-2xl p-6 shadow-sm flex flex-col hover:shadow-md transition-shadow">
-                  <div className="w-12 h-12 bg-[#111111] rounded-full flex items-center justify-center mb-4">
-                    <Send className="w-6 h-6 text-[#f9f8f6]" />
+                <div className="bg-bg-secondary border border-border-primary rounded-2xl p-6 shadow-sm flex flex-col hover:shadow-md transition-shadow">
+                  <div className="w-12 h-12 bg-bg-primary rounded-full flex items-center justify-center mb-4">
+                    <Send className="w-6 h-6 text-text-primary" />
                   </div>
-                  <h3 className="text-4xl font-semibold text-[#f9f8f6]">{stats.letters}</h3>
-                  <p className="text-sm text-[#a0a0a0] mt-2 font-medium">Total Sent Letters</p>
+                  <h3 className="text-4xl font-semibold text-text-primary">{stats.letters}</h3>
+                  <p className="text-sm text-text-secondary mt-2 font-medium">Total Sent Letters</p>
                 </div>
                 
-                <div className="bg-[#1a1a1a] border border-[#333333] rounded-2xl p-6 shadow-sm flex flex-col hover:shadow-md transition-shadow">
-                  <div className="w-12 h-12 bg-[#111111] rounded-full flex items-center justify-center mb-4">
-                    <Inbox className="w-6 h-6 text-[#f9f8f6]" />
+                <div className="bg-bg-secondary border border-border-primary rounded-2xl p-6 shadow-sm flex flex-col hover:shadow-md transition-shadow">
+                  <div className="w-12 h-12 bg-bg-primary rounded-full flex items-center justify-center mb-4">
+                    <Inbox className="w-6 h-6 text-text-primary" />
                   </div>
-                  <h3 className="text-4xl font-semibold text-[#f9f8f6]">{stats.received}</h3>
-                  <p className="text-sm text-[#a0a0a0] mt-2 font-medium">Total Received</p>
+                  <h3 className="text-4xl font-semibold text-text-primary">{stats.received}</h3>
+                  <p className="text-sm text-text-secondary mt-2 font-medium">Total Received</p>
                 </div>
                 
-                <div className="bg-[#1a1a1a] border border-[#333333] rounded-2xl p-6 shadow-sm flex flex-col hover:shadow-md transition-shadow">
-                  <div className="w-12 h-12 bg-[#111111] rounded-full flex items-center justify-center mb-4">
-                    <Archive className="w-6 h-6 text-[#f9f8f6]" />
+                <div className="bg-bg-secondary border border-border-primary rounded-2xl p-6 shadow-sm flex flex-col hover:shadow-md transition-shadow">
+                  <div className="w-12 h-12 bg-bg-primary rounded-full flex items-center justify-center mb-4">
+                    <Archive className="w-6 h-6 text-text-primary" />
                   </div>
-                  <h3 className="text-4xl font-semibold text-[#f9f8f6]">{stats.keepsakes}</h3>
-                  <p className="text-sm text-[#a0a0a0] mt-2 font-medium">Items in Keepsake Box</p>
+                  <h3 className="text-4xl font-semibold text-text-primary">{stats.keepsakes}</h3>
+                  <p className="text-sm text-text-secondary mt-2 font-medium">Items in Keepsake Box</p>
                 </div>
 
-                <div className="bg-[#1a1a1a] border border-[#333333] rounded-2xl p-6 shadow-sm flex flex-col hover:shadow-md transition-shadow">
-                  <div className="w-12 h-12 bg-[#111111] rounded-full flex items-center justify-center mb-4">
-                    <LayoutDashboard className="w-6 h-6 text-[#f9f8f6]" />
+                <div className="bg-bg-secondary border border-border-primary rounded-2xl p-6 shadow-sm flex flex-col hover:shadow-md transition-shadow">
+                  <div className="w-12 h-12 bg-bg-primary rounded-full flex items-center justify-center mb-4">
+                    <LayoutDashboard className="w-6 h-6 text-text-primary" />
                   </div>
-                  <h3 className="text-4xl font-semibold text-[#f9f8f6]">{stats.milestones}</h3>
-                  <p className="text-sm text-[#a0a0a0] mt-2 font-medium">Milestones Recorded</p>
+                  <h3 className="text-4xl font-semibold text-text-primary">{stats.milestones}</h3>
+                  <p className="text-sm text-text-secondary mt-2 font-medium">Milestones Recorded</p>
                 </div>
               </div>
 
               {bio && (
-                <div className="bg-[#1a1a1a] border border-[#333333] rounded-2xl p-8 shadow-sm max-w-3xl mt-8">
-                  <h2 className="text-xs font-bold text-[#a0a0a0] uppercase tracking-widest mb-4">Biography</h2>
-                  <p className="text-lg text-[#f9f8f6] leading-relaxed">
+                <div className="bg-bg-secondary border border-border-primary rounded-2xl p-8 shadow-sm max-w-3xl mt-8">
+                  <h2 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-4">Biography</h2>
+                  <p className="text-lg text-text-primary leading-relaxed">
                     {bio}
                   </p>
                 </div>
@@ -332,74 +332,74 @@ export default function Profile() {
               className="max-w-3xl space-y-8"
             >
               <div>
-                <h2 className="text-xl font-semibold text-[#f9f8f6]">Personal Information</h2>
-                <p className="text-[#a0a0a0] text-sm mt-1">Update your personal details and how others see you on the platform.</p>
+                <h2 className="text-xl font-semibold text-text-primary">Personal Information</h2>
+                <p className="text-text-secondary text-sm mt-1">Update your personal details and how others see you on the platform.</p>
               </div>
 
-              <div className="bg-[#1a1a1a] border border-[#333333] rounded-2xl shadow-sm overflow-hidden">
+              <div className="bg-bg-secondary border border-border-primary rounded-2xl shadow-sm overflow-hidden">
                 <div className="p-6 md:p-8 space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-[#f9f8f6] mb-2">Display Name</label>
+                    <label className="block text-sm font-medium text-text-primary mb-2">Display Name</label>
                     <input 
                       type="text" 
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Your Name"
-                      className="w-full bg-[#111111] border-none rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#111111] transition-all text-[#f9f8f6]"
+                      className="w-full bg-bg-primary border-none rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#111111] transition-all text-text-primary"
                     />
-                    <p className="text-xs text-[#a0a0a0] mt-2">This is the name your partner and friends will see.</p>
+                    <p className="text-xs text-text-secondary mt-2">This is the name your partner and friends will see.</p>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-[#f9f8f6] mb-2">Avatar URL</label>
+                    <label className="block text-sm font-medium text-text-primary mb-2">Avatar URL</label>
                     <div className="relative">
-                      <ImageIcon className="absolute left-4 top-3 h-4 w-4 text-[#a0a0a0]" />
+                      <ImageIcon className="absolute left-4 top-3 h-4 w-4 text-text-secondary" />
                       <input 
                         type="text" 
                         value={avatarUrl}
                         onChange={(e) => setAvatarUrl(e.target.value)}
                         placeholder="https://example.com/avatar.jpg"
-                        className="w-full bg-[#111111] border-none rounded-xl pl-12 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#111111] transition-all text-[#f9f8f6]"
+                        className="w-full bg-bg-primary border-none rounded-xl pl-12 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#111111] transition-all text-text-primary"
                       />
                     </div>
-                    <p className="text-xs text-[#a0a0a0] mt-2">Leave blank to use an auto-generated minimal avatar.</p>
+                    <p className="text-xs text-text-secondary mt-2">Leave blank to use an auto-generated minimal avatar.</p>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-[#f9f8f6] mb-2">Biography</label>
+                    <label className="block text-sm font-medium text-text-primary mb-2">Biography</label>
                     <textarea 
                       value={bio}
                       onChange={(e) => setBio(e.target.value)}
                       placeholder="Tell your partner a little about yourself..."
                       rows={4}
-                      className="w-full bg-[#111111] border-none rounded-xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#111111] transition-all text-[#f9f8f6] resize-none"
+                      className="w-full bg-bg-primary border-none rounded-xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#111111] transition-all text-text-primary resize-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-[#f9f8f6] mb-2">Gender</label>
+                    <label className="block text-sm font-medium text-text-primary mb-2">Gender</label>
                     <select 
                       value={gender}
                       onChange={(e) => setGender(e.target.value)}
-                      className="w-full bg-[#111111] border-none rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#111111] transition-all text-[#f9f8f6] cursor-pointer"
+                      className="w-full bg-bg-primary border-none rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#111111] transition-all text-text-primary cursor-pointer"
                     >
                       <option value="">Prefer not to say</option>
                       <option value="male">Male</option>
                       <option value="female">Female</option>
                     </select>
-                    <p className="text-xs text-[#a0a0a0] mt-2">Used for the letter tracking bird animation silhouettes.</p>
+                    <p className="text-xs text-text-secondary mt-2">Used for the letter tracking bird animation silhouettes.</p>
                   </div>
                 </div>
                 
-                <div className="bg-[#222222] border-t border-[#333333] px-6 py-4 flex items-center justify-between">
-                  <p className="text-xs text-[#a0a0a0]">Please save your changes to apply them.</p>
+                <div className="bg-bg-tertiary border-t border-border-primary px-6 py-4 flex items-center justify-between">
+                  <p className="text-xs text-text-secondary">Please save your changes to apply them.</p>
                   <button 
                     onClick={() => handleSave()}
                     disabled={saving}
                     className={`flex items-center px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
                       saved 
-                        ? "bg-green-600 text-white shadow-lg shadow-green-600/20" 
-                        : "bg-[#111111] text-white hover:bg-black shadow-lg shadow-black/10"
+                        ? "bg-green-600 text-text-primary shadow-lg shadow-green-600/20" 
+                        : "bg-bg-primary text-text-primary hover:bg-bg-primary shadow-lg shadow-bg-primary/10"
                     } disabled:opacity-50`}
                   >
                     {saving ? <BirdLoader className="w-5 h-5 mr-2" /> : (saved ? <CheckCircle2 className="w-4 h-4 mr-2" /> : <Save className="w-4 h-4 mr-2" />)}
@@ -419,52 +419,52 @@ export default function Profile() {
               className="max-w-3xl space-y-8"
             >
               <div>
-                <h2 className="text-xl font-semibold text-[#f9f8f6]">Privacy Controls</h2>
-                <p className="text-[#a0a0a0] text-sm mt-1">Manage who can see your profile and contact information.</p>
+                <h2 className="text-xl font-semibold text-text-primary">Privacy Controls</h2>
+                <p className="text-text-secondary text-sm mt-1">Manage who can see your profile and contact information.</p>
               </div>
 
-              <div className="bg-[#1a1a1a] border border-[#333333] rounded-2xl shadow-sm overflow-hidden">
+              <div className="bg-bg-secondary border border-border-primary rounded-2xl shadow-sm overflow-hidden">
                 <div className="p-6 md:p-8 space-y-8">
                   <label className="flex items-start justify-between cursor-pointer group">
                     <div className="pr-8">
-                      <div className="font-medium text-[#f9f8f6] text-sm">Public Profile Visibility</div>
-                      <div className="text-[#a0a0a0] text-sm mt-1 leading-relaxed">
+                      <div className="font-medium text-text-primary text-sm">Public Profile Visibility</div>
+                      <div className="text-text-secondary text-sm mt-1 leading-relaxed">
                         Allow others to search for you by email and view your public profile. Turning this off means no one can send you connection requests.
                       </div>
                     </div>
                     <div className="relative mt-1 shrink-0">
                       <input type="checkbox" className="sr-only" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} />
-                      <div className={`block w-12 h-7 rounded-full transition-colors ${isPublic ? 'bg-[#111111]' : 'bg-[#e0e0e0]'}`}></div>
-                      <div className={`dot absolute left-1 top-1 bg-[#1a1a1a] w-5 h-5 rounded-full transition-transform ${isPublic ? 'transform translate-x-5' : ''} shadow-sm`}></div>
+                      <div className={`block w-12 h-7 rounded-full transition-colors ${isPublic ? 'bg-bg-primary' : 'bg-[#e0e0e0]'}`}></div>
+                      <div className={`dot absolute left-1 top-1 bg-bg-secondary w-5 h-5 rounded-full transition-transform ${isPublic ? 'transform translate-x-5' : ''} shadow-sm`}></div>
                     </div>
                   </label>
 
-                  <div className="border-t border-[#333333]"></div>
+                  <div className="border-t border-border-primary"></div>
 
                   <label className="flex items-start justify-between cursor-pointer group">
                     <div className="pr-8">
-                      <div className={`font-medium text-sm ${!isPublic ? 'text-[#a0a0a0]' : 'text-[#f9f8f6]'}`}>Show Email Publicly</div>
-                      <div className={`text-sm mt-1 leading-relaxed ${!isPublic ? 'text-[#a0a0a0]' : 'text-[#a0a0a0]'}`}>
+                      <div className={`font-medium text-sm ${!isPublic ? 'text-text-secondary' : 'text-text-primary'}`}>Show Email Publicly</div>
+                      <div className={`text-sm mt-1 leading-relaxed ${!isPublic ? 'text-text-secondary' : 'text-text-secondary'}`}>
                         Display your email address directly on your public profile page. If your profile is hidden, this setting is disabled.
                       </div>
                     </div>
                     <div className="relative mt-1 shrink-0">
                       <input type="checkbox" className="sr-only" checked={showEmail} onChange={(e) => setShowEmail(e.target.checked)} disabled={!isPublic} />
-                      <div className={`block w-12 h-7 rounded-full transition-colors ${showEmail ? 'bg-[#111111]' : 'bg-[#e0e0e0]'} ${!isPublic && 'opacity-50'}`}></div>
-                      <div className={`dot absolute left-1 top-1 bg-[#1a1a1a] w-5 h-5 rounded-full transition-transform ${showEmail ? 'transform translate-x-5' : ''} shadow-sm`}></div>
+                      <div className={`block w-12 h-7 rounded-full transition-colors ${showEmail ? 'bg-bg-primary' : 'bg-[#e0e0e0]'} ${!isPublic && 'opacity-50'}`}></div>
+                      <div className={`dot absolute left-1 top-1 bg-bg-secondary w-5 h-5 rounded-full transition-transform ${showEmail ? 'transform translate-x-5' : ''} shadow-sm`}></div>
                     </div>
                   </label>
                 </div>
 
-                <div className="bg-[#222222] border-t border-[#333333] px-6 py-4 flex items-center justify-between">
-                  <p className="text-xs text-[#a0a0a0]">Please save your changes to apply them.</p>
+                <div className="bg-bg-tertiary border-t border-border-primary px-6 py-4 flex items-center justify-between">
+                  <p className="text-xs text-text-secondary">Please save your changes to apply them.</p>
                   <button 
                     onClick={() => handleSave()}
                     disabled={saving}
                     className={`flex items-center px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
                       saved 
-                        ? "bg-green-600 text-white shadow-lg shadow-green-600/20" 
-                        : "bg-[#111111] text-white hover:bg-black shadow-lg shadow-black/10"
+                        ? "bg-green-600 text-text-primary shadow-lg shadow-green-600/20" 
+                        : "bg-bg-primary text-text-primary hover:bg-bg-primary shadow-lg shadow-bg-primary/10"
                     } disabled:opacity-50`}
                   >
                     {saving ? <BirdLoader className="w-5 h-5 mr-2" /> : (saved ? <CheckCircle2 className="w-4 h-4 mr-2" /> : <Save className="w-4 h-4 mr-2" />)}
@@ -484,37 +484,37 @@ export default function Profile() {
               className="max-w-3xl space-y-8"
             >
               <div>
-                <h2 className="text-xl font-semibold text-[#f9f8f6]">Partner Hub</h2>
-                <p className="text-[#a0a0a0] text-sm mt-1">Manage your connection and shared spaces.</p>
+                <h2 className="text-xl font-semibold text-text-primary">Partner Hub</h2>
+                <p className="text-text-secondary text-sm mt-1">Manage your connection and shared spaces.</p>
               </div>
 
-              <div className="bg-[#1a1a1a] border border-[#333333] rounded-2xl p-8 md:p-12 shadow-sm flex flex-col items-center text-center">
-                <div className="w-20 h-20 bg-[#111111] rounded-full flex items-center justify-center mb-6">
-                  <Heart className="w-10 h-10 text-[#f9f8f6]" />
+              <div className="bg-bg-secondary border border-border-primary rounded-2xl p-8 md:p-12 shadow-sm flex flex-col items-center text-center">
+                <div className="w-20 h-20 bg-bg-primary rounded-full flex items-center justify-center mb-6">
+                  <Heart className="w-10 h-10 text-text-primary" />
                 </div>
                 
                 {partnerId ? (
                   <>
-                    <h2 className="text-xl font-semibold text-[#f9f8f6] mb-3">You are connected!</h2>
-                    <p className="text-[#a0a0a0] text-sm max-w-md mx-auto mb-8 leading-relaxed">
+                    <h2 className="text-xl font-semibold text-text-primary mb-3">You are connected!</h2>
+                    <p className="text-text-secondary text-sm max-w-md mx-auto mb-8 leading-relaxed">
                       You and your partner are officially connected on PostHeart. You can write letters, build your timeline, and manage your keepsake box together.
                     </p>
                     <div className="flex justify-center gap-4">
-                      <button onClick={() => router.push("/board")} className="px-6 py-3 bg-[#111111] text-white rounded-xl text-sm font-medium hover:bg-black transition-colors shadow-lg shadow-black/10">
+                      <button onClick={() => router.push("/board")} className="px-6 py-3 bg-bg-primary text-text-primary rounded-xl text-sm font-medium hover:bg-bg-primary transition-colors shadow-lg shadow-bg-primary/10">
                         Go to Couple Board
                       </button>
-                      <button onClick={() => router.push("/connect")} className="px-6 py-3 bg-[#1a1a1a] text-[#f9f8f6] border border-[#333333] rounded-xl text-sm font-medium hover:bg-[#222222] transition-colors shadow-sm">
+                      <button onClick={() => router.push("/connect")} className="px-6 py-3 bg-bg-secondary text-text-primary border border-border-primary rounded-xl text-sm font-medium hover:bg-bg-tertiary transition-colors shadow-sm">
                         Manage Connection
                       </button>
                     </div>
                   </>
                 ) : (
                   <>
-                    <h2 className="text-xl font-semibold text-[#f9f8f6] mb-3">Not Partnered Yet</h2>
-                    <p className="text-[#a0a0a0] text-sm max-w-md mx-auto mb-8 leading-relaxed">
+                    <h2 className="text-xl font-semibold text-text-primary mb-3">Not Partnered Yet</h2>
+                    <p className="text-text-secondary text-sm max-w-md mx-auto mb-8 leading-relaxed">
                       You are currently flying solo. Send a connection request to your significant other to unlock the Couple Board and Timeline!
                     </p>
-                    <button onClick={() => router.push("/connect")} className="px-6 py-3 bg-[#111111] text-white rounded-xl text-sm font-medium hover:bg-black transition-colors shadow-lg shadow-black/10">
+                    <button onClick={() => router.push("/connect")} className="px-6 py-3 bg-bg-primary text-text-primary rounded-xl text-sm font-medium hover:bg-bg-primary transition-colors shadow-lg shadow-bg-primary/10">
                       Find Partner
                     </button>
                   </>

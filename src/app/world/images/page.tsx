@@ -48,6 +48,8 @@ function WorldImagesPageContent() {
                   shouldAdd = letter.pinnedImages && letter.pinnedImages.includes(url);
                 } else if (currentTab === 'special_me' || currentTab === 'special_them') {
                   shouldAdd = letter.specialImages && letter.specialImages.includes(url);
+                } else if (currentTab.length === 24) {
+                  shouldAdd = json.folderItems && json.folderItems.includes(url);
                 }
 
                 if (shouldAdd) {
@@ -106,7 +108,7 @@ function WorldImagesPageContent() {
   if (status === 'loading') {
     return (
       <div className="flex h-screen items-center justify-center">
-        <BirdLoader className="w-16 h-16 text-white/80" />
+        <BirdLoader className="w-16 h-16 text-text-primary/80" />
       </div>
     );
   }
@@ -116,11 +118,11 @@ function WorldImagesPageContent() {
       
       {/* Header */}
       <div className="mb-12">
-        <Link href="/world" className="inline-flex items-center space-x-2 text-white/40 hover:text-white transition-colors font-mono text-[10px] uppercase tracking-widest mb-6">
+        <Link href="/world" className="inline-flex items-center space-x-2 text-text-primary/40 hover:text-text-primary transition-colors font-mono text-[10px] uppercase tracking-widest mb-6">
           <ArrowLeft size={14} />
           <span>Back to My World</span>
         </Link>
-        <h1 className="font-serif text-4xl font-light text-white tracking-wide flex items-center gap-4">
+        <h1 className="font-serif text-4xl font-light text-text-primary tracking-wide flex items-center gap-4">
           <ImageIcon className="text-[#c2410c]" size={36} strokeWidth={1.5} />
           Photo Gallery<span className="text-[#c2410c]">.</span>
         </h1>
@@ -134,8 +136,8 @@ function WorldImagesPageContent() {
           <BirdLoader className="w-12 h-12 text-[#c2410c]" />
         </div>
       ) : images.length === 0 ? (
-        <div className="text-center py-32 border border-dashed border-white/10 rounded-2xl">
-          <p className="font-serif text-white/40 text-lg">No photos found in this category.</p>
+        <div className="text-center py-32 border border-dashed border-text-primary/10 rounded-2xl">
+          <p className="font-serif text-text-primary/40 text-lg">No photos found in this category.</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -156,7 +158,7 @@ function WorldImagesPageContent() {
 export default function WorldImagesPage() {
   return (
     <Suspense fallback={
-      <div className="flex justify-center py-20 min-h-screen bg-black">
+      <div className="flex justify-center py-20 min-h-screen bg-bg-primary">
         <BirdLoader className="w-12 h-12 text-[#c2410c]" />
       </div>
     }>

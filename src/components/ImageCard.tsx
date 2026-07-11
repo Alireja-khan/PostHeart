@@ -89,11 +89,11 @@ export default function ImageCard({ letter, imageUrl, onUpdate }: ImageCardProps
   return (
     <div 
       onClick={handleCardClick}
-      className="relative aspect-square group bg-[#1a1a1a] border border-white/5 rounded-xl block cursor-pointer hover:border-[#c2410c]/50 transition-colors"
+      className="relative aspect-square group bg-bg-secondary border border-text-primary/5 rounded-xl block cursor-pointer hover:border-[#c2410c]/50 transition-colors"
     >
       <div className="absolute inset-0 rounded-xl overflow-hidden pointer-events-none">
         <img 
-          src={imageUrl} 
+          src={imageUrl.includes('res.cloudinary.com') ? imageUrl.replace('/upload/', '/upload/q_auto,f_auto,w_800/') : imageUrl} 
           alt="Letter attachment" 
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-40"
         />
@@ -106,12 +106,12 @@ export default function ImageCard({ letter, imageUrl, onUpdate }: ImageCardProps
         <div className="flex justify-between items-start w-full">
           <div className="flex items-center gap-2">
             {isImagePinned && (
-              <div className="bg-black/50 backdrop-blur-sm p-1.5 rounded border border-white/5 text-[#c2410c]" title="Pinned">
+              <div className="bg-bg-primary/50 backdrop-blur-sm p-1.5 rounded border border-text-primary/5 text-[#c2410c]" title="Pinned">
                 <Pin size={12} className="fill-current" />
               </div>
             )}
             {isImageSpecial && (
-              <div className="bg-black/50 backdrop-blur-sm p-1.5 rounded border border-white/5 text-[#c2410c]" title="Special">
+              <div className="bg-bg-primary/50 backdrop-blur-sm p-1.5 rounded border border-text-primary/5 text-[#c2410c]" title="Special">
                 <Star size={12} className="fill-current" />
               </div>
             )}
@@ -120,7 +120,7 @@ export default function ImageCard({ letter, imageUrl, onUpdate }: ImageCardProps
 
           <div className="flex gap-2 relative">
             <button 
-              className="bg-black/60 backdrop-blur-md p-2 rounded-xl border border-white/5 hover:bg-[#c2410c]/20 hover:border-[#c2410c]/50 transition-colors cursor-pointer text-white/80"
+              className="bg-bg-primary/60 backdrop-blur-md p-2 rounded-xl border border-text-primary/5 hover:bg-[#c2410c]/20 hover:border-[#c2410c]/50 transition-colors cursor-pointer text-text-primary/80"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -131,7 +131,7 @@ export default function ImageCard({ letter, imageUrl, onUpdate }: ImageCardProps
               <Maximize2 size={16} />
             </button>
             <button 
-              className="bg-black/60 backdrop-blur-md p-2 rounded-xl border border-white/5 hover:bg-[#c2410c]/20 hover:border-[#c2410c]/50 transition-colors cursor-pointer text-white/80"
+              className="bg-bg-primary/60 backdrop-blur-md p-2 rounded-xl border border-text-primary/5 hover:bg-[#c2410c]/20 hover:border-[#c2410c]/50 transition-colors cursor-pointer text-text-primary/80"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -151,17 +151,17 @@ export default function ImageCard({ letter, imageUrl, onUpdate }: ImageCardProps
                     setShowMenu(false);
                   }}
                 />
-                <div className="absolute right-0 top-full mt-2 bg-[#1a1a1a] border border-[#333333] rounded-lg shadow-xl p-2 w-48 z-50">
+                <div className="absolute right-0 top-full mt-2 bg-bg-secondary border border-border-primary rounded-lg shadow-xl p-2 w-48 z-50">
                   <button 
                     onClick={handleTogglePin}
-                    className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-white/70 hover:text-white hover:bg-[#333333] rounded-md transition-colors relative z-50"
+                    className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-text-primary/70 hover:text-text-primary hover:bg-[#333333] rounded-md transition-colors relative z-50"
                   >
                     <Pin size={14} className={isImagePinned ? "text-[#c2410c]" : ""} />
                     <span>{isImagePinned ? 'Unpin image' : 'Pin image'}</span>
                   </button>
                   <button 
                     onClick={handleToggleSpecial}
-                    className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-white/70 hover:text-white hover:bg-[#333333] rounded-md transition-colors relative z-50"
+                    className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-text-primary/70 hover:text-text-primary hover:bg-[#333333] rounded-md transition-colors relative z-50"
                   >
                     <Star size={14} className={isImageSpecial ? "text-[#c2410c]" : ""} />
                     <span className="whitespace-nowrap">{isImageSpecial ? 'Remove special' : 'Put as special'}</span>
@@ -174,10 +174,10 @@ export default function ImageCard({ letter, imageUrl, onUpdate }: ImageCardProps
 
         {/* Bottom text info */}
         <div>
-          <div className="text-[10px] uppercase font-mono tracking-widest text-white/50 mb-1">
+          <div className="text-[10px] uppercase font-mono tracking-widest text-text-primary/50 mb-1">
             {timeAgo(letter.createdAt)}
           </div>
-          <h3 className="font-serif text-lg text-white leading-tight drop-shadow-md">
+          <h3 className="font-serif text-lg text-text-primary leading-tight drop-shadow-md">
             From: {titleText}
           </h3>
           <p className="text-[10px] uppercase font-mono tracking-widest text-[#c2410c] mt-2 font-semibold">
@@ -188,14 +188,14 @@ export default function ImageCard({ letter, imageUrl, onUpdate }: ImageCardProps
 
       {isFullscreen && (
         <div 
-          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-[100] bg-bg-primary/95 flex items-center justify-center p-4 backdrop-blur-sm"
           onClick={(e) => {
             e.stopPropagation();
             setIsFullscreen(false);
           }}
         >
           <button 
-            className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors border border-white/10"
+            className="absolute top-6 right-6 p-3 bg-text-primary/10 hover:bg-text-primary/20 rounded-full text-text-primary transition-colors border border-text-primary/10"
             onClick={(e) => {
               e.stopPropagation();
               setIsFullscreen(false);
@@ -206,7 +206,7 @@ export default function ImageCard({ letter, imageUrl, onUpdate }: ImageCardProps
           <img 
             src={imageUrl} 
             alt="Fullscreen view" 
-            className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl border border-white/10"
+            className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl border border-text-primary/10"
             onClick={(e) => e.stopPropagation()}
           />
         </div>

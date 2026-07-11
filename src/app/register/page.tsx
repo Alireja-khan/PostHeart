@@ -62,7 +62,7 @@ export default function Register() {
       >
         <div className="flex justify-center mb-6">
           <div className="h-16 w-16 bg-gradient-to-tr from-pink-500 to-rose-400 rounded-2xl flex items-center justify-center shadow-lg shadow-pink-500/20">
-            <Heart className="text-white h-8 w-8" />
+            <Heart className="text-text-primary h-8 w-8" />
           </div>
         </div>
         
@@ -126,7 +126,7 @@ export default function Register() {
           <button 
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-pink-500 to-rose-400 text-white rounded-xl py-3 font-medium hover:opacity-90 transition-opacity mt-4 shadow-lg shadow-pink-500/20 disabled:opacity-50"
+            className="w-full bg-gradient-to-r from-pink-500 to-rose-400 text-text-primary rounded-xl py-3 font-medium hover:opacity-90 transition-opacity mt-4 shadow-lg shadow-pink-500/20 disabled:opacity-50"
           >
             {loading ? "Creating account..." : "Sign Up"}
           </button>

@@ -26,13 +26,13 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="w-full min-h-full bg-[#111111] p-8 lg:p-12 overflow-y-auto no-scrollbar">
+    <div className="w-full min-h-full bg-bg-primary p-8 lg:p-12 overflow-y-auto no-scrollbar">
       
       {/* Page Header */}
       <div className="mb-10 max-w-2xl mx-auto">
-        <span className="text-[10px] tracking-widest text-[#a0a0a0] uppercase font-semibold">Preferences</span>
-        <h1 className="font-serif text-4xl font-bold text-[#f9f8f6] mt-1">Settings</h1>
-        <p className="text-sm text-[#a0a0a0] mt-2">
+        <span className="text-[10px] tracking-widest text-text-secondary uppercase font-semibold">Preferences</span>
+        <h1 className="font-serif text-4xl font-bold text-text-primary mt-1">Settings</h1>
+        <p className="text-sm text-text-secondary mt-2">
           Personalize your private letter-writing space and manage shared configurations.
         </p>
       </div>
@@ -40,37 +40,37 @@ export default function SettingsPage() {
       <div className="max-w-2xl mx-auto space-y-8">
         
         {/* Form Container */}
-        <form onSubmit={handleSave} className="bg-[#1a1a1a] border border-[#333333] rounded-lg p-6 lg:p-8 card-shadow space-y-6">
+        <form onSubmit={handleSave} className="bg-bg-secondary border border-border-primary rounded-lg p-6 lg:p-8 card-shadow space-y-6">
           
           {/* Profile Section */}
           <div>
-            <div className="flex items-center gap-2 border-b border-[#333333]/60 pb-3 mb-4">
+            <div className="flex items-center gap-2 border-b border-border-primary/60 pb-3 mb-4">
               <User size={16} className="text-[#c2410c]" />
-              <h2 className="font-serif text-lg font-bold text-[#f9f8f6]">Names & Identity</h2>
+              <h2 className="font-serif text-lg font-bold text-text-primary">Names & Identity</h2>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[10px] font-serif uppercase tracking-wider text-[#a0a0a0] font-semibold mb-2">
+                <label className="block text-[10px] font-serif uppercase tracking-wider text-text-secondary font-semibold mb-2">
                   Your Name
                 </label>
                 <input 
                   type="text" 
                   value={userName}
                   onChange={(e) => setUserName(e.target.value)}
-                  className="w-full bg-[#fdfbf7] border border-[#333333] rounded-lg p-2.5 text-[#f9f8f6] font-serif text-sm focus:outline-none focus:border-[#1a1a1a]"
+                  className="w-full bg-[#fdfbf7] border border-border-primary rounded-lg p-2.5 text-text-primary font-serif text-sm focus:outline-none focus:border-[#1a1a1a]"
                 />
               </div>
               
               <div>
-                <label className="block text-[10px] font-serif uppercase tracking-wider text-[#a0a0a0] font-semibold mb-2">
+                <label className="block text-[10px] font-serif uppercase tracking-wider text-text-secondary font-semibold mb-2">
                   Partner's Name
                 </label>
                 <input 
                   type="text" 
                   value={partnerName}
                   onChange={(e) => setPartnerName(e.target.value)}
-                  className="w-full bg-[#fdfbf7] border border-[#333333] rounded-lg p-2.5 text-[#f9f8f6] font-serif text-sm focus:outline-none focus:border-[#1a1a1a]"
+                  className="w-full bg-[#fdfbf7] border border-border-primary rounded-lg p-2.5 text-text-primary font-serif text-sm focus:outline-none focus:border-[#1a1a1a]"
                 />
               </div>
             </div>
@@ -78,13 +78,13 @@ export default function SettingsPage() {
 
           {/* Theme Section */}
           <div>
-            <div className="flex items-center gap-2 border-b border-[#333333]/60 pb-3 mb-4">
+            <div className="flex items-center gap-2 border-b border-border-primary/60 pb-3 mb-4">
               <Heart size={16} className="text-[#344e41]" />
-              <h2 className="font-serif text-lg font-bold text-[#f9f8f6]">Theme Customization</h2>
+              <h2 className="font-serif text-lg font-bold text-text-primary">Theme Customization</h2>
             </div>
             
             <div>
-              <label className="block text-[10px] font-serif uppercase tracking-wider text-[#a0a0a0] font-semibold mb-2">
+              <label className="block text-[10px] font-serif uppercase tracking-wider text-text-secondary font-semibold mb-2">
                 Primary Accent Color
               </label>
               <div className="flex gap-4">
@@ -99,8 +99,8 @@ export default function SettingsPage() {
                     onClick={() => setAccentColor(accent.id)}
                     className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-serif transition-all ${
                       accentColor === accent.id 
-                        ? 'border-[#1a1a1a] bg-[#fdfbf7] text-[#f9f8f6] font-bold shadow-xs' 
-                        : 'border-[#333333] bg-[#1a1a1a] text-[#a0a0a0] hover:border-[#1a1a1a]'
+                        ? 'border-[#1a1a1a] bg-[#fdfbf7] text-text-primary font-bold shadow-xs' 
+                        : 'border-border-primary bg-bg-secondary text-text-secondary hover:border-[#1a1a1a]'
                     }`}
                   >
                     <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: accent.color }}></span>
@@ -113,26 +113,26 @@ export default function SettingsPage() {
 
           {/* Privacy & Settings */}
           <div>
-            <div className="flex items-center gap-2 border-b border-[#333333]/60 pb-3 mb-4">
-              <Shield size={16} className="text-[#a0a0a0]" />
-              <h2 className="font-serif text-lg font-bold text-[#f9f8f6]">Privacy & Sync</h2>
+            <div className="flex items-center gap-2 border-b border-border-primary/60 pb-3 mb-4">
+              <Shield size={16} className="text-text-secondary" />
+              <h2 className="font-serif text-lg font-bold text-text-primary">Privacy & Sync</h2>
             </div>
             
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="font-serif text-sm font-semibold text-[#f9f8f6]">Enable Delivery Notifications</h4>
-                <p className="text-xs text-[#a0a0a0] mt-0.5">Receive audio alerts when a new letter arrives in your mailbox.</p>
+                <h4 className="font-serif text-sm font-semibold text-text-primary">Enable Delivery Notifications</h4>
+                <p className="text-xs text-text-secondary mt-0.5">Receive audio alerts when a new letter arrives in your mailbox.</p>
               </div>
               <button
                 type="button"
                 onClick={() => setNotificationsEnabled(!notificationsEnabled)}
                 className={`w-11 h-6 rounded-full transition-colors relative border ${
-                  notificationsEnabled ? 'bg-[#344e41] border-[#344e41]' : 'bg-stone-100 border-[#333333]'
+                  notificationsEnabled ? 'bg-[#344e41] border-[#344e41]' : 'bg-stone-100 border-border-primary'
                 }`}
               >
                 <motion.div 
                   layout
-                  className="w-4 z-10 h-4 bg-[#1a1a1a] rounded-full absolute left-1 top-0.5 shadow-xs"
+                  className="w-4 z-10 h-4 bg-bg-secondary rounded-full absolute left-1 top-0.5 shadow-xs"
                   animate={{ x: notificationsEnabled ? 20 : 0 }}
                   transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                 />
@@ -140,10 +140,10 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div className="pt-4 border-t border-[#333333]/60 flex justify-end">
+          <div className="pt-4 border-t border-border-primary/60 flex justify-end">
             <button
               type="submit"
-              className="bg-[#1a1a1a] hover:bg-[#333] text-white px-6 py-2.5 rounded-lg font-serif text-xs uppercase tracking-widest transition-colors font-bold shadow-sm"
+              className="bg-bg-secondary hover:bg-[#333] text-text-primary px-6 py-2.5 rounded-lg font-serif text-xs uppercase tracking-widest transition-colors font-bold shadow-sm"
             >
               Save Preferences
             </button>
@@ -159,8 +159,8 @@ export default function SettingsPage() {
           
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h4 className="font-serif text-sm font-semibold text-[#f9f8f6]">Reset Shared Couple Board</h4>
-              <p className="text-xs text-[#a0a0a0] mt-0.5">This clears all custom polaroids, stickers, washi tape, and notes from localStorage.</p>
+              <h4 className="font-serif text-sm font-semibold text-text-primary">Reset Shared Couple Board</h4>
+              <p className="text-xs text-text-secondary mt-0.5">This clears all custom polaroids, stickers, washi tape, and notes from localStorage.</p>
             </div>
             
             <button

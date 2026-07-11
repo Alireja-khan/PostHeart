@@ -104,22 +104,22 @@ export default function NotificationSidebar() {
     <>
       {/* Overlay */}
       <div 
-        className="fixed inset-0 bg-black/20 z-40 transition-opacity" 
+        className="fixed inset-0 bg-bg-primary/20 z-40 transition-opacity" 
         onClick={() => setSidebarOpen(false)}
       />
 
       {/* Sidebar Panel */}
-      <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-[#111111] shadow-xl border-l border-[#333333] transform transition-transform duration-300 flex flex-col">
+      <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-bg-primary shadow-xl border-l border-border-primary transform transition-transform duration-300 flex flex-col">
         
         {/* Header */}
-        <div className="flex justify-between items-center px-6 py-6 border-b border-[#333333] bg-[#1a1a1a]">
-          <h2 className="text-2xl font-serif font-bold text-[#f9f8f6] flex items-center">
+        <div className="flex justify-between items-center px-6 py-6 border-b border-border-primary bg-bg-secondary">
+          <h2 className="text-2xl font-serif font-bold text-text-primary flex items-center">
             <Mail className="w-6 h-6 mr-3 text-[#c2410c]" />
             Notifications
           </h2>
           <button 
             onClick={() => setSidebarOpen(false)}
-            className="p-2 text-[#a0a0a0] hover:text-[#f9f8f6] hover:bg-[#111111] rounded-full transition-colors"
+            className="p-2 text-text-secondary hover:text-text-primary hover:bg-bg-primary rounded-full transition-colors"
           >
             <X className="w-6 h-6" />
           </button>
@@ -137,22 +137,22 @@ export default function NotificationSidebar() {
               {/* Requests */}
               {requests.length > 0 && (
                 <section>
-                  <h3 className="text-lg font-serif font-bold text-[#f9f8f6] mb-4 flex items-center">
+                  <h3 className="text-lg font-serif font-bold text-text-primary mb-4 flex items-center">
                     <UserPlus className="w-5 h-5 mr-2 text-[#c2410c]" />
                     Action Requests
                   </h3>
                   <div className="space-y-4">
                     {requests.map(req => (
-                      <div key={req.id} className="p-4 bg-[#1a1a1a] rounded-2xl border border-[#333333] shadow-sm flex flex-col gap-3">
+                      <div key={req.id} className="p-4 bg-bg-secondary rounded-2xl border border-border-primary shadow-sm flex flex-col gap-3">
                         <div className="flex items-center space-x-3">
                           <img 
                             src={req.sender.avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${req.sender.name || req.sender.email}`} 
                             alt="Avatar" 
-                            className="w-10 h-10 rounded-full border border-[#333333]"
+                            className="w-10 h-10 rounded-full border border-border-primary"
                           />
                           <div>
-                            <p className="font-bold text-[#f9f8f6] leading-tight">{req.sender.name || "Anonymous User"}</p>
-                            <p className="text-xs text-[#a0a0a0] leading-tight">
+                            <p className="font-bold text-text-primary leading-tight">{req.sender.name || "Anonymous User"}</p>
+                            <p className="text-xs text-text-secondary leading-tight">
                               {req.type === "DISCONNECT" 
                                 ? "Requested to disconnect." 
                                 : "Wants to connect as your partner."}
@@ -163,14 +163,14 @@ export default function NotificationSidebar() {
                           <button 
                             onClick={() => handleRequest(req.id, "DECLINE")}
                             disabled={actionLoading === req.id}
-                            className="flex-1 py-2 px-3 text-[#a0a0a0] text-sm font-medium hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center"
+                            className="flex-1 py-2 px-3 text-text-secondary text-sm font-medium hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center"
                           >
                             Decline
                           </button>
                           <button 
                             onClick={() => handleRequest(req.id, "ACCEPT")}
                             disabled={actionLoading === req.id}
-                            className={`flex-1 py-2 px-3 text-white text-sm font-medium rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center ${
+                            className={`flex-1 py-2 px-3 text-text-primary text-sm font-medium rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center ${
                               req.type === "DISCONNECT" ? "bg-red-600 hover:bg-red-700" : "bg-[#c2410c] hover:bg-[#a3360a]"
                             }`}
                           >
@@ -185,26 +185,26 @@ export default function NotificationSidebar() {
 
               {/* System Alerts */}
               <section>
-                <h3 className="text-lg font-serif font-bold text-[#f9f8f6] mb-4 flex items-center">
-                  <Info className="w-5 h-5 mr-2 text-[#a0a0a0]" />
+                <h3 className="text-lg font-serif font-bold text-text-primary mb-4 flex items-center">
+                  <Info className="w-5 h-5 mr-2 text-text-secondary" />
                   Alerts
                 </h3>
                 {notifications.length === 0 ? (
-                  <div className="text-center py-12 bg-[#1a1a1a] rounded-2xl border border-[#333333] shadow-sm">
+                  <div className="text-center py-12 bg-bg-secondary rounded-2xl border border-border-primary shadow-sm">
                     <Mail className="w-10 h-10 text-[#e6e4df] mx-auto mb-3" />
-                    <p className="text-sm text-[#a0a0a0]">You're all caught up!</p>
+                    <p className="text-sm text-text-secondary">You're all caught up!</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {notifications.map(notif => (
-                      <div key={notif.id} className={`p-4 rounded-2xl border transition-colors ${notif.read ? 'bg-[#1a1a1a] border-[#333333]' : 'bg-[#fff5f0] border-[#ffd5c2]'}`}>
+                      <div key={notif.id} className={`p-4 rounded-2xl border transition-colors ${notif.read ? 'bg-bg-secondary border-border-primary' : 'bg-[#fff5f0] border-[#ffd5c2]'}`}>
                         <div className="flex justify-between items-start mb-1">
-                          <h4 className={`font-bold text-sm ${notif.read ? 'text-[#f9f8f6]' : 'text-[#c2410c]'}`}>{notif.title}</h4>
-                          <span className="text-[10px] text-[#a0a0a0]">
+                          <h4 className={`font-bold text-sm ${notif.read ? 'text-text-primary' : 'text-[#c2410c]'}`}>{notif.title}</h4>
+                          <span className="text-[10px] text-text-secondary">
                             {new Date(notif.createdAt).toLocaleDateString()}
                           </span>
                         </div>
-                        <p className="text-[#a0a0a0] text-xs">{notif.message}</p>
+                        <p className="text-text-secondary text-xs">{notif.message}</p>
                       </div>
                     ))}
                   </div>

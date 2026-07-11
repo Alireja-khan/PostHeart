@@ -11,7 +11,7 @@ import BirdLoader from "@/components/BirdLoader"
 
 function DeskSkeleton() {
   return (
-    <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#111111]">
+    <div className="absolute inset-0 z-50 flex items-center justify-center bg-bg-primary">
       <BirdLoader className="w-16 h-16 text-[#c2410c]" />
     </div>
   )

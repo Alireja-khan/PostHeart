@@ -3,9 +3,11 @@ import { Lora, Caveat, Special_Elite } from "next/font/google";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
 import { Providers } from "@/components/Providers";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 import TopBar from "@/components/TopBar";
 import NotificationSidebar from "@/components/NotificationSidebar";
 import GlobalBirdTracker from "@/components/GlobalBirdTracker";
+import GlobalAudioPlayer from "@/components/GlobalAudioPlayer";
 import { Toaster } from 'react-hot-toast';
 
 const lora = Lora({
@@ -41,29 +43,30 @@ export default function RootLayout({
       lang="en"
       className={`${lora.variable} ${caveat.variable} ${specialElite.variable} h-full antialiased`}
     >
-      <body className="h-full flex bg-[#111111] text-[#f9f8f6] overflow-hidden">
+      <body className="h-full flex bg-bg-primary text-text-primary overflow-hidden">
         <Providers>
-          <Toaster 
-            position="top-center" 
-            toastOptions={{
-              style: {
-                background: '#1a1a1a',
-                color: '#f9f8f6',
-                border: '1px solid #333',
-                borderRadius: '8px',
-                fontFamily: 'serif'
-              }
-            }} 
-          />
-          <Sidebar />
-          <div className="flex-1 h-full overflow-y-auto relative bg-[#111111]">
-            <TopBar />
-            <GlobalBirdTracker />
-            <PageLayoutWrapper>
-              {children}
-            </PageLayoutWrapper>
-          </div>
-          <NotificationSidebar />
+            <Toaster 
+              position="top-center" 
+              toastOptions={{
+                style: {
+                  background: '#1a1a1a',
+                  color: '#f9f8f6',
+                  border: '1px solid #333',
+                  borderRadius: '8px',
+                  fontFamily: 'serif'
+                }
+              }} 
+            />
+            <Sidebar />
+            <div className="flex-1 h-full overflow-y-auto relative bg-bg-primary">
+              <TopBar />
+              <GlobalBirdTracker />
+              <PageLayoutWrapper>
+                {children}
+              </PageLayoutWrapper>
+            </div>
+            <NotificationSidebar />
+            <GlobalAudioPlayer />
         </Providers>
       </body>
     </html>

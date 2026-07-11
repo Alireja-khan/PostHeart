@@ -15,7 +15,7 @@ export default function BirdLoader({ className = "w-10 h-10" }: BirdLoaderProps)
         className="w-full h-full relative"
       >
         {/* Realistic Bird Silhouette Animation */}
-        <svg viewBox="0 0 100 100" className="w-full h-full text-current drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]">
+        <svg viewBox="0 0 100 100" className="w-full h-full text-text-primary drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]">
           <path fill="currentColor">
             <animate 
               attributeName="d"

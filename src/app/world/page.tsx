@@ -17,12 +17,16 @@ import {
   Scale,
   Camera,
   Trash2,
-  PenTool
+  PenTool,
+  Maximize2,
+  X
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import BirdLoader from '@/components/BirdLoader';
 import { useDialog } from '@/components/DialogProvider';
 import { uploadFile } from '@/lib/upload';
 import toast from 'react-hot-toast';
+import { useAudio } from '@/contexts/AudioContext';
 
 interface WorldStats {
   musicSent: number;
@@ -61,8 +65,46 @@ export default function MyWorld() {
   const [data, setData] = useState<WorldData | null>(null);
   
   // Audio Player State
-  const [audioSrc, setAudioSrc] = useState<string | null>(null);
+  const { currentTrack, isPlaying, togglePlayPause, playTrack, closePlayer } = useAudio();
   const audioInputRef = useRef<HTMLInputElement>(null);
+  const [musicSelectorOpen, setMusicSelectorOpen] = useState(false);
+  const [existingMusic, setExistingMusic] = useState<any[]>([]);
+  const [loadingMusic, setLoadingMusic] = useState(false);
+  
+  // Lightbox State
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+
+  const openMusicSelector = async () => {
+    setMusicSelectorOpen(true);
+    if (existingMusic.length > 0) return;
+    setLoadingMusic(true);
+    try {
+      const [sentRes, receivedRes] = await Promise.all([
+        fetch('/api/world/media?tab=sent&media=songs'),
+        fetch('/api/world/media?tab=received&media=songs')
+      ]);
+      const sentJson = await sentRes.json();
+      const receivedJson = await receivedRes.json();
+      
+      const allMusic = [
+        ...(sentJson.data || []),
+        ...(receivedJson.data || [])
+      ].filter((l: any) => l.music).map((l: any) => ({
+        url: l.music.split('|')[0],
+        title: l.musicTitle || 'Audio Track',
+        coverUrl: l.images && l.images.length > 0 ? l.images[0] : undefined,
+        id: l.id
+      }));
+
+      const uniqueMusic = Array.from(new Map(allMusic.map(item => [item.url, item])).values());
+      setExistingMusic(uniqueMusic);
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to load existing music');
+    } finally {
+      setLoadingMusic(false);
+    }
+  };
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -180,15 +222,15 @@ export default function MyWorld() {
       return;
     }
 
-    // Create a local object URL to play it without uploading to DB (as requested)
+    // Create a local object URL to play it
     const localUrl = URL.createObjectURL(file);
-    setAudioSrc(localUrl);
+    playTrack({ url: localUrl, title: file.name, type: 'music' });
   };
 
   if (status === 'loading' || loading) {
     return (
       <div className="flex h-[80vh] items-center justify-center">
-        <BirdLoader className="w-16 h-16 text-white/80" />
+        <BirdLoader className="w-16 h-16 text-text-primary/80" />
       </div>
     );
   }
@@ -196,29 +238,20 @@ export default function MyWorld() {
   if (!data) return null;
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-12 md:py-20 min-h-screen">
+    <>
+      <div className="max-w-6xl mx-auto px-6 py-12 md:py-20 min-h-screen">
       
-      {/* Header */}
-      <div className="mb-16 text-center md:text-left">
-        <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-light text-white tracking-wide">
-          My World<span className="text-[#c2410c]">.</span>
-        </h1>
-        <p className="font-serif text-xs md:text-sm tracking-[0.2em] text-white/40 mt-3 uppercase">
-          A personal gallery of your shared journey
-        </p>
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
         
         {/* Left Column: Interactive Hanging Photo Frame (Polaroid representation) */}
-        <div className="lg:col-span-5 flex flex-col items-center">
+        <div className="lg:col-span-6 flex flex-col items-center">
           
           {/* Minimalist Picture Frame */}
-          <div className="w-full max-w-md aspect-[4/5] bg-[#121212] relative group overflow-hidden border border-white/5">
+          <div className="w-full max-w-xl aspect-[4/5] bg-[#121212] relative group overflow-hidden border border-text-primary/5">
             {uploading ? (
-              <div className="absolute inset-0 bg-black/75 z-20 flex flex-col items-center justify-center">
+              <div className="absolute inset-0 bg-bg-primary/75 z-20 flex flex-col items-center justify-center">
                 <BirdLoader className="w-12 h-12 text-[#c2410c]" />
-                <span className="text-[10px] uppercase tracking-wider text-white/50 mt-4 font-mono">Updating...</span>
+                <span className="text-[10px] uppercase tracking-wider text-text-primary/50 mt-4 font-mono">Updating...</span>
               </div>
             ) : null}
 
@@ -230,12 +263,12 @@ export default function MyWorld() {
                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
               />
             ) : (
-              <div className="flex flex-col items-center justify-center h-full p-6 text-center text-white/30">
+              <div className="flex flex-col items-center justify-center h-full p-6 text-center text-text-primary/30">
                 <Camera size={36} className="mb-4 stroke-[1.2]" />
                 <p className="font-serif text-sm italic">"Your featured photo"</p>
                 <button 
                   onClick={() => fileInputRef.current?.click()}
-                  className="mt-6 text-[10px] tracking-widest uppercase bg-white/10 hover:bg-white/20 text-white font-mono py-2 px-4 rounded-full transition-all"
+                  className="mt-6 text-[10px] tracking-widest uppercase bg-text-primary/10 hover:bg-text-primary/20 text-text-primary font-mono py-2 px-4 rounded-full transition-all"
                 >
                   Select Photo
                 </button>
@@ -244,21 +277,30 @@ export default function MyWorld() {
 
             {/* Hover Overlay Controls */}
             {data.worldImage && (
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 z-20">
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="p-3 bg-[#111] hover:bg-white hover:text-black rounded-full text-white transition-all shadow-lg"
-                  title="Change Photo"
-                >
-                  <Upload size={18} />
-                </button>
-                <button
-                  onClick={handleRemoveImage}
-                  className="p-3 bg-[#111] hover:bg-red-950 hover:text-red-400 rounded-full text-white/80 transition-all shadow-lg"
-                  title="Remove Photo"
-                >
-                  <Trash2 size={18} />
-                </button>
+              <div className="absolute inset-0 bg-bg-primary/40 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                <div className="absolute bottom-4 right-4 flex gap-3">
+                  <button
+                    onClick={() => setLightboxOpen(true)}
+                    className="p-3 bg-bg-primary hover:bg-text-primary hover:text-bg-primary rounded-full text-text-primary transition-all shadow-lg"
+                    title="View Fullscreen"
+                  >
+                    <Maximize2 size={16} />
+                  </button>
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="p-3 bg-bg-primary hover:bg-text-primary hover:text-bg-primary rounded-full text-text-primary transition-all shadow-lg"
+                    title="Change Photo"
+                  >
+                    <Upload size={16} />
+                  </button>
+                  <button
+                    onClick={handleRemoveImage}
+                    className="p-3 bg-bg-primary hover:bg-red-950 hover:text-red-400 rounded-full text-text-primary/80 transition-all shadow-lg"
+                    title="Remove Photo"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </div>
             )}
 
@@ -274,11 +316,59 @@ export default function MyWorld() {
         </div>
 
         {/* Right Column: Statistics Grid & Interesting Facts */}
-        <div className="lg:col-span-7 flex flex-col space-y-16">
+        <div className="lg:col-span-6 flex flex-col space-y-12">
           
+          {/* Improved Audio Player UI */}
+          <div className="flex items-center justify-between bg-bg-primary border border-text-primary/5 rounded-[2rem] p-2 pr-4 w-full max-w-md shadow-lg transition-all">
+            {currentTrack ? (
+              <div className="flex items-center gap-4 w-full">
+                <div className="w-12 h-12 rounded-full overflow-hidden bg-text-primary/5 flex items-center justify-center shrink-0 border border-text-primary/10 relative group cursor-pointer" onClick={togglePlayPause}>
+                  {currentTrack.coverUrl ? (
+                    <img src={currentTrack.coverUrl} alt="Cover" className={`w-full h-full object-cover ${isPlaying ? 'animate-spin-slow' : ''}`} style={{ animationDuration: '8s' }} />
+                  ) : (
+                    <Music size={16} className="text-[#c2410c]" />
+                  )}
+                  <div className="absolute inset-0 bg-bg-primary/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                     {/* Assume Play/Pause icon from lucide-react if imported, or just use text/simple shape for now */}
+                     <span className="text-text-primary text-xs font-bold">{isPlaying ? '||' : '▶'}</span>
+                  </div>
+                </div>
+                <div className="flex flex-col flex-1 min-w-0">
+                  <span className="text-[10px] text-text-primary/40 font-mono uppercase tracking-widest mb-0.5">Now Playing</span>
+                  <span className="text-text-primary/90 text-sm font-serif truncate">{currentTrack.title}</span>
+                </div>
+                <button 
+                  onClick={closePlayer}
+                  className="text-text-primary/30 hover:text-text-primary transition-colors p-2"
+                  title="Clear Track"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between w-full">
+                 <span className="text-[10px] font-mono text-text-primary/40 uppercase tracking-widest">World Soundtrack</span>
+                 <button
+                  onClick={openMusicSelector}
+                  className="bg-text-primary/10 hover:bg-text-primary/20 text-text-primary px-4 py-1.5 rounded-full text-[10px] uppercase tracking-widest font-mono transition-all flex items-center gap-2"
+                >
+                  <Music size={12} />
+                  Choose Audio File
+                </button>
+              </div>
+            )}
+            <input 
+              type="file"
+              ref={audioInputRef}
+              onChange={handleAudioUpload}
+              accept="audio/*"
+              className="hidden"
+            />
+          </div>
+
           {/* Statistics Grid (Boundless canvas design) */}
           <div>
-            <h2 className="font-serif text-lg tracking-wider text-white/30 mb-8 uppercase font-light">
+            <h2 className="font-serif text-lg tracking-wider text-text-primary/30 mb-8 uppercase font-light">
               Exchange Statistics
             </h2>
 
@@ -286,65 +376,65 @@ export default function MyWorld() {
               
               {/* Stat 1: Letters */}
               <Link href="/world/letters" className="flex flex-col space-y-2 group cursor-pointer">
-                <div className="flex items-center text-white/30 space-x-2 group-hover:text-[#c2410c] transition-colors">
+                <div className="flex items-center text-text-primary/30 space-x-2 group-hover:text-[#c2410c] transition-colors">
                   <Mail size={14} className="stroke-[1.5]" />
                   <span className="text-[10px] tracking-widest uppercase font-mono">Letters</span>
                 </div>
                 <div className="flex items-baseline space-x-2">
-                  <span className="text-3xl font-serif text-white group-hover:text-[#c2410c] transition-colors">{data.stats.lettersSent}</span>
-                  <span className="text-xs text-white/30 font-mono">sent</span>
+                  <span className="text-3xl font-serif text-text-primary group-hover:text-[#c2410c] transition-colors">{data.stats.lettersSent}</span>
+                  <span className="text-xs text-text-primary/30 font-mono">sent</span>
                 </div>
                 <div className="flex items-baseline space-x-2">
-                  <span className="text-2xl font-serif text-white/60">{data.stats.lettersReceived}</span>
-                  <span className="text-[10px] text-white/30 font-mono">received</span>
+                  <span className="text-2xl font-serif text-text-primary/60">{data.stats.lettersReceived}</span>
+                  <span className="text-[10px] text-text-primary/30 font-mono">received</span>
                 </div>
               </Link>
 
               {/* Stat 2: Music */}
               <Link href="/world/songs" className="flex flex-col space-y-2 group cursor-pointer">
-                <div className="flex items-center text-white/30 space-x-2 group-hover:text-[#c2410c] transition-colors">
+                <div className="flex items-center text-text-primary/30 space-x-2 group-hover:text-[#c2410c] transition-colors">
                   <Music size={14} className="stroke-[1.5]" />
                   <span className="text-[10px] tracking-widest uppercase font-mono">Songs</span>
                 </div>
                 <div className="flex items-baseline space-x-2">
-                  <span className="text-3xl font-serif text-white group-hover:text-[#c2410c] transition-colors">{data.stats.musicSent}</span>
-                  <span className="text-xs text-white/30 font-mono">sent</span>
+                  <span className="text-3xl font-serif text-text-primary group-hover:text-[#c2410c] transition-colors">{data.stats.musicSent}</span>
+                  <span className="text-xs text-text-primary/30 font-mono">sent</span>
                 </div>
                 <div className="flex items-baseline space-x-2">
-                  <span className="text-2xl font-serif text-white/60">{data.stats.musicReceived}</span>
-                  <span className="text-[10px] text-white/30 font-mono">received</span>
+                  <span className="text-2xl font-serif text-text-primary/60">{data.stats.musicReceived}</span>
+                  <span className="text-[10px] text-text-primary/30 font-mono">received</span>
                 </div>
               </Link>
 
               {/* Stat 3: Images */}
               <Link href="/world/images" className="flex flex-col space-y-2 group cursor-pointer">
-                <div className="flex items-center text-white/30 space-x-2 group-hover:text-[#c2410c] transition-colors">
+                <div className="flex items-center text-text-primary/30 space-x-2 group-hover:text-[#c2410c] transition-colors">
                   <ImageIcon size={14} className="stroke-[1.5]" />
                   <span className="text-[10px] tracking-widest uppercase font-mono">Images</span>
                 </div>
                 <div className="flex items-baseline space-x-2">
-                  <span className="text-3xl font-serif text-white group-hover:text-[#c2410c] transition-colors">{data.stats.imagesSent}</span>
-                  <span className="text-xs text-white/30 font-mono">sent</span>
+                  <span className="text-3xl font-serif text-text-primary group-hover:text-[#c2410c] transition-colors">{data.stats.imagesSent}</span>
+                  <span className="text-xs text-text-primary/30 font-mono">sent</span>
                 </div>
                 <div className="flex items-baseline space-x-2">
-                  <span className="text-2xl font-serif text-white/60">{data.stats.imagesReceived}</span>
-                  <span className="text-[10px] text-white/30 font-mono">received</span>
+                  <span className="text-2xl font-serif text-text-primary/60">{data.stats.imagesReceived}</span>
+                  <span className="text-[10px] text-text-primary/30 font-mono">received</span>
                 </div>
               </Link>
 
               {/* Stat 4: Voice Notes */}
               <Link href="/world/voices" className="flex flex-col space-y-2 group cursor-pointer">
-                <div className="flex items-center text-white/30 space-x-2 group-hover:text-[#c2410c] transition-colors">
+                <div className="flex items-center text-text-primary/30 space-x-2 group-hover:text-[#c2410c] transition-colors">
                   <Mic size={14} className="stroke-[1.5]" />
                   <span className="text-[10px] tracking-widest uppercase font-mono">Voices</span>
                 </div>
                 <div className="flex items-baseline space-x-2">
-                  <span className="text-3xl font-serif text-white group-hover:text-[#c2410c] transition-colors">{data.stats.voicesSent}</span>
-                  <span className="text-xs text-white/30 font-mono">sent</span>
+                  <span className="text-3xl font-serif text-text-primary group-hover:text-[#c2410c] transition-colors">{data.stats.voicesSent}</span>
+                  <span className="text-xs text-text-primary/30 font-mono">sent</span>
                 </div>
                 <div className="flex items-baseline space-x-2">
-                  <span className="text-2xl font-serif text-white/60">{data.stats.voicesReceived}</span>
-                  <span className="text-[10px] text-white/30 font-mono">received</span>
+                  <span className="text-2xl font-serif text-text-primary/60">{data.stats.voicesReceived}</span>
+                  <span className="text-[10px] text-text-primary/30 font-mono">received</span>
                 </div>
               </Link>
 
@@ -352,21 +442,21 @@ export default function MyWorld() {
           </div>
 
           {/* Interesting Facts Section (Styled like typed vintage log entries) */}
-          <div className="border-t border-white/5 pt-12">
-            <h2 className="font-serif text-lg tracking-wider text-white/30 mb-8 uppercase font-light">
+          <div className="border-t border-text-primary/5 pt-12">
+            <h2 className="font-serif text-lg tracking-wider text-text-primary/30 mb-8 uppercase font-light">
               Interesting Journal Facts
             </h2>
 
-            <div className="space-y-6 font-typewriter text-white/80 max-w-xl text-sm leading-relaxed">
+            <div className="space-y-6 font-typewriter text-text-primary/80 max-w-xl text-sm leading-relaxed">
               
               {/* Fact 1: Connection Length */}
               <div className="flex items-start space-x-4">
                 <Calendar size={16} className="mt-1 text-[#c2410c] flex-shrink-0 stroke-[1.5]" />
                 <div>
-                  <span className="text-white/40 block text-[10px] tracking-widest uppercase font-mono mb-1">DAYS CONNECTED</span>
+                  <span className="text-text-primary/40 block text-[10px] tracking-widest uppercase font-mono mb-1">DAYS CONNECTED</span>
                   <span>
                     {data.facts.daysConnected > 0 ? (
-                      <>You have shared this space for <span className="text-white font-bold">{data.facts.daysConnected}</span> days.</>
+                      <>You have shared this space for <span className="text-text-primary font-bold">{data.facts.daysConnected}</span> days.</>
                     ) : (
                       <>Your connection starts today with your first letter.</>
                     )}
@@ -378,7 +468,7 @@ export default function MyWorld() {
               <div className="flex items-start space-x-4">
                 <Clock size={16} className="mt-1 text-[#c2410c] flex-shrink-0 stroke-[1.5]" />
                 <div>
-                  <span className="text-white/40 block text-[10px] tracking-widest uppercase font-mono mb-1">LAST LETTER SENT</span>
+                  <span className="text-text-primary/40 block text-[10px] tracking-widest uppercase font-mono mb-1">LAST LETTER SENT</span>
                   <span>{formatDate(data.facts.lastLetterSent)}</span>
                 </div>
               </div>
@@ -387,7 +477,7 @@ export default function MyWorld() {
               <div className="flex items-start space-x-4">
                 <BookOpen size={16} className="mt-1 text-[#c2410c] flex-shrink-0 stroke-[1.5]" />
                 <div>
-                  <span className="text-white/40 block text-[10px] tracking-widest uppercase font-mono mb-1">LAST LETTER RECEIVED</span>
+                  <span className="text-text-primary/40 block text-[10px] tracking-widest uppercase font-mono mb-1">LAST LETTER RECEIVED</span>
                   <span>{formatDate(data.facts.lastLetterReceived)}</span>
                 </div>
               </div>
@@ -396,9 +486,9 @@ export default function MyWorld() {
               <div className="flex items-start space-x-4">
                 <PenTool size={16} className="mt-1 text-[#c2410c] flex-shrink-0 stroke-[1.5]" />
                 <div>
-                  <span className="text-white/40 block text-[10px] tracking-widest uppercase font-mono mb-1">WORDS WRITTEN</span>
+                  <span className="text-text-primary/40 block text-[10px] tracking-widest uppercase font-mono mb-1">WORDS WRITTEN</span>
                   <span>
-                    You have penned a total of <span className="text-white font-bold">{data.facts.totalWordsWritten}</span> words of affection in your letters.
+                    You have penned a total of <span className="text-text-primary font-bold">{data.facts.totalWordsWritten}</span> words of affection in your letters.
                   </span>
                 </div>
               </div>
@@ -408,7 +498,7 @@ export default function MyWorld() {
                 <div className="flex items-start space-x-4">
                   <Hourglass size={16} className="mt-1 text-[#c2410c] flex-shrink-0 stroke-[1.5]" />
                   <div>
-                    <span className="text-white/40 block text-[10px] tracking-widest uppercase font-mono mb-1">LETTERS IN TRANSIT</span>
+                    <span className="text-text-primary/40 block text-[10px] tracking-widest uppercase font-mono mb-1">LETTERS IN TRANSIT</span>
                     <span className="text-[#c2410c] animate-pulse">
                       There are currently <span className="font-bold">{data.facts.lettersInTransit}</span> letter(s) traveling through space to your partner.
                     </span>
@@ -421,9 +511,9 @@ export default function MyWorld() {
                 <div className="flex items-start space-x-4">
                   <Scale size={16} className="mt-1 text-[#c2410c] flex-shrink-0 stroke-[1.5]" />
                   <div>
-                    <span className="text-white/40 block text-[10px] tracking-widest uppercase font-mono mb-1">PATIENCE INDEX</span>
+                    <span className="text-text-primary/40 block text-[10px] tracking-widest uppercase font-mono mb-1">PATIENCE INDEX</span>
                     <span>
-                      Your letters take an average of <span className="text-white font-bold">{data.facts.averageDelayHours}</span> hours to cross the distance.
+                      Your letters take an average of <span className="text-text-primary font-bold">{data.facts.averageDelayHours}</span> hours to cross the distance.
                     </span>
                   </div>
                 </div>
@@ -433,49 +523,98 @@ export default function MyWorld() {
           </div>
 
         </div>
-
-      </div>
-
-      {/* Audio Player Section */}
-      <div className="mt-20 pt-12 border-t border-white/5 flex flex-col items-center">
-        <h2 className="font-serif text-lg tracking-wider text-white/30 mb-8 uppercase font-light text-center">
-          World Soundtrack
-        </h2>
-        
-        <div className="w-full max-w-2xl bg-[#111] p-6 rounded-2xl flex flex-col items-center gap-6 shadow-2xl border border-white/5">
-          {audioSrc ? (
-            <div className="w-full flex flex-col gap-4">
-              <audio controls src={audioSrc} className="w-full h-12" autoPlay />
-              <button 
-                onClick={() => setAudioSrc(null)}
-                className="text-[10px] text-white/40 hover:text-white uppercase tracking-widest transition-colors font-mono self-center"
-              >
-                Clear Track
-              </button>
-            </div>
-          ) : (
-            <div className="text-center">
-              <p className="text-white/40 text-sm font-serif mb-4">No track playing. Select a song or voice note from your local device to set the mood.</p>
-              <button
-                onClick={() => audioInputRef.current?.click()}
-                className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-full text-sm font-medium transition-all flex items-center gap-2 mx-auto"
-              >
-                <Music size={16} />
-                Choose Audio File
-              </button>
-            </div>
-          )}
-          
-          <input 
-            type="file"
-            ref={audioInputRef}
-            onChange={handleAudioUpload}
-            accept="audio/*"
-            className="hidden"
-          />
         </div>
       </div>
 
-    </div>
+      {/* Fullscreen Image Lightbox */}
+      <AnimatePresence>
+        {lightboxOpen && data?.worldImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-primary/90 p-4"
+          >
+            <button 
+              onClick={() => setLightboxOpen(false)}
+              className="absolute top-6 right-6 p-3 bg-text-primary/10 hover:bg-text-primary/20 rounded-full text-text-primary transition-colors"
+            >
+              <X size={24} />
+            </button>
+            <img 
+              src={data.worldImage} 
+              alt="Fullscreen" 
+              className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Music Selector Modal */}
+      <AnimatePresence>
+        {musicSelectorOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-bg-primary/80 backdrop-blur-sm p-4"
+          >
+            <motion.div 
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.95 }}
+              className="bg-bg-primary border border-text-primary/10 w-full max-w-lg rounded-3xl p-6 shadow-2xl flex flex-col max-h-[80vh]"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-text-primary font-serif text-xl">Select Soundtrack</h3>
+                <button onClick={() => setMusicSelectorOpen(false)} className="text-text-primary/40 hover:text-text-primary transition-colors">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto pr-2 space-y-3 mb-6">
+                {loadingMusic ? (
+                  <div className="flex justify-center py-10">
+                    <BirdLoader className="w-8 h-8 text-text-primary/50" />
+                  </div>
+                ) : existingMusic.length > 0 ? (
+                  existingMusic.map(track => (
+                    <div 
+                      key={track.id} 
+                      onClick={() => { playTrack({ url: track.url, title: track.title, coverUrl: track.coverUrl, type: 'music' }); setMusicSelectorOpen(false); }}
+                      className="flex items-center gap-4 bg-text-primary/5 hover:bg-text-primary/10 p-3 rounded-xl cursor-pointer transition-colors border border-transparent hover:border-text-primary/10"
+                    >
+                      <div className="w-12 h-12 rounded-lg bg-bg-primary/40 flex items-center justify-center shrink-0 overflow-hidden">
+                        {track.coverUrl ? (
+                          <img src={track.coverUrl} alt="Cover" className="w-full h-full object-cover" />
+                        ) : (
+                          <Music size={16} className="text-[#c2410c]" />
+                        )}
+                      </div>
+                      <span className="text-text-primary/80 text-sm font-mono truncate">{track.title}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center text-text-primary/40 font-mono text-xs py-10">
+                    No existing music found in your letters.
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-4 border-t border-text-primary/10 flex flex-col items-center">
+                <span className="text-[10px] text-text-primary/30 uppercase tracking-widest font-mono mb-3">Or upload a new track</span>
+                <button
+                  onClick={() => { audioInputRef.current?.click(); setMusicSelectorOpen(false); }}
+                  className="bg-text-primary text-bg-primary hover:bg-text-primary/90 px-6 py-2.5 rounded-full text-xs uppercase tracking-widest font-bold transition-all flex items-center gap-2"
+                >
+                  <Upload size={14} />
+                  Upload from Device
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

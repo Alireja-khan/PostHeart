@@ -65,7 +65,7 @@ export default function DisconnectButton({ initialPending = false }: { initialPe
 
   if (isPending) {
     return (
-      <div className="w-full mt-4 bg-[#111111] text-[#a0a0a0] rounded-xl py-3 font-medium flex items-center justify-center gap-2 border border-[#333333]">
+      <div className="w-full mt-4 bg-bg-primary text-text-secondary rounded-xl py-3 font-medium flex items-center justify-center gap-2 border border-border-primary">
         <Clock className="w-4 h-4" /> Disconnect Request Pending
       </div>
     )
@@ -81,7 +81,7 @@ export default function DisconnectButton({ initialPending = false }: { initialPe
       <button 
         onClick={handleDisconnect}
         disabled={loading}
-        className="w-full mt-4 bg-[#1a1a1a] text-[#a0a0a0] border border-[#333333] rounded-xl py-3 font-medium hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
+        className="w-full mt-4 bg-bg-secondary text-text-secondary border border-border-primary rounded-xl py-3 font-medium hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
       >
         {loading ? <BirdLoader className="w-6 h-6" /> : (
           <>

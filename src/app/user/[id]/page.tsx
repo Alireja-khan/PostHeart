@@ -60,32 +60,32 @@ export default async function PublicProfile({ params }: { params: Promise<{ id: 
   const currentAvatar = user.avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${user.name || user.email}`
 
   return (
-    <div className="min-h-screen p-8 lg:p-12 font-sans bg-[#111111] flex flex-col items-center justify-center">
+    <div className="min-h-screen p-8 lg:p-12 font-sans bg-bg-primary flex flex-col items-center justify-center">
       <div className="w-full max-w-md">
-        <Link href="/connect" className="inline-flex items-center text-[#a0a0a0] hover:text-[#f9f8f6] transition-colors mb-6">
+        <Link href="/connect" className="inline-flex items-center text-text-secondary hover:text-text-primary transition-colors mb-6">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Search
         </Link>
         
-        <div className="bg-[#1a1a1a] border border-[#333333] rounded-3xl p-8 shadow-sm text-center">
+        <div className="bg-bg-secondary border border-border-primary rounded-3xl p-8 shadow-sm text-center">
           <div className="flex justify-center mb-6">
-            <div className="h-32 w-32 bg-[#111111] rounded-full flex items-center justify-center border-4 border-white shadow-md overflow-hidden">
+            <div className="h-32 w-32 bg-bg-primary rounded-full flex items-center justify-center border-4 border-text-primary shadow-md overflow-hidden">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={currentAvatar} alt={user.name || "User"} className="w-full h-full object-cover" />
             </div>
           </div>
           
-          <h1 className="text-3xl font-serif font-bold text-[#f9f8f6] mb-2">{user.name || "Anonymous User"}</h1>
+          <h1 className="text-3xl font-serif font-bold text-text-primary mb-2">{user.name || "Anonymous User"}</h1>
           
           {user.showEmail && (
-            <div className="flex items-center justify-center text-[#a0a0a0] mb-6">
+            <div className="flex items-center justify-center text-text-secondary mb-6">
               <Mail className="w-4 h-4 mr-2" />
               {user.email}
             </div>
           )}
 
           {user.bio && (
-            <div className="bg-[#111111] border border-[#333333] rounded-2xl p-6 text-[#f9f8f6] text-left mb-8">
+            <div className="bg-bg-primary border border-border-primary rounded-2xl p-6 text-text-primary text-left mb-8">
               <p className="whitespace-pre-wrap">{user.bio}</p>
             </div>
           )}

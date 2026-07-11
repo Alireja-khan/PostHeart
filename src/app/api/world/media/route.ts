@@ -30,6 +30,7 @@ export async function GET(request: Request) {
 
     // Base query conditions based on tabs
     let whereClause: any = {};
+    let folderItems: string[] | undefined;
 
     switch (tab) {
       case 'sent':
@@ -85,6 +86,7 @@ export async function GET(request: Request) {
         if (tab.length === 24) { // MongoDB ObjectId length
           const folder = await prisma.folder.findUnique({ where: { id: tab } });
           if (folder && folder.userId === user.id) {
+            folderItems = folder.items;
             if (folder.items.length === 0) {
               whereClause = { id: '000000000000000000000000' }; // fake ObjectId to force empty
             } else if (mediaType === 'letters') {
@@ -92,7 +94,7 @@ export async function GET(request: Request) {
             } else if (mediaType === 'images') {
               whereClause = { images: { hasSome: folder.items } };
             } else if (mediaType === 'songs') {
-              whereClause = { music: { in: folder.items } };
+              whereClause = { id: { in: folder.items } };
             } else if (mediaType === 'voices') {
               whereClause = { voices: { hasSome: folder.items } };
             }
@@ -176,7 +178,8 @@ export async function GET(request: Request) {
       years: availableYears,
       userGender: user?.gender || null,
       partnerGender: user?.partner?.gender || null,
-      currentUserId: user?.id
+      currentUserId: user?.id,
+      folderItems
     });
 
   } catch (error) {

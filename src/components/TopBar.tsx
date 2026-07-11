@@ -11,14 +11,14 @@ export default function TopBar() {
   if (!session) return null
 
   return (
-    <div className="fixed top-40 left-72 z-50 flex items-center space-x-4">
+    <div className="fixed top-40 left-72 z-50 flex flex-col space-y-4">
       <button 
         onClick={() => setSidebarOpen(true)}
-        className="relative p-3 bg-[#1a1a1a] border border-[#333333] rounded-full shadow-sm hover:bg-[#222222] transition-colors"
+        className="relative p-3 bg-bg-secondary border border-border-primary rounded-full shadow-sm hover:bg-bg-tertiary transition-colors"
       >
-        <Mail className="w-6 h-6 text-[#f9f8f6]" />
+        <Mail className="w-6 h-6 text-text-primary" />
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 border-2 border-[#1a1a1a] rounded-full">
+          <span className="absolute top-0 right-0 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-text-primary bg-red-500 border-2 border-[#1a1a1a] rounded-full">
             {unreadCount}
           </span>
         )}

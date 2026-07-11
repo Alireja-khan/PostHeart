@@ -111,7 +111,7 @@ export default function FolderDropdown({ itemId, mediaType }: FolderDropdownProp
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={(e) => { e.stopPropagation(); setIsOpen(!isOpen); }}
-        className="p-1.5 rounded bg-black/40 hover:bg-[#c2410c] text-white/70 hover:text-white transition-colors border border-white/5 shadow-sm"
+        className="p-1.5 rounded bg-bg-primary/40 hover:bg-[#c2410c] text-text-primary/70 hover:text-text-primary transition-colors border border-text-primary/5 shadow-sm"
         title="Add to Folder"
       >
         <FolderPlus size={14} />
@@ -123,17 +123,17 @@ export default function FolderDropdown({ itemId, mediaType }: FolderDropdownProp
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="absolute bottom-full mb-2 right-0 w-48 bg-[#1a1a1a] border border-[#333] rounded-xl shadow-2xl p-2 z-50 origin-bottom-right"
+            className="absolute bottom-full mb-2 right-0 w-48 bg-bg-secondary border border-[#333] rounded-xl shadow-2xl p-2 z-50 origin-bottom-right"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="text-[10px] font-mono uppercase tracking-widest text-white/40 mb-2 px-2">Folders</div>
+            <div className="text-[10px] font-mono uppercase tracking-widest text-text-primary/40 mb-2 px-2">Folders</div>
             
             {loading ? (
-              <div className="px-2 py-3 text-xs text-white/30 text-center">Loading...</div>
+              <div className="px-2 py-3 text-xs text-text-primary/30 text-center">Loading...</div>
             ) : (
               <div className="max-h-40 overflow-y-auto space-y-1 mb-2 custom-scrollbar">
                 {folders.length === 0 && (
-                  <div className="px-2 py-2 text-[10px] text-white/30 italic">No folders yet</div>
+                  <div className="px-2 py-2 text-[10px] text-text-primary/30 italic">No folders yet</div>
                 )}
                 {folders.map(folder => {
                   const isAdded = folder.items.includes(itemId);
@@ -141,10 +141,10 @@ export default function FolderDropdown({ itemId, mediaType }: FolderDropdownProp
                     <button
                       key={folder.id}
                       onClick={() => handleToggleFolder(folder)}
-                      className="w-full text-left px-2 py-1.5 flex items-center justify-between hover:bg-white/5 rounded text-xs text-white/80 transition-colors"
+                      className="w-full text-left px-2 py-1.5 flex items-center justify-between hover:bg-text-primary/5 rounded text-xs text-text-primary/80 transition-colors"
                     >
                       <span className="flex items-center gap-2">
-                        <Folder size={12} className={isAdded ? "text-[#c2410c]" : "text-white/40"} />
+                        <Folder size={12} className={isAdded ? "text-[#c2410c]" : "text-text-primary/40"} />
                         <span className="truncate max-w-[100px]">{folder.name}</span>
                       </span>
                       {isAdded && <Check size={12} className="text-[#c2410c]" />}
@@ -154,7 +154,7 @@ export default function FolderDropdown({ itemId, mediaType }: FolderDropdownProp
               </div>
             )}
 
-            <div className="border-t border-white/10 pt-2">
+            <div className="border-t border-text-primary/10 pt-2">
               {isCreating ? (
                 <div className="flex flex-col gap-2">
                   <input
@@ -167,17 +167,17 @@ export default function FolderDropdown({ itemId, mediaType }: FolderDropdownProp
                       if (e.key === 'Escape') setIsCreating(false);
                     }}
                     placeholder="Folder name..."
-                    className="bg-black/50 border border-white/10 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-[#c2410c] w-full"
+                    className="bg-bg-primary/50 border border-text-primary/10 rounded px-2 py-1 text-xs text-text-primary focus:outline-none focus:border-[#c2410c] w-full"
                   />
                   <div className="flex gap-2">
-                    <button onClick={handleCreateFolder} className="flex-1 bg-[#c2410c] hover:bg-[#a3360a] text-white text-[10px] py-1 rounded transition-colors uppercase tracking-widest font-bold">Create</button>
-                    <button onClick={() => setIsCreating(false)} className="flex-1 bg-white/10 hover:bg-white/20 text-white text-[10px] py-1 rounded transition-colors uppercase tracking-widest font-bold">Cancel</button>
+                    <button onClick={handleCreateFolder} className="flex-1 bg-[#c2410c] hover:bg-[#a3360a] text-text-primary text-[10px] py-1 rounded transition-colors uppercase tracking-widest font-bold">Create</button>
+                    <button onClick={() => setIsCreating(false)} className="flex-1 bg-text-primary/10 hover:bg-text-primary/20 text-text-primary text-[10px] py-1 rounded transition-colors uppercase tracking-widest font-bold">Cancel</button>
                   </div>
                 </div>
               ) : (
                 <button
                   onClick={() => setIsCreating(true)}
-                  className="w-full flex items-center gap-2 text-xs text-white/50 hover:text-white px-2 py-1.5 hover:bg-white/5 rounded transition-colors"
+                  className="w-full flex items-center gap-2 text-xs text-text-primary/50 hover:text-text-primary px-2 py-1.5 hover:bg-text-primary/5 rounded transition-colors"
                 >
                   <Plus size={12} />
                   <span>New Folder</span>

@@ -42,14 +42,14 @@ const VoiceNoteCard = ({
   }, [volume, isMuted]);
 
   return (
-    <div className="relative w-52 bg-[#1a1a1a] rounded-3xl p-4 shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-white/10 overflow-hidden group">
+    <div className="relative w-52 bg-bg-secondary rounded-3xl p-4 shadow-[0_10px_40px_rgba(0,0,0,0.5)] border border-text-primary/10 overflow-hidden group">
       <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
       
       {/* Header */}
       <div className="flex justify-between items-start mb-4 relative z-10">
-        <div className="flex items-center gap-2 bg-black/40 rounded-full pr-2 p-1">
-          <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center overflow-hidden">
-            <Mic size={12} className="text-white/60" />
+        <div className="flex items-center gap-2 bg-bg-primary/40 rounded-full pr-2 p-1">
+          <div className="w-6 h-6 rounded-full bg-text-primary/10 flex items-center justify-center overflow-hidden">
+            <Mic size={12} className="text-text-primary/60" />
           </div>
           <div className="flex flex-col">
             {onTitleChange ? (
@@ -58,10 +58,10 @@ const VoiceNoteCard = ({
                 value={title || ''} 
                 onChange={(e) => onTitleChange(e.target.value)} 
                 placeholder="Voice Note Title"
-                className="bg-transparent text-white text-[10px] font-bold leading-tight border-b border-white/20 focus:border-white focus:outline-none w-24 placeholder-white/30"
+                className="bg-transparent text-text-primary text-[10px] font-bold leading-tight border-b border-text-primary/20 focus:border-text-primary focus:outline-none w-24 placeholder-white/30"
               />
             ) : (
-              <span className="text-white text-[10px] font-bold leading-tight">{title || 'Voice Note'}</span>
+              <span className="text-text-primary text-[10px] font-bold leading-tight">{title || 'Voice Note'}</span>
             )}
           </div>
         </div>
@@ -70,14 +70,14 @@ const VoiceNoteCard = ({
           {isTop && onAdd && (
             <button 
               onClick={onAdd}
-              className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors text-white"
+              className="w-6 h-6 rounded-full bg-text-primary/10 flex items-center justify-center hover:bg-text-primary/20 transition-colors text-text-primary"
             >
               <Plus size={10} />
             </button>
           )}
           <button 
             onClick={() => onRemove(id)}
-            className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors text-white"
+            className="w-6 h-6 rounded-full bg-text-primary/10 flex items-center justify-center hover:bg-text-primary/20 transition-colors text-text-primary"
           >
             <Trash2 size={10} />
           </button>
@@ -86,12 +86,12 @@ const VoiceNoteCard = ({
 
       {/* Progress */}
       <div className="mb-3 relative z-10">
-        <div className="flex justify-between text-[9px] text-white/50 mb-1 font-mono">
+        <div className="flex justify-between text-[9px] text-text-primary/50 mb-1 font-mono">
           <span>{Math.floor(currentTime / 60)}:{(Math.floor(currentTime % 60)).toString().padStart(2, '0')}</span>
           <span>{Math.floor(duration / 60)}:{(Math.floor(duration % 60)).toString().padStart(2, '0')}</span>
         </div>
         <div 
-          className="w-full h-1 bg-white/10 rounded-full overflow-hidden cursor-pointer"
+          className="w-full h-1 bg-text-primary/10 rounded-full overflow-hidden cursor-pointer"
           onClick={(e) => {
              if (!audioRef.current || !duration) return;
              const rect = e.currentTarget.getBoundingClientRect();
@@ -100,7 +100,7 @@ const VoiceNoteCard = ({
           }}
         >
           <div 
-            className="h-full bg-white transition-all duration-100 ease-linear"
+            className="h-full bg-text-primary transition-all duration-100 ease-linear"
             style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
           />
         </div>
@@ -109,11 +109,11 @@ const VoiceNoteCard = ({
       {/* Volume and Extra Controls */}
       <div className="flex justify-between items-center mb-3 relative z-10">
         <div className="flex items-center gap-2 w-1/2">
-          <button onClick={() => setIsMuted(!isMuted)} className="text-white/50 hover:text-white transition-colors">
+          <button onClick={() => setIsMuted(!isMuted)} className="text-text-primary/50 hover:text-text-primary transition-colors">
             {isMuted || volume === 0 ? <VolumeX size={12} /> : <Volume2 size={12} />}
           </button>
           <div 
-            className="w-full h-1 bg-white/10 rounded-full overflow-hidden cursor-pointer flex-1"
+            className="w-full h-1 bg-text-primary/10 rounded-full overflow-hidden cursor-pointer flex-1"
             onClick={(e) => {
               const rect = e.currentTarget.getBoundingClientRect();
               const pos = (e.clientX - rect.left) / rect.width;
@@ -121,12 +121,12 @@ const VoiceNoteCard = ({
               setIsMuted(false);
             }}
           >
-            <div className="h-full bg-white transition-all" style={{ width: `${isMuted ? 0 : volume * 100}%` }} />
+            <div className="h-full bg-text-primary transition-all" style={{ width: `${isMuted ? 0 : volume * 100}%` }} />
           </div>
         </div>
         <button 
           onClick={() => setIsRepeat(!isRepeat)}
-          className={`transition-colors ${isRepeat ? 'text-white' : 'text-white/30 hover:text-white/60'}`}
+          className={`transition-colors ${isRepeat ? 'text-text-primary' : 'text-text-primary/30 hover:text-text-primary/60'}`}
         >
           {isRepeat ? <Repeat1 size={12} /> : <Repeat size={12} />}
         </button>
@@ -135,7 +135,7 @@ const VoiceNoteCard = ({
       {/* Main Controls */}
       <div className="flex justify-center items-center gap-4 relative z-10">
         {isTop && hasMultiple && (
-           <button onClick={onPrev} className="text-white/40 hover:text-white transition-colors">
+           <button onClick={onPrev} className="text-text-primary/40 hover:text-text-primary transition-colors">
              <SkipBack size={14} fill="currentColor" />
            </button>
         )}
@@ -150,12 +150,12 @@ const VoiceNoteCard = ({
             setIsPlaying(!isPlaying);
           }}
           disabled={isUploading}
-          className="w-8 h-8 bg-white text-black rounded-full flex items-center justify-center hover:scale-105 transition-transform shadow-[0_0_15px_rgba(255,255,255,0.2)] disabled:opacity-50"
+          className="w-8 h-8 bg-text-primary text-bg-primary rounded-full flex items-center justify-center hover:scale-105 transition-transform shadow-[0_0_15px_rgba(255,255,255,0.2)] disabled:opacity-50"
         >
-          {isUploading ? <BirdLoader className="w-4 h-4 text-black" /> : isPlaying ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" className="ml-0.5" />}
+          {isUploading ? <BirdLoader className="w-4 h-4 text-bg-primary" /> : isPlaying ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" className="ml-0.5" />}
         </button>
         {isTop && hasMultiple && (
-           <button onClick={onNext} className="text-white/40 hover:text-white transition-colors">
+           <button onClick={onNext} className="text-text-primary/40 hover:text-text-primary transition-colors">
              <SkipForward size={14} fill="currentColor" />
            </button>
         )}
@@ -725,8 +725,11 @@ export default function WriteLetterPage() {
         setEmbeddedMemories({});
         sessionStorage.removeItem('writeLetterDraft');
         if (keyboardRef.current) keyboardRef.current.setInput('');
+        // Add slight delay to show success state before redirect
         window.dispatchEvent(new Event('letter-posted'));
-        router.push('/scheduled');
+        setTimeout(() => {
+          router.push('/');
+        }, 1500);
       } else {
         await alert('Failed', data.error || 'Failed to post letter');
         setIsSubmitting(false);
@@ -751,7 +754,7 @@ export default function WriteLetterPage() {
   const secondLastImage = allImages.length > 1 ? allImages[allImages.length - 2] : null;
 
   const renderRichText = (text: string) => {
-    if (!text) return <span className="text-white/20 pointer-events-none">{isTransliterating ? "Translating..." : "What are you feeling right now?"}</span>;
+    if (!text) return <span className="text-text-primary/20 pointer-events-none">{isTransliterating ? "Translating..." : "What are you feeling right now?"}</span>;
     
     const parts = [];
     const regex = /\u200C(\u200B+)(.*?)\u200D/g;
@@ -778,7 +781,7 @@ export default function WriteLetterPage() {
         >
           {linkText}
           {memory && (
-            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-3 py-1.5 bg-[#f9f8f6] text-black text-[10px] font-bold uppercase tracking-wider rounded opacity-0 group-hover:opacity-100 transition-opacity delay-100 pointer-events-none shadow-2xl z-50">
+            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-3 py-1.5 bg-text-primary text-bg-primary text-[10px] font-bold uppercase tracking-wider rounded opacity-0 group-hover:opacity-100 transition-opacity delay-100 pointer-events-none shadow-2xl z-50">
               See Memory
             </span>
           )}
@@ -796,7 +799,7 @@ export default function WriteLetterPage() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-transparent text-white relative flex flex-col items-center pt-24 pb-48 px-6 font-sans overflow-x-hidden">
+    <div className="w-full min-h-screen bg-transparent text-text-primary relative flex flex-col items-center pt-24 pb-48 px-6 font-sans overflow-x-hidden">
       
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
@@ -806,7 +809,7 @@ export default function WriteLetterPage() {
       >
           <div className="flex flex-col gap-2 mb-12">
             <div className="flex items-center gap-4">
-              <Feather size={20} className="text-white/20" strokeWidth={1} />
+              <Feather size={20} className="text-text-primary/20" strokeWidth={1} />
               <input 
                 type="text" 
                 placeholder="To my love..." 
@@ -814,7 +817,7 @@ export default function WriteLetterPage() {
                 onChange={(e) => setReceiver(e.target.value)}
                 disabled={hasInTransitLetter || isSubmitting}
                 spellCheck="false"
-                className="w-full bg-transparent border-none text-3xl md:text-5xl text-white/90 focus:outline-none placeholder-white/20 font-typewriter"
+                className="w-full bg-transparent border-none text-3xl md:text-5xl text-text-primary/90 focus:outline-none placeholder-white/20 font-typewriter"
               />
             </div>
           </div>
@@ -857,7 +860,7 @@ export default function WriteLetterPage() {
             style={{ outline: 'none' }}
           />
           {isTransliterating && (
-            <div className="absolute top-4 right-4 animate-spin text-white/20 z-20">
+            <div className="absolute top-4 right-4 animate-spin text-text-primary/20 z-20">
               <BirdLoader className="w-5 h-5" />
             </div>
           )}
@@ -873,22 +876,22 @@ export default function WriteLetterPage() {
             className={`fixed ${isKeyboardOpen ? 'bottom-[240px] md:bottom-[320px]' : 'bottom-10'} left-1/2 -translate-x-1/2 flex items-center gap-2 z-50 mix-blend-difference transition-all duration-300`}
           >
             {/* Tools Group */}
-            <div className="flex items-center gap-1 bg-white border border-black/10 rounded-full px-2 py-1 shadow-2xl">
+            <div className="flex items-center gap-1 bg-text-primary border border-bg-primary/10 rounded-full px-2 py-1 shadow-2xl">
               <button 
                 onClick={() => setIsKeyboardOpen(!isKeyboardOpen)}
-                className={`p-2.5 rounded-full transition-colors relative group ${isKeyboardOpen ? 'text-black bg-black/5' : 'text-black/40 hover:text-black'}`}
+                className={`p-2.5 rounded-full transition-colors relative group ${isKeyboardOpen ? 'text-bg-primary bg-bg-primary/5' : 'text-bg-primary/40 hover:text-bg-primary'}`}
               >
                 <KeyboardIcon size={16} strokeWidth={2} />
-                <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-medium">Virtual Keyboard</span>
+                <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-bg-primary text-text-primary text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-medium">Virtual Keyboard</span>
               </button>
 
               <div className="relative" ref={coverMenuRef}>
                 <button 
                   onClick={() => setIsCoverMenuOpen(!isCoverMenuOpen)}
-                  className={`p-2.5 rounded-full transition-colors relative group ${isCoverMenuOpen ? 'text-black bg-black/5' : 'text-black/40 hover:text-black'}`}
+                  className={`p-2.5 rounded-full transition-colors relative group ${isCoverMenuOpen ? 'text-bg-primary bg-bg-primary/5' : 'text-bg-primary/40 hover:text-bg-primary'}`}
                 >
                   <Book size={16} strokeWidth={2} />
-                  <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-medium">Notebook Cover</span>
+                  <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-bg-primary text-text-primary text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-medium">Notebook Cover</span>
                 </button>
 
                 <AnimatePresence>
@@ -898,9 +901,9 @@ export default function WriteLetterPage() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 bg-white border border-black/10 rounded-2xl shadow-xl flex flex-col p-4 min-w-[280px]"
+                      className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 bg-text-primary border border-bg-primary/10 rounded-2xl shadow-xl flex flex-col p-4 min-w-[280px]"
                     >
-                      <h4 className="text-black font-bold text-sm mb-3">Notebook Cover</h4>
+                      <h4 className="text-bg-primary font-bold text-sm mb-3">Notebook Cover</h4>
                       <div className="flex flex-col gap-3">
                         <input 
                           type="text" 
@@ -909,7 +912,7 @@ export default function WriteLetterPage() {
                           onChange={(e) => setCoverTitle(e.target.value)}
                           disabled={hasInTransitLetter || isSubmitting}
                           spellCheck="false"
-                          className="w-full bg-black/5 rounded-xl border-none text-sm text-black focus:outline-none placeholder-black/40 font-serif px-3 py-2"
+                          className="w-full bg-bg-primary/5 rounded-xl border-none text-sm text-bg-primary focus:outline-none placeholder-black/40 font-serif px-3 py-2"
                         />
                         <input 
                           type="text" 
@@ -918,7 +921,7 @@ export default function WriteLetterPage() {
                           onChange={(e) => setCoverSubtitle(e.target.value)}
                           disabled={hasInTransitLetter || isSubmitting}
                           spellCheck="false"
-                          className="w-full bg-black/5 rounded-xl border-none text-xs text-black focus:outline-none placeholder-black/40 font-mono uppercase tracking-widest px-3 py-2"
+                          className="w-full bg-bg-primary/5 rounded-xl border-none text-xs text-bg-primary focus:outline-none placeholder-black/40 font-mono uppercase tracking-widest px-3 py-2"
                         />
                       </div>
                     </motion.div>
@@ -928,40 +931,40 @@ export default function WriteLetterPage() {
 
               <button 
                 onClick={() => musicInputRef.current?.click()}
-                className={`p-2.5 rounded-full transition-colors relative group hidden sm:block ${uploadedMusic ? 'text-[#ff9f1c]' : 'text-black/40 hover:text-black'}`}
+                className={`p-2.5 rounded-full transition-colors relative group hidden sm:block ${uploadedMusic ? 'text-[#ff9f1c]' : 'text-bg-primary/40 hover:text-bg-primary'}`}
               >
-                {isUploadingMusic ? <BirdLoader className="w-5 h-5 text-black" /> : <Music size={16} strokeWidth={2} />}
-                <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-medium">
+                {isUploadingMusic ? <BirdLoader className="w-5 h-5 text-bg-primary" /> : <Music size={16} strokeWidth={2} />}
+                <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-bg-primary text-text-primary text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-medium">
                   {uploadedMusic ? 'Music Added' : 'Add Music'}
                 </span>
               </button>
 
               <button 
                 onClick={() => setIsVoicePopupOpen(true)}
-                className="p-2.5 text-black/40 hover:text-black rounded-full transition-colors relative group"
+                className="p-2.5 text-bg-primary/40 hover:text-bg-primary rounded-full transition-colors relative group"
               >
                 <Mic size={16} strokeWidth={2} />
-                <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-medium">Voice Note</span>
+                <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-bg-primary text-text-primary text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-medium">Voice Note</span>
               </button>
 
               <button 
                 onClick={() => fileInputRef.current?.click()}
-                className={`p-2.5 rounded-full transition-colors relative group text-black/40 hover:text-black`}
+                className={`p-2.5 rounded-full transition-colors relative group text-bg-primary/40 hover:text-bg-primary`}
               >
                 <ImageIcon size={16} strokeWidth={2} />
-                <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-medium">Add Memory</span>
+                <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-bg-primary text-text-primary text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-medium">Add Memory</span>
               </button>
 
-              <div className="w-[1px] h-4 bg-black/10 mx-1" />
+              <div className="w-[1px] h-4 bg-bg-primary/10 mx-1" />
 
               {/* Language Selector */}
               <div className="relative" ref={langMenuRef}>
                 <button 
                   onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
-                  className={`p-2.5 rounded-full transition-colors relative group ${isLangMenuOpen ? 'text-black bg-black/5' : 'text-black/40 hover:text-black'}`}
+                  className={`p-2.5 rounded-full transition-colors relative group ${isLangMenuOpen ? 'text-bg-primary bg-bg-primary/5' : 'text-bg-primary/40 hover:text-bg-primary'}`}
                 >
                   <Globe size={16} strokeWidth={2} />
-                  <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-medium">Language</span>
+                  <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-bg-primary text-text-primary text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-medium">Language</span>
                 </button>
 
                 <AnimatePresence>
@@ -971,7 +974,7 @@ export default function WriteLetterPage() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 bg-white border border-black/10 rounded-2xl shadow-xl flex flex-col p-1.5 min-w-[120px]"
+                      className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 bg-text-primary border border-bg-primary/10 rounded-2xl shadow-xl flex flex-col p-1.5 min-w-[120px]"
                     >
                       {LANGUAGES.map((lang) => (
                         <button 
@@ -980,7 +983,7 @@ export default function WriteLetterPage() {
                             setLanguage(lang.code);
                             setIsLangMenuOpen(false);
                           }}
-                          className={`text-left px-3 py-2 text-[12px] rounded-xl font-bold transition-colors ${language === lang.code ? 'bg-black text-white' : 'text-black/60 hover:text-black hover:bg-black/5'}`}
+                          className={`text-left px-3 py-2 text-[12px] rounded-xl font-bold transition-colors ${language === lang.code ? 'bg-bg-primary text-text-primary' : 'text-bg-primary/60 hover:text-bg-primary hover:bg-bg-primary/5'}`}
                         >
                           {lang.name}
                         </button>
@@ -990,13 +993,13 @@ export default function WriteLetterPage() {
                 </AnimatePresence>
               </div>
 
-              <div className="w-[1px] h-4 bg-black/10 mx-1" />
+              <div className="w-[1px] h-4 bg-bg-primary/10 mx-1" />
 
               {/* Delay Dropdown */}
               <div className="relative" ref={delayMenuRef}>
                 <button 
                   onClick={() => setIsDelayMenuOpen(!isDelayMenuOpen)}
-                  className="flex items-center gap-1.5 p-2 px-3 text-[12px] font-bold text-black/50 hover:text-black hover:bg-black/5 rounded-full transition-colors"
+                  className="flex items-center gap-1.5 p-2 px-3 text-[12px] font-bold text-bg-primary/50 hover:text-bg-primary hover:bg-bg-primary/5 rounded-full transition-colors"
                 >
                   <Clock size={14} strokeWidth={2} />
                   {getDelayText(delay)}
@@ -1009,7 +1012,7 @@ export default function WriteLetterPage() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 bg-white border border-black/10 rounded-2xl shadow-xl flex flex-col p-1.5 min-w-[120px]"
+                      className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 bg-text-primary border border-bg-primary/10 rounded-2xl shadow-xl flex flex-col p-1.5 min-w-[120px]"
                     >
                       {['1m', '5m', '1h', '24h', '7d'].map((val) => (
                         <button 
@@ -1018,7 +1021,7 @@ export default function WriteLetterPage() {
                             setDelay(val);
                             setIsDelayMenuOpen(false);
                           }}
-                          className={`text-left px-3 py-2 text-[12px] rounded-xl font-bold transition-colors ${delay === val ? 'bg-black text-white' : 'text-black/60 hover:text-black hover:bg-black/5'}`}
+                          className={`text-left px-3 py-2 text-[12px] rounded-xl font-bold transition-colors ${delay === val ? 'bg-bg-primary text-text-primary' : 'text-bg-primary/60 hover:text-bg-primary hover:bg-bg-primary/5'}`}
                         >
                           {val === '1m' ? '1 minute' : val === '5m' ? '5 minutes' : val === '1h' ? '1 hour' : val === '24h' ? 'Tomorrow' : 'Next week'}
                         </button>
@@ -1037,7 +1040,7 @@ export default function WriteLetterPage() {
                     exit={{ width: 0, opacity: 0, marginLeft: 0 }}
                     onClick={handleSubmit}
                     disabled={isSubmitting}
-                    className="flex items-center justify-center bg-black text-white h-9 px-5 rounded-full hover:scale-105 active:scale-95 transition-all overflow-hidden whitespace-nowrap"
+                    className="flex items-center justify-center bg-bg-primary text-text-primary h-9 px-5 rounded-full hover:scale-105 active:scale-95 transition-all overflow-hidden whitespace-nowrap"
                   >
                     <Send size={14} className={isSubmitting ? 'animate-pulse' : ''} />
                   </motion.button>
@@ -1056,7 +1059,7 @@ export default function WriteLetterPage() {
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 bg-[#e4e4e4] dark:bg-[#1a1a1a] p-2 pt-4 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] z-40 text-black dark:text-white"
+            className="fixed bottom-0 left-0 right-0 bg-[#e4e4e4] dark:bg-bg-secondary p-2 pt-4 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] z-40 text-bg-primary dark:text-text-primary"
             style={{ 
               ['--hg-theme-default-bg' as any]: '#222',
               ['--hg-theme-default-button-bg' as any]: '#333',
@@ -1119,34 +1122,34 @@ export default function WriteLetterPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-6"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-bg-primary/40 backdrop-blur-sm p-6"
           >
-            <div className="bg-[#1a1a1a] border border-white/20 p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center">
-              <h3 className="text-white text-xl font-serif mb-2">Music Uploaded</h3>
-              <p className="text-white/60 mb-4 text-sm">Would you like to add a title and cover art?</p>
+            <div className="bg-bg-secondary border border-text-primary/20 p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center">
+              <h3 className="text-text-primary text-xl font-serif mb-2">Music Uploaded</h3>
+              <p className="text-text-primary/60 mb-4 text-sm">Would you like to add a title and cover art?</p>
               
               <input 
                 type="text"
                 placeholder="Music Title (Optional)"
                 value={musicTitle}
                 onChange={(e) => setMusicTitle(e.target.value)}
-                className="w-full bg-black/40 border border-white/20 rounded-xl px-4 py-3 text-white text-sm mb-6 focus:outline-none focus:border-white transition-colors"
+                className="w-full bg-bg-primary/40 border border-text-primary/20 rounded-xl px-4 py-3 text-text-primary text-sm mb-6 focus:outline-none focus:border-text-primary transition-colors"
               />
 
               <div className="flex gap-4 justify-center">
                 <button 
                   onClick={() => setShowCoverPrompt(false)}
-                  className="px-6 py-2 rounded-full border border-white/20 text-white/60 hover:text-white hover:bg-white/5 transition-colors"
+                  className="px-6 py-2 rounded-full border border-text-primary/20 text-text-primary/60 hover:text-text-primary hover:bg-text-primary/5 transition-colors"
                 >
                   Skip
                 </button>
                 <button 
                   onClick={() => musicCoverInputRef.current?.click()}
                   disabled={isUploadingMusicCover}
-                  className="px-6 py-2 rounded-full bg-white text-black hover:scale-105 transition-transform flex items-center justify-center gap-2 disabled:opacity-80"
+                  className="px-6 py-2 rounded-full bg-text-primary text-bg-primary hover:scale-105 transition-transform flex items-center justify-center gap-2 disabled:opacity-80"
                 >
                   {isUploadingMusicCover ? (
-                    <><BirdLoader className="w-4 h-4 text-black" /> Adding...</>
+                    <><BirdLoader className="w-4 h-4 text-bg-primary" /> Adding...</>
                   ) : (
                     "Add Cover Art"
                   )}
@@ -1164,20 +1167,20 @@ export default function WriteLetterPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-6"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-bg-primary/80 backdrop-blur-md p-6"
           >
-            <div className="bg-[#111] border border-white/10 p-10 rounded-[40px] shadow-2xl max-w-sm w-full flex flex-col items-center relative overflow-hidden">
+            <div className="bg-bg-primary border border-text-primary/10 p-10 rounded-[40px] shadow-2xl max-w-sm w-full flex flex-col items-center relative overflow-hidden">
               {/* Animated Glow when recording */}
               {isRecording && (
                 <motion.div 
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: [0.1, 0.3, 0.1], scale: [1, 1.2, 1] }}
                   transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-                  className="absolute inset-0 bg-white/20 rounded-full blur-3xl -z-10"
+                  className="absolute inset-0 bg-text-primary/20 rounded-full blur-3xl -z-10"
                 />
               )}
               
-              <button onClick={() => { stopRecording(); setIsVoicePopupOpen(false); }} className="absolute top-6 right-6 text-white/40 hover:text-white transition-colors">
+              <button onClick={() => { stopRecording(); setIsVoicePopupOpen(false); }} className="absolute top-6 right-6 text-text-primary/40 hover:text-text-primary transition-colors">
                 <X size={20} />
               </button>
 
@@ -1189,23 +1192,23 @@ export default function WriteLetterPage() {
                          key={i}
                          animate={{ scale: [1, 2], opacity: [0.5, 0] }}
                          transition={{ repeat: Infinity, duration: 1.5, delay: i * 0.5, ease: "easeOut" }}
-                         className="absolute inset-0 border border-white/50 rounded-full"
+                         className="absolute inset-0 border border-text-primary/50 rounded-full"
                        />
                      ))}
-                     <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(255,255,255,0.3)] z-10 relative">
-                       <Mic size={24} className="text-black" />
+                     <div className="w-16 h-16 bg-text-primary rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(255,255,255,0.3)] z-10 relative">
+                       <Mic size={24} className="text-bg-primary" />
                      </div>
                   </div>
                 ) : (
-                  <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center border border-white/20">
-                    <Mic size={24} className="text-white/60" />
+                  <div className="w-16 h-16 bg-text-primary/10 rounded-full flex items-center justify-center border border-text-primary/20">
+                    <Mic size={24} className="text-text-primary/60" />
                   </div>
                 )}
               </div>
 
               <div className="text-center mb-10">
-                <h3 className="text-white text-xl font-medium mb-2">{isRecording ? "Listening..." : "Record a Voice Note"}</h3>
-                <p className="text-white/40 font-mono text-sm">
+                <h3 className="text-text-primary text-xl font-medium mb-2">{isRecording ? "Listening..." : "Record a Voice Note"}</h3>
+                <p className="text-text-primary/40 font-mono text-sm">
                   {Math.floor(recordingTime / 60)}:{(Math.floor(recordingTime % 60)).toString().padStart(2, '0')}
                 </p>
               </div>
@@ -1213,14 +1216,14 @@ export default function WriteLetterPage() {
               {isRecording ? (
                 <button 
                   onClick={stopRecording}
-                  className="w-full py-4 rounded-full bg-white/10 text-white font-medium hover:bg-white/20 transition-colors border border-white/10"
+                  className="w-full py-4 rounded-full bg-text-primary/10 text-text-primary font-medium hover:bg-text-primary/20 transition-colors border border-text-primary/10"
                 >
                   Stop Recording
                 </button>
               ) : (
                 <button 
                   onClick={startRecording}
-                  className="w-full py-4 rounded-full bg-white text-black font-medium hover:scale-105 transition-transform"
+                  className="w-full py-4 rounded-full bg-text-primary text-bg-primary font-medium hover:scale-105 transition-transform"
                 >
                   Start Recording
                 </button>
@@ -1307,24 +1310,24 @@ export default function WriteLetterPage() {
               exit={{ opacity: 0, x: 50 }}
               className="pointer-events-auto"
             >
-            <div className="relative w-52 bg-[#1a1a1a] rounded-3xl p-4 shadow-2xl border border-white/10 overflow-hidden group">
+            <div className="relative w-52 bg-bg-secondary rounded-3xl p-4 shadow-2xl border border-text-primary/10 overflow-hidden group">
               <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
               
               {/* Header */}
               <div className="flex justify-between items-start mb-4 relative z-10">
-                <div className="flex items-center gap-2 bg-black/40 rounded-full pr-2 p-1">
-                  <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center overflow-hidden">
-                    <Music size={12} className="text-white/60" />
+                <div className="flex items-center gap-2 bg-bg-primary/40 rounded-full pr-2 p-1">
+                  <div className="w-6 h-6 rounded-full bg-text-primary/10 flex items-center justify-center overflow-hidden">
+                    <Music size={12} className="text-text-primary/60" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-white text-[10px] font-bold leading-tight">Audio Track</span>
+                    <span className="text-text-primary text-[10px] font-bold leading-tight">Audio Track</span>
                   </div>
                 </div>
                 
                 <div className="flex gap-1">
                   <button 
                     onClick={() => musicInputRef.current?.click()}
-                    className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors text-white"
+                    className="w-6 h-6 rounded-full bg-text-primary/10 flex items-center justify-center hover:bg-text-primary/20 transition-colors text-text-primary"
                   >
                     <Edit2 size={10} />
                   </button>
@@ -1334,7 +1337,7 @@ export default function WriteLetterPage() {
                       setMusicCover(null);
                       setIsPlaying(false);
                     }}
-                    className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors text-white"
+                    className="w-6 h-6 rounded-full bg-text-primary/10 flex items-center justify-center hover:bg-text-primary/20 transition-colors text-text-primary"
                   >
                     <Trash2 size={10} />
                   </button>
@@ -1343,21 +1346,21 @@ export default function WriteLetterPage() {
 
               {/* Cover Art */}
               <div 
-                className="w-full aspect-square rounded-2xl bg-gradient-to-br from-orange-500/20 to-purple-500/20 mb-4 flex items-center justify-center border border-white/5 overflow-hidden relative z-10 cursor-pointer group/cover"
+                className="w-full aspect-square rounded-2xl bg-gradient-to-br from-orange-500/20 to-purple-500/20 mb-4 flex items-center justify-center border border-text-primary/5 overflow-hidden relative z-10 cursor-pointer group/cover"
                 onClick={() => musicCoverInputRef.current?.click()}
               >
                  {isUploadingMusicCover ? (
-                   <BirdLoader className="w-8 h-8 text-white" />
+                   <BirdLoader className="w-8 h-8 text-text-primary" />
                  ) : musicCover ? (
                    <img src={musicCover} alt="Cover" className="w-full h-full object-cover" />
                  ) : (
                    <>
                      <div className="absolute inset-0 backdrop-blur-3xl opacity-50" />
-                     <Music size={32} className="text-white/20" />
+                     <Music size={32} className="text-text-primary/20" />
                    </>
                  )}
-                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/cover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
-                    <span className="text-white text-xs font-bold tracking-wider">Change Cover</span>
+                 <div className="absolute inset-0 bg-bg-primary/40 opacity-0 group-hover/cover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
+                    <span className="text-text-primary text-xs font-bold tracking-wider">Change Cover</span>
                  </div>
                  {isPlaying && !musicCover && (
                     <div className="absolute bottom-4 flex gap-1 items-end h-4">
@@ -1366,7 +1369,7 @@ export default function WriteLetterPage() {
                           key={i}
                           animate={{ height: ['20%', '100%', '20%'] }}
                           transition={{ repeat: Infinity, duration: 0.8 + (i * 0.2), ease: 'easeInOut' }}
-                          className="w-1 bg-white/50 rounded-full"
+                          className="w-1 bg-text-primary/50 rounded-full"
                         />
                       ))}
                     </div>
@@ -1375,12 +1378,12 @@ export default function WriteLetterPage() {
 
               {/* Progress */}
               <div className="mb-3 relative z-10">
-                <div className="flex justify-between text-[9px] text-white/50 mb-1 font-mono">
+                <div className="flex justify-between text-[9px] text-text-primary/50 mb-1 font-mono">
                   <span>{Math.floor(currentTime / 60)}:{(Math.floor(currentTime % 60)).toString().padStart(2, '0')}</span>
                   <span>{Math.floor(duration / 60)}:{(Math.floor(duration % 60)).toString().padStart(2, '0')}</span>
                 </div>
                 <div 
-                  className="w-full h-1 bg-white/10 rounded-full overflow-hidden cursor-pointer"
+                  className="w-full h-1 bg-text-primary/10 rounded-full overflow-hidden cursor-pointer"
                   onClick={(e) => {
                      if (!audioRef.current || !duration) return;
                      const rect = e.currentTarget.getBoundingClientRect();
@@ -1389,7 +1392,7 @@ export default function WriteLetterPage() {
                   }}
                 >
                   <div 
-                    className="h-full bg-white transition-all duration-100 ease-linear"
+                    className="h-full bg-text-primary transition-all duration-100 ease-linear"
                     style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
                   />
                 </div>
@@ -1398,11 +1401,11 @@ export default function WriteLetterPage() {
               {/* Volume and Extra Controls */}
               <div className="flex justify-between items-center mb-3 relative z-10">
                 <div className="flex items-center gap-2 w-1/2">
-                  <button onClick={() => setIsMuted(!isMuted)} className="text-white/50 hover:text-white transition-colors">
+                  <button onClick={() => setIsMuted(!isMuted)} className="text-text-primary/50 hover:text-text-primary transition-colors">
                     {isMuted || volume === 0 ? <VolumeX size={12} /> : <Volume2 size={12} />}
                   </button>
                   <div 
-                    className="w-full h-1 bg-white/10 rounded-full overflow-hidden cursor-pointer flex-1"
+                    className="w-full h-1 bg-text-primary/10 rounded-full overflow-hidden cursor-pointer flex-1"
                     onClick={(e) => {
                       const rect = e.currentTarget.getBoundingClientRect();
                       const pos = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
@@ -1410,13 +1413,13 @@ export default function WriteLetterPage() {
                       if (pos > 0) setIsMuted(false);
                     }}
                   >
-                    <div className="h-full bg-white transition-all duration-100 ease-linear" style={{ width: `${isMuted ? 0 : volume * 100}%` }} />
+                    <div className="h-full bg-text-primary transition-all duration-100 ease-linear" style={{ width: `${isMuted ? 0 : volume * 100}%` }} />
                   </div>
                 </div>
                 
                 <button 
                   onClick={() => setIsRepeat(!isRepeat)}
-                  className={`transition-colors ${isRepeat ? 'text-[#ff9f1c]' : 'text-white/50 hover:text-white'}`}
+                  className={`transition-colors ${isRepeat ? 'text-[#ff9f1c]' : 'text-text-primary/50 hover:text-text-primary'}`}
                 >
                   <Repeat size={12} />
                 </button>
@@ -1426,7 +1429,7 @@ export default function WriteLetterPage() {
               <div className="flex justify-center items-center gap-5 relative z-10">
                 <button 
                    onClick={() => { if(audioRef.current) audioRef.current.currentTime = Math.max(0, currentTime - 10) }}
-                   className="text-white/50 hover:text-white transition-colors"
+                   className="text-text-primary/50 hover:text-text-primary transition-colors"
                 >
                   <SkipBack size={14} fill="currentColor" />
                 </button>
@@ -1439,13 +1442,13 @@ export default function WriteLetterPage() {
                     }
                     setIsPlaying(!isPlaying);
                   }}
-                  className="w-8 h-8 bg-white text-black rounded-full flex items-center justify-center hover:scale-105 transition-transform"
+                  className="w-8 h-8 bg-text-primary text-bg-primary rounded-full flex items-center justify-center hover:scale-105 transition-transform"
                 >
                   {isPlaying ? <Pause size={14} fill="currentColor" /> : <Play size={14} fill="currentColor" className="ml-0.5" />}
                 </button>
                 <button 
                    onClick={() => { if(audioRef.current) audioRef.current.currentTime = Math.min(duration, currentTime + 10) }}
-                   className="text-white/50 hover:text-white transition-colors"
+                   className="text-text-primary/50 hover:text-text-primary transition-colors"
                 >
                   <SkipForward size={14} fill="currentColor" />
                 </button>
@@ -1466,21 +1469,21 @@ export default function WriteLetterPage() {
             onClick={() => setIsGalleryOpen(true)}
             className="pointer-events-auto cursor-pointer group"
           >
-            <div className="relative w-52 bg-[#1a1a1a] rounded-3xl p-4 shadow-2xl border border-white/10 overflow-hidden">
+            <div className="relative w-52 bg-bg-secondary rounded-3xl p-4 shadow-2xl border border-text-primary/10 overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
               
               {/* Header */}
               <div className="flex justify-between items-start mb-4 relative z-10">
-                <div className="flex items-center gap-2 bg-black/40 rounded-full pr-2 p-1">
-                  <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center overflow-hidden">
-                    <Folder size={12} className="text-white/60" />
+                <div className="flex items-center gap-2 bg-bg-primary/40 rounded-full pr-2 p-1">
+                  <div className="w-6 h-6 rounded-full bg-text-primary/10 flex items-center justify-center overflow-hidden">
+                    <Folder size={12} className="text-text-primary/60" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-white text-[10px] font-bold leading-tight">Gallery</span>
+                    <span className="text-text-primary text-[10px] font-bold leading-tight">Gallery</span>
                   </div>
                 </div>
                 
-                <div className="bg-white/10 text-white text-[10px] font-bold px-2 py-1 rounded-full border border-white/10">
+                <div className="bg-text-primary/10 text-text-primary text-[10px] font-bold px-2 py-1 rounded-full border border-text-primary/10">
                   {totalAttachments} items
                 </div>
               </div>
@@ -1489,37 +1492,37 @@ export default function WriteLetterPage() {
               <div className="flex justify-center mt-2 relative z-10">
                 <div className="relative w-24 h-[72px] transition-transform duration-300 group-hover:scale-105">
                   {/* Folder Back (Dark) */}
-                  <div className="absolute bottom-0 left-0 w-full h-[85%] bg-gradient-to-b from-[#2a2a2a] to-[#111] rounded-xl rounded-tl-none shadow-2xl border border-white/10" />
+                  <div className="absolute bottom-0 left-0 w-full h-[85%] bg-gradient-to-b from-[#2a2a2a] to-[#111] rounded-xl rounded-tl-none shadow-2xl border border-text-primary/10" />
                   {/* Folder Back Tab */}
-                  <div className="absolute top-0 left-0 w-[40%] h-[25%] bg-[#2a2a2a] rounded-t-lg border-t border-l border-white/10" />
+                  <div className="absolute top-0 left-0 w-[40%] h-[25%] bg-[#2a2a2a] rounded-t-lg border-t border-l border-text-primary/10" />
 
                   {/* Document 1 */}
-                  <div className="absolute top-2 left-4 w-12 h-[50px] bg-[#e5e5e5] rounded shadow-sm transform -rotate-6 origin-bottom-left transition-transform duration-300 group-hover:-translate-y-3 group-hover:-rotate-12 overflow-hidden border border-white/20">
+                  <div className="absolute top-2 left-4 w-12 h-[50px] bg-[#e5e5e5] rounded shadow-sm transform -rotate-6 origin-bottom-left transition-transform duration-300 group-hover:-translate-y-3 group-hover:-rotate-12 overflow-hidden border border-text-primary/20">
                     {secondLastImage ? (
                       <img src={secondLastImage} alt="Preview 1" className="w-full h-full object-cover opacity-90" />
                     ) : (
                       <>
-                        <div className="mt-2 ml-2 w-8 h-[2px] bg-black/10 rounded-full" />
-                        <div className="mt-1.5 ml-2 w-5 h-[2px] bg-black/10 rounded-full" />
+                        <div className="mt-2 ml-2 w-8 h-[2px] bg-bg-primary/10 rounded-full" />
+                        <div className="mt-1.5 ml-2 w-5 h-[2px] bg-bg-primary/10 rounded-full" />
                       </>
                     )}
                   </div>
                   
                   {/* Document 2 */}
-                  <div className="absolute top-3 left-8 w-12 h-[48px] bg-white rounded shadow-sm transform rotate-6 origin-bottom-right transition-transform duration-300 group-hover:-translate-y-2 group-hover:rotate-12 overflow-hidden border border-white/20">
+                  <div className="absolute top-3 left-8 w-12 h-[48px] bg-text-primary rounded shadow-sm transform rotate-6 origin-bottom-right transition-transform duration-300 group-hover:-translate-y-2 group-hover:rotate-12 overflow-hidden border border-text-primary/20">
                     {lastImage ? (
                       <img src={lastImage} alt="Preview 2" className="w-full h-full object-cover" />
                     ) : (
                       <>
-                        <div className="mt-2 ml-2 w-6 h-[2px] bg-black/10 rounded-full" />
-                        <div className="mt-1.5 ml-2 w-8 h-[2px] bg-black/10 rounded-full" />
-                        <div className="mt-1.5 ml-2 w-4 h-[2px] bg-black/10 rounded-full" />
+                        <div className="mt-2 ml-2 w-6 h-[2px] bg-bg-primary/10 rounded-full" />
+                        <div className="mt-1.5 ml-2 w-8 h-[2px] bg-bg-primary/10 rounded-full" />
+                        <div className="mt-1.5 ml-2 w-4 h-[2px] bg-bg-primary/10 rounded-full" />
                       </>
                     )}
                   </div>
 
                   {/* Front Glass layer (Translucent Frosted) */}
-                  <div className="absolute bottom-0 left-0 w-full h-[70%] bg-white/[0.15] backdrop-blur-md rounded-xl border border-white/30 shadow-[0_-4px_16px_rgba(0,0,0,0.2)] overflow-hidden">
+                  <div className="absolute bottom-0 left-0 w-full h-[70%] bg-text-primary/[0.15] backdrop-blur-md rounded-xl border border-text-primary/30 shadow-[0_-4px_16px_rgba(0,0,0,0.2)] overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent" />
                   </div>
                 </div>
@@ -1538,18 +1541,18 @@ export default function WriteLetterPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-6"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-bg-primary/40 backdrop-blur-sm p-6"
           >
             <motion.div
               ref={galleryRef}
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-3xl shadow-2xl w-full max-w-3xl max-h-[80vh] overflow-y-auto"
+              className="bg-text-primary/10 backdrop-blur-xl border border-text-primary/20 p-6 rounded-3xl shadow-2xl w-full max-w-3xl max-h-[80vh] overflow-y-auto"
             >
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-white text-xl font-serif">Attached Memories</h3>
-                <button onClick={() => setIsGalleryOpen(false)} className="text-white/60 hover:text-white p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors">
+                <h3 className="text-text-primary text-xl font-serif">Attached Memories</h3>
+                <button onClick={() => setIsGalleryOpen(false)} className="text-text-primary/60 hover:text-text-primary p-2 rounded-full bg-text-primary/5 hover:bg-text-primary/10 transition-colors">
                   <X size={20} />
                 </button>
               </div>
@@ -1557,11 +1560,11 @@ export default function WriteLetterPage() {
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {/* Uploaded final images */}
                 {uploadedImages.map((url, idx) => (
-                  <div key={`final-${idx}`} className="relative group aspect-square rounded-2xl overflow-hidden bg-black/20 border border-white/10">
+                  <div key={`final-${idx}`} className="relative group aspect-square rounded-2xl overflow-hidden bg-bg-primary/20 border border-text-primary/10">
                     <img src={url} alt={`Memory ${idx+1}`} className="w-full h-full object-cover" />
                     <button 
                       onClick={() => setUploadedImages(uploadedImages.filter((_, i) => i !== idx))}
-                      className="absolute top-2 right-2 bg-black/50 hover:bg-black text-white p-1.5 rounded-full backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all scale-90 hover:scale-100"
+                      className="absolute top-2 right-2 bg-bg-primary/50 hover:bg-bg-primary text-text-primary p-1.5 rounded-full backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all scale-90 hover:scale-100"
                     >
                       <X size={14} />
                     </button>
@@ -1571,10 +1574,10 @@ export default function WriteLetterPage() {
 
                 {/* Currently uploading temporary images */}
                 {uploadingImages.map((localUrl, idx) => (
-                  <div key={`temp-${idx}`} className="relative group aspect-square rounded-2xl overflow-hidden bg-black/20 border border-white/10">
+                  <div key={`temp-${idx}`} className="relative group aspect-square rounded-2xl overflow-hidden bg-bg-primary/20 border border-text-primary/10">
                     <img src={localUrl} alt={`Uploading ${idx+1}`} className="w-full h-full object-cover opacity-50 grayscale" />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[2px]">
-                      <BirdLoader className="w-8 h-8 text-white" />
+                    <div className="absolute inset-0 flex items-center justify-center bg-bg-primary/20 backdrop-blur-[2px]">
+                      <BirdLoader className="w-8 h-8 text-text-primary" />
                     </div>
                   </div>
                 ))}
@@ -1582,10 +1585,10 @@ export default function WriteLetterPage() {
                 {/* Add More Button Box */}
                 <div 
                   onClick={() => fileInputRef.current?.click()}
-                  className="aspect-square rounded-2xl border-2 border-dashed border-white/30 flex flex-col items-center justify-center cursor-pointer hover:bg-white/5 hover:border-white/60 transition-all group"
+                  className="aspect-square rounded-2xl border-2 border-dashed border-text-primary/30 flex flex-col items-center justify-center cursor-pointer hover:bg-text-primary/5 hover:border-text-primary/60 transition-all group"
                 >
-                  <Plus size={24} className="text-white/40 group-hover:text-white/80 mb-2 transition-colors" />
-                  <span className="text-white/40 group-hover:text-white/80 text-[10px] font-bold uppercase tracking-wider transition-colors">Add More</span>
+                  <Plus size={24} className="text-text-primary/40 group-hover:text-text-primary/80 mb-2 transition-colors" />
+                  <span className="text-text-primary/40 group-hover:text-text-primary/80 text-[10px] font-bold uppercase tracking-wider transition-colors">Add More</span>
                 </div>
               </div>
             </motion.div>
@@ -1600,7 +1603,7 @@ export default function WriteLetterPage() {
             initial={{ opacity: 0, y: 10, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.9 }}
-            className="fixed z-50 flex items-center gap-1 bg-[#1a1a1a] border border-white/10 rounded-full px-2 py-1.5 shadow-2xl"
+            className="fixed z-50 flex items-center gap-1 bg-bg-secondary border border-text-primary/10 rounded-full px-2 py-1.5 shadow-2xl"
             style={{ 
               top: Math.max(20, mousePos.y - 60),
               left: mousePos.x,
@@ -1613,24 +1616,24 @@ export default function WriteLetterPage() {
                 setMousePos(null);
                 embedFileInputRef.current?.click(); 
               }}
-              className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-full transition-all relative group"
+              className="p-2 text-text-primary/60 hover:text-text-primary hover:bg-text-primary/10 rounded-full transition-all relative group"
             >
               <ImageIcon size={14} strokeWidth={2} />
-              <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white text-black text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-bold uppercase tracking-wider">Embed Image</span>
+              <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-text-primary text-bg-primary text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-bold uppercase tracking-wider">Embed Image</span>
             </button>
             <button 
               onClick={() => setMousePos(null)}
-              className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-full transition-all relative group"
+              className="p-2 text-text-primary/60 hover:text-text-primary hover:bg-text-primary/10 rounded-full transition-all relative group"
             >
               <Music size={14} strokeWidth={2} />
-              <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white text-black text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-bold uppercase tracking-wider">Embed Music</span>
+              <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-text-primary text-bg-primary text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-bold uppercase tracking-wider">Embed Music</span>
             </button>
             <button 
               onClick={() => setMousePos(null)}
-              className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-full transition-all relative group"
+              className="p-2 text-text-primary/60 hover:text-text-primary hover:bg-text-primary/10 rounded-full transition-all relative group"
             >
               <Mic size={14} strokeWidth={2} />
-              <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white text-black text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-bold uppercase tracking-wider">Embed Voice</span>
+              <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-text-primary text-bg-primary text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-bold uppercase tracking-wider">Embed Voice</span>
             </button>
           </motion.div>
         )}
@@ -1674,14 +1677,14 @@ export default function WriteLetterPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-6"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-bg-primary/40 backdrop-blur-sm p-6"
             onClick={() => setSelectedEmbedId(null)}
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-[#1a1a1a] border border-white/20 p-8 rounded-3xl shadow-2xl flex gap-6"
+              className="bg-bg-secondary border border-text-primary/20 p-8 rounded-3xl shadow-2xl flex gap-6"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Images Folder */}
@@ -1696,11 +1699,11 @@ export default function WriteLetterPage() {
                   <div className="w-16 h-12 bg-blue-500/20 rounded-lg border border-blue-500/40 flex items-center justify-center group-hover:bg-blue-500/30 transition-colors">
                     <ImageIcon className="text-blue-400" />
                   </div>
-                  <div className="absolute -top-2 -right-2 bg-black text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full border border-white/20">
+                  <div className="absolute -top-2 -right-2 bg-bg-primary text-text-primary text-[10px] w-5 h-5 flex items-center justify-center rounded-full border border-text-primary/20">
                     {embeddedMemories[selectedEmbedId]?.images.length || 0}
                   </div>
                 </div>
-                <span className="text-white/60 text-xs font-bold uppercase tracking-wider group-hover:text-white transition-colors">Images</span>
+                <span className="text-text-primary/60 text-xs font-bold uppercase tracking-wider group-hover:text-text-primary transition-colors">Images</span>
               </div>
               
               {/* Music Folder */}
@@ -1711,11 +1714,11 @@ export default function WriteLetterPage() {
                   <div className="w-16 h-12 bg-purple-500/20 rounded-lg border border-purple-500/40 flex items-center justify-center group-hover:bg-purple-500/30 transition-colors">
                     <Music className="text-purple-400" />
                   </div>
-                  <div className="absolute -top-2 -right-2 bg-black text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full border border-white/20">
+                  <div className="absolute -top-2 -right-2 bg-bg-primary text-text-primary text-[10px] w-5 h-5 flex items-center justify-center rounded-full border border-text-primary/20">
                     {embeddedMemories[selectedEmbedId]?.music.length || 0}
                   </div>
                 </div>
-                <span className="text-white/60 text-xs font-bold uppercase tracking-wider group-hover:text-white transition-colors">Music</span>
+                <span className="text-text-primary/60 text-xs font-bold uppercase tracking-wider group-hover:text-text-primary transition-colors">Music</span>
               </div>
               
               {/* Audio Folder */}
@@ -1726,11 +1729,11 @@ export default function WriteLetterPage() {
                   <div className="w-16 h-12 bg-green-500/20 rounded-lg border border-green-500/40 flex items-center justify-center group-hover:bg-green-500/30 transition-colors">
                     <Mic className="text-green-400" />
                   </div>
-                  <div className="absolute -top-2 -right-2 bg-black text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full border border-white/20">
+                  <div className="absolute -top-2 -right-2 bg-bg-primary text-text-primary text-[10px] w-5 h-5 flex items-center justify-center rounded-full border border-text-primary/20">
                     {embeddedMemories[selectedEmbedId]?.audio.length || 0}
                   </div>
                 </div>
-                <span className="text-white/60 text-xs font-bold uppercase tracking-wider group-hover:text-white transition-colors">Voice</span>
+                <span className="text-text-primary/60 text-xs font-bold uppercase tracking-wider group-hover:text-text-primary transition-colors">Voice</span>
               </div>
             </motion.div>
           </motion.div>
@@ -1744,29 +1747,29 @@ export default function WriteLetterPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-6"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-bg-primary/40 backdrop-blur-sm p-6"
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-3xl shadow-2xl w-full max-w-3xl max-h-[80vh] overflow-y-auto"
+              className="bg-text-primary/10 backdrop-blur-xl border border-text-primary/20 p-6 rounded-3xl shadow-2xl w-full max-w-3xl max-h-[80vh] overflow-y-auto"
             >
               <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-4">
-                  <button onClick={() => setIsEmbedGalleryOpen(false)} className="text-white/60 hover:text-white p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors">
+                  <button onClick={() => setIsEmbedGalleryOpen(false)} className="text-text-primary/60 hover:text-text-primary p-2 rounded-full bg-text-primary/5 hover:bg-text-primary/10 transition-colors">
                     <Feather size={16} className="rotate-180" /> {/* Back icon */}
                   </button>
-                  <h3 className="text-white text-xl font-serif capitalize">Memory {embedGalleryType}</h3>
+                  <h3 className="text-text-primary text-xl font-serif capitalize">Memory {embedGalleryType}</h3>
                 </div>
-                <button onClick={() => { setIsEmbedGalleryOpen(false); setSelectedEmbedId(null); }} className="text-white/60 hover:text-white p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors">
+                <button onClick={() => { setIsEmbedGalleryOpen(false); setSelectedEmbedId(null); }} className="text-text-primary/60 hover:text-text-primary p-2 rounded-full bg-text-primary/5 hover:bg-text-primary/10 transition-colors">
                   <X size={20} />
                 </button>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {embeddedMemories[selectedEmbedId]?.[embedGalleryType].map((url, idx) => (
-                  <div key={`embed-img-${idx}`} className="relative group aspect-square rounded-2xl overflow-hidden bg-black/20 border border-white/10">
+                  <div key={`embed-img-${idx}`} className="relative group aspect-square rounded-2xl overflow-hidden bg-bg-primary/20 border border-text-primary/10">
                     <img src={url} alt={`Memory ${idx+1}`} className="w-full h-full object-cover" />
                     <button 
                       onClick={() => {
@@ -1778,7 +1781,7 @@ export default function WriteLetterPage() {
                           return next;
                         });
                       }}
-                      className="absolute top-2 right-2 bg-black/50 hover:bg-black text-white p-1.5 rounded-full backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all scale-90 hover:scale-100"
+                      className="absolute top-2 right-2 bg-bg-primary/50 hover:bg-bg-primary text-text-primary p-1.5 rounded-full backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all scale-90 hover:scale-100"
                     >
                       <X size={14} />
                     </button>
@@ -1788,10 +1791,10 @@ export default function WriteLetterPage() {
                 {/* Add More Button */}
                 <div 
                   onClick={() => embedFileInputRef.current?.click()}
-                  className="aspect-square rounded-2xl border-2 border-dashed border-white/30 flex flex-col items-center justify-center cursor-pointer hover:bg-white/5 hover:border-white/60 transition-all group"
+                  className="aspect-square rounded-2xl border-2 border-dashed border-text-primary/30 flex flex-col items-center justify-center cursor-pointer hover:bg-text-primary/5 hover:border-text-primary/60 transition-all group"
                 >
-                  <Plus size={24} className="text-white/40 group-hover:text-white/80 mb-2 transition-colors" />
-                  <span className="text-white/40 group-hover:text-white/80 text-[10px] font-bold uppercase tracking-wider transition-colors">Add Image</span>
+                  <Plus size={24} className="text-text-primary/40 group-hover:text-text-primary/80 mb-2 transition-colors" />
+                  <span className="text-text-primary/40 group-hover:text-text-primary/80 text-[10px] font-bold uppercase tracking-wider transition-colors">Add Image</span>
                 </div>
               </div>
               

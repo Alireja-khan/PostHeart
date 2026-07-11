@@ -26,6 +26,15 @@ export async function GET() {
         showEmail: true,
         createdAt: true,
         partnerId: true,
+        partner: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatarUrl: true,
+            gender: true
+          }
+        },
         received: {
           where: { status: 'IN_TRANSIT' },
           orderBy: { deliverAt: 'asc' },

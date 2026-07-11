@@ -1,28 +1,30 @@
 @import "tailwindcss";
 
 :root {
-  /* Sophisticated Minimalist Modern Color Palette */
-  --color-warm-bone: #f9f8f6;       /* Clean soft off-white background */
-  --color-card-white: #ffffff;      /* Pure white for layout cards */
-  --color-charcoal-gray: #1a1a1a;   /* Primary dark text */
-  --color-muted-gray: #707070;      /* Muted secondary text */
-  --color-sage-green: #344e41;      /* Accent color (deep forest/sage green) */
-  --color-rust-terracotta: #c2410c; /* Secondary accent color (terracotta) */
+  /* Default: Midnight (Dark Theme) */
+  --bg-primary: #111111;
+  --bg-secondary: #1a1a1a;
+  --bg-tertiary: #222222;
+  --text-primary: #f9f8f6;
+  --text-secondary: #a0a0a0;
+  --border-primary: #333333;
   
-  --background: var(--color-warm-bone);
-  --foreground: var(--color-charcoal-gray);
-  
-  --border-light: #e6e4df;          /* Sleek border dividing lines */
+  --color-sage-green: #344e41;
+  --color-rust-terracotta: #c2410c;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-bg-tertiary: var(--bg-tertiary);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-border-primary: var(--border-primary);
 }
 
 body {
-  background-color: var(--background);
-  color: var(--foreground);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   font-family: var(--font-lora), serif;
   margin: 0;
   padding: 0;

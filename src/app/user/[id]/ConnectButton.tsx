@@ -63,7 +63,7 @@ export default function ConnectButton({ partnerId, initialPending = false }: { p
 
   if (isPending) {
     return (
-      <div className="w-full bg-[#111111] text-[#a0a0a0] rounded-xl py-3 font-medium flex items-center justify-center gap-2 border border-[#333333]">
+      <div className="w-full bg-bg-primary text-text-secondary rounded-xl py-3 font-medium flex items-center justify-center gap-2 border border-border-primary">
         <Clock className="w-5 h-5" /> Request Pending...
       </div>
     )
@@ -79,7 +79,7 @@ export default function ConnectButton({ partnerId, initialPending = false }: { p
       <button 
         onClick={handleConnect}
         disabled={loading}
-        className="w-full bg-[#c2410c] text-white rounded-xl py-3 font-medium hover:bg-[#a3360a] transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
+        className="w-full bg-[#c2410c] text-text-primary rounded-xl py-3 font-medium hover:bg-[#a3360a] transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
       >
         {loading ? <BirdLoader className="w-6 h-6" /> : (
           <>

@@ -87,7 +87,7 @@ function WorldLettersPageContent() {
   if (status === 'loading') {
     return (
       <div className="flex h-screen items-center justify-center">
-        <BirdLoader className="w-16 h-16 text-white/80" />
+        <BirdLoader className="w-16 h-16 text-text-primary/80" />
       </div>
     );
   }
@@ -98,11 +98,11 @@ function WorldLettersPageContent() {
       {/* Header */}
       <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <Link href="/world" className="inline-flex items-center space-x-2 text-white/40 hover:text-white transition-colors font-mono text-[10px] uppercase tracking-widest mb-6">
+          <Link href="/world" className="inline-flex items-center space-x-2 text-text-primary/40 hover:text-text-primary transition-colors font-mono text-[10px] uppercase tracking-widest mb-6">
             <ArrowLeft size={14} />
             <span>Back to My World</span>
           </Link>
-          <h1 className="font-serif text-4xl font-light text-white tracking-wide flex items-center gap-4">
+          <h1 className="font-serif text-4xl font-light text-text-primary tracking-wide flex items-center gap-4">
             <MailOpen className="text-[#c2410c]" size={36} strokeWidth={1.5} />
             Letters Collection<span className="text-[#c2410c]">.</span>
           </h1>
@@ -114,9 +114,9 @@ function WorldLettersPageContent() {
             placeholder="Search letters..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-full px-4 py-2.5 pl-10 text-sm text-white placeholder-white/40 focus:outline-none focus:border-white/30 transition-colors"
+            className="w-full bg-text-primary/5 border border-text-primary/10 rounded-full px-4 py-2.5 pl-10 text-sm text-text-primary placeholder-white/40 focus:outline-none focus:border-text-primary/30 transition-colors"
           />
-          <Search className="absolute left-4 top-3 text-white/40" size={16} />
+          <Search className="absolute left-4 top-3 text-text-primary/40" size={16} />
         </div>
       </div>
 
@@ -128,8 +128,8 @@ function WorldLettersPageContent() {
           <BirdLoader className="w-12 h-12 text-[#c2410c]" />
         </div>
       ) : letters.length === 0 ? (
-        <div className="text-center py-32 border border-dashed border-white/10 rounded-2xl">
-          <p className="font-serif text-white/40 text-lg">No letters found in this category.</p>
+        <div className="text-center py-32 border border-dashed border-text-primary/10 rounded-2xl">
+          <p className="font-serif text-text-primary/40 text-lg">No letters found in this category.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -145,7 +145,7 @@ function WorldLettersPageContent() {
 export default function WorldLettersPage() {
   return (
     <Suspense fallback={
-      <div className="flex justify-center py-20 min-h-screen bg-black">
+      <div className="flex justify-center py-20 min-h-screen bg-bg-primary">
         <BirdLoader className="w-12 h-12 text-[#c2410c]" />
       </div>
     }>

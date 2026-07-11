@@ -2,29 +2,51 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useAnimationFrame, useMotionValue, useTransform } from 'framer-motion';
-import BoySvg from './BoySvg';
-import GirlSvg from './GirlSvg';
-
-const WaitingFigure = ({ gender, facing }: { gender: string | null, facing: 'left' | 'right' }) => {
-  if (!gender) {
-    return <div className={`w-20 h-28 md:w-24 md:h-32 pointer-events-none transition-transform duration-500 ${facing === 'left' ? 'scale-x-[-1]' : ''}`} />;
-  }
-
-  const isGirl = gender === 'female';
-  const SvgComponent = isGirl ? GirlSvg : BoySvg;
-  
-  return (
-    <div className={`w-20 h-28 md:w-24 md:h-32 text-white pointer-events-none transition-transform duration-500 ${facing === 'left' ? 'scale-x-[-1]' : ''}`}>
-      <SvgComponent className="w-full h-full" />
-    </div>
-  );
-};
+import { X, Clock, Navigation } from 'lucide-react';
+import RadialDial from './RadialDial';
 
 export default function GlobalBirdTracker() {
+  const [profile, setProfile] = useState<any>(null);
   const [inTransitLetter, setInTransitLetter] = useState<Record<string, any> | null>(null);
   const [hasReached, setHasReached] = useState(false);
   const [genders, setGenders] = useState<{userGender: string | null, partnerGender: string | null}>({userGender: null, partnerGender: null});
   const [particles, setParticles] = useState<{x: number, y: number, destY: number, duration: number, delay: number}[]>([]);
+  const [showPopup, setShowPopup] = useState(false);
+  const [timeStats, setTimeStats] = useState({ passed: '', remaining: '', passedPct: 0 });
+
+  // Update time stats for the popup every second
+  useEffect(() => {
+    if (!showPopup || !inTransitLetter) return;
+    
+    const calculateTimes = () => {
+      const now = Date.now();
+      const start = new Date(inTransitLetter.createdAt as string).getTime();
+      const end = new Date(inTransitLetter.deliverAt as string).getTime();
+      
+      const formatDuration = (ms: number) => {
+        if (ms <= 0) return '0s';
+        const d = Math.floor(ms / (1000 * 60 * 60 * 24));
+        const h = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const m = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+        const s = Math.floor((ms % (1000 * 60)) / 1000);
+        return `${d > 0 ? d + 'd ' : ''}${h > 0 ? h + 'h ' : ''}${m > 0 ? m + 'm ' : ''}${s}s`;
+      };
+      
+      let pct = ((now - start) / (end - start)) * 100;
+      if (pct < 0) pct = 0;
+      if (pct > 100) pct = 100;
+
+      setTimeStats({
+        passed: formatDuration(Math.max(0, now - start)),
+        remaining: formatDuration(Math.max(0, end - now)),
+        passedPct: pct
+      });
+    };
+    
+    calculateTimes();
+    const interval = setInterval(calculateTimes, 1000);
+    return () => clearInterval(interval);
+  }, [showPopup, inTransitLetter]);
 
   // We still fetch the letter to know who is who, but the animation is now continuous
   useEffect(() => {
@@ -56,7 +78,20 @@ export default function GlobalBirdTracker() {
       }
     };
 
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch('/api/profile');
+        if (res.ok) {
+          const data = await res.json();
+          setProfile(data);
+        }
+      } catch (error) {
+        console.error("Error fetching profile details:", error);
+      }
+    };
+
     fetchLetter();
+    fetchProfile();
     const intervalId = setInterval(fetchLetter, 30000);
     
     window.addEventListener('letter-posted', fetchLetter);
@@ -96,17 +131,33 @@ export default function GlobalBirdTracker() {
     return inTransitLetter.isSender ? `calc(${position}% - 28px)` : `calc(${100 - position}% - 28px)`;
   });
 
-  const currentUserGender = inTransitLetter ? (inTransitLetter.isSender ? inTransitLetter.senderGender : inTransitLetter.receiverGender) : genders.userGender;
-  const partnerGender = inTransitLetter ? (inTransitLetter.isSender ? inTransitLetter.receiverGender : inTransitLetter.senderGender) : genders.partnerGender;
-
   return (
-    <div className="absolute top-0 left-0 right-0 h-40 z-50 pointer-events-none overflow-hidden">
+    <div className="absolute top-0 left-0 right-0 h-40 z-50 pointer-events-none">
       
+      {/* Current User Dial (Left) */}
+      <div className="absolute left-24 md:left-28 top-1/2 -translate-y-1/2 z-30 pointer-events-auto">
+        <RadialDial 
+          side="left"
+          avatarUrl={profile?.avatarUrl}
+          name={profile?.name || "Me"}
+        />
+      </div>
+
+      {/* Partner Dial (Right) */}
+      <div className="absolute right-24 md:right-28 top-1/2 -translate-y-1/2 z-30 pointer-events-auto">
+        <RadialDial 
+          side="right"
+          avatarUrl={profile?.partner?.avatarUrl}
+          name={profile?.partner?.name || "Partner"}
+          isPartnered={!!profile?.partner}
+        />
+      </div>
+
       {/* Floating Particles */}
       {particles.map((p, i) => (
         <motion.div
           key={i}
-          className="absolute w-1 h-1 bg-white/40 rounded-full"
+          className="absolute w-1 h-1 bg-text-primary/40 rounded-full"
           initial={{ 
             x: p.x, 
             y: p.y 
@@ -124,21 +175,12 @@ export default function GlobalBirdTracker() {
         />
       ))}
 
-      {/* Current User Figure (Always Left) */}
-      <div className="absolute left-6 md:left-16 bottom-4 z-30">
-        <WaitingFigure gender={currentUserGender} facing="right" />
-      </div>
-
-      {/* Partner Figure (Always Right) */}
-      <div className="absolute right-6 md:right-16 bottom-4 z-30">
-        <WaitingFigure gender={partnerGender} facing="left" />
-      </div>
-
       {/* The Bird - Progress Tracking */}
       {inTransitLetter && !hasReached && (
         <motion.div 
-          className="absolute top-8 w-14 h-14 z-20"
+          className="absolute top-8 w-14 h-14 z-20 pointer-events-auto cursor-pointer"
           style={{ left: birdLeftStyle }}
+          onClick={() => setShowPopup(true)}
         >
           {/* Bobbing Motion */}
           <motion.div
@@ -147,7 +189,7 @@ export default function GlobalBirdTracker() {
             className="w-full h-full relative"
           >
             {/* Realistic Bird Silhouette Animation */}
-            <svg viewBox="0 0 100 100" className="w-full h-full text-white drop-shadow-[0_0_8px_rgba(255,255,255,1)]" style={{ transform: inTransitLetter.isSender ? "scaleX(-1)" : "none" }}>
+            <svg viewBox="0 0 100 100" className="w-full h-full text-text-primary drop-shadow-[0_0_8px_rgba(255,255,255,1)]" style={{ transform: inTransitLetter.isSender ? "scaleX(-1)" : "none" }}>
               <path fill="currentColor">
                 <animate 
                   attributeName="d"
@@ -166,7 +208,7 @@ export default function GlobalBirdTracker() {
 
             {/* Dangling Letter Envelope */}
             <motion.div 
-              className="absolute bottom-2 right-[18px] w-[14px] h-[10px] bg-white rounded-sm shadow-lg flex flex-col overflow-hidden"
+              className="absolute bottom-2 right-[18px] w-[14px] h-[10px] bg-text-primary rounded-sm shadow-lg flex flex-col overflow-hidden"
               animate={{ rotate: [-12, 12, -12], transformOrigin: "top center" }}
               transition={{ repeat: Infinity, duration: 1.2, ease: "easeInOut" }}
             >
@@ -180,6 +222,59 @@ export default function GlobalBirdTracker() {
           </motion.div>
         </motion.div>
       )}
+
+      {/* Interactive Timeline Popup */}
+      <AnimatePresence>
+        {showPopup && inTransitLetter && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            className="absolute top-24 left-1/2 -translate-x-1/2 w-80 bg-bg-secondary/95 backdrop-blur-xl border border-[#333] rounded-2xl shadow-2xl p-5 z-[60] pointer-events-auto"
+          >
+            <button 
+              onClick={() => setShowPopup(false)}
+              className="absolute top-3 right-3 p-1.5 text-text-primary/50 hover:text-text-primary bg-bg-primary/20 hover:bg-bg-primary/40 rounded-full transition-colors"
+            >
+              <X size={14} />
+            </button>
+            
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-2">
+                <Navigation size={16} className="text-[#c2410c]" />
+                <h3 className="font-serif text-lg text-text-primary">Letter in Transit</h3>
+              </div>
+
+              <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-[#333] to-transparent" />
+              
+              <div className="space-y-3 font-mono">
+                <div>
+                  <div className="text-[10px] text-text-primary/40 uppercase tracking-widest mb-1 flex items-center justify-between">
+                    <span>Time Passed</span>
+                    <span>{timeStats.passedPct.toFixed(1)}%</span>
+                  </div>
+                  <div className="text-text-primary text-sm font-medium">
+                    {timeStats.passed}
+                  </div>
+                  <div className="mt-1 h-1 w-full bg-[#222] rounded-full overflow-hidden">
+                    <div className="h-full bg-[#c2410c]" style={{ width: `${timeStats.passedPct}%` }} />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-[10px] text-text-primary/40 uppercase tracking-widest mb-1 flex items-center gap-1">
+                    <Clock size={10} />
+                    <span>Time Remaining</span>
+                  </div>
+                  <div className="text-[#c2410c] text-sm font-medium">
+                    {timeStats.remaining}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
