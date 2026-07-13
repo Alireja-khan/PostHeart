@@ -11,7 +11,7 @@ export default function TopBar() {
   if (!session) return null
 
   return (
-    <div className="fixed top-40 left-72 z-50 flex flex-col space-y-4">
+    <div className="fixed top-4 right-4 md:top-40 md:left-72 md:right-auto z-50 flex flex-col space-y-4">
       <button 
         onClick={() => setSidebarOpen(true)}
         className="relative p-3 bg-bg-secondary border border-border-primary rounded-full shadow-sm hover:bg-bg-tertiary transition-colors"

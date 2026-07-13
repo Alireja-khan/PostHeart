@@ -132,7 +132,7 @@ export default function GlobalBirdTracker() {
   });
 
   return (
-    <div className="absolute top-0 left-0 right-0 h-40 z-50 pointer-events-none">
+    <div className="absolute top-0 left-0 right-0 h-40 z-50 pointer-events-none overflow-hidden">
       
       {/* Current User Dial (Left) */}
       <div className="absolute left-24 md:left-28 top-1/2 -translate-y-1/2 z-30 pointer-events-auto">

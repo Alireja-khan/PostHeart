@@ -129,9 +129,9 @@ export default function Desk({ initialLetters }: DeskProps) {
         </defs>
       </svg>
       
-      {/* Page Header - Minimalist */}
-      <div className="absolute top-8 right-8 z-50">
-        <div className="flex flex-col items-end space-y-4 px-6 py-3">
+      {/* Page Header - Responsive Positioning */}
+      <div className="absolute top-8 right-8 z-50 max-md:relative max-md:top-0 max-md:right-0 max-md:flex max-md:justify-center max-md:w-full max-md:mt-4 max-md:mb-8">
+        <div className="flex flex-col md:flex-col max-md:flex-row max-md:space-y-0 max-md:gap-4 items-end max-md:items-center px-6 py-3">
           <button 
             onClick={() => { 
               if (isEnvelopeOpen) {
@@ -168,11 +168,11 @@ export default function Desk({ initialLetters }: DeskProps) {
       <div className="flex-1 flex flex-col justify-center items-center w-full relative z-0">
         
         {viewMode === 'envelope' ? (
-          <div className="relative w-full max-w-3xl flex flex-col items-center justify-center min-h-[600px]">
+          <div className="relative w-full max-w-3xl flex flex-col items-center justify-center flex-1 px-4">
             
             {/* The Envelope Box */}
             <div 
-              className="relative w-[500px] h-[300px] cursor-pointer group z-20 mt-32"
+              className="relative w-full max-w-[320px] sm:max-w-[380px] md:max-w-[420px] lg:max-w-[460px] aspect-[5/3] cursor-pointer group z-20 mt-6"
               style={{ boxShadow: '0 30px 60px rgba(0,0,0,0.8)' }}
               onClick={() => setIsEnvelopeOpen(true)}
             >
@@ -201,7 +201,7 @@ export default function Desk({ initialLetters }: DeskProps) {
                       initial={{ opacity: 0, y: 150 }}
                       animate={{ opacity: 1, y: 0, transition: { duration: 1, ease: "easeInOut", delay: 0.8 } }}
                       exit={{ opacity: 0, y: 400, transition: { duration: 0.8, ease: "easeInOut", delay: 0 } }}
-                      className="absolute bottom-10 left-1/2 -translate-x-1/2 w-full max-w-sm h-[800px] overflow-y-auto pointer-events-auto flex flex-col gap-4 pb-32 px-4 items-center"
+                      className="absolute bottom-10 left-1/2 -translate-x-1/2 w-full max-w-[90vw] sm:max-w-sm h-[60%] md:h-[65%] overflow-y-auto pointer-events-auto flex flex-col gap-4 pb-32 px-4 items-center"
                       style={{
                         maskImage: 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)',
                         WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%)',
@@ -280,7 +280,7 @@ export default function Desk({ initialLetters }: DeskProps) {
                   rotateX: { duration: 1.2, ease: "easeInOut", delay: isEnvelopeOpen ? 0 : 0.8 }
                 }}
                 style={{ transformOrigin: 'top', zIndex: flapZIndex }}
-                className="absolute top-0 left-0 right-0 h-[220px] origin-top drop-shadow-2xl"
+                className="absolute top-0 left-0 right-0 aspect-[25/11] h-auto origin-top drop-shadow-2xl"
               >
                 {/* SVG Flap mirroring the reference image */}
                 <svg viewBox="0 0 500 220" preserveAspectRatio="none" className="w-full h-full filter" style={{ filter: 'drop-shadow(0 10px 10px rgba(0,0,0,0.5))' }}>
@@ -338,7 +338,7 @@ export default function Desk({ initialLetters }: DeskProps) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1.5 }}
-                className="mt-12 text-[#555] text-xs font-mono flex flex-col items-center gap-2 animate-pulse absolute -right-32 top-1/2"
+                className="mt-12 text-[#555] text-xs font-mono hidden md:flex flex-col items-center gap-2 animate-pulse absolute -right-24 lg:-right-32 top-1/2"
               >
                 <div className="w-px h-12 bg-gradient-to-t from-[#555] to-transparent mb-2" />
                 <span className="[writing-mode:vertical-rl]">Scroll Cards</span>
@@ -349,7 +349,7 @@ export default function Desk({ initialLetters }: DeskProps) {
             {isEnvelopeOpen && (
               <button 
                 onClick={() => setViewMode('grid')}
-                className="absolute -left-32 top-1/2 flex items-center gap-2 text-[#555] hover:text-text-primary transition-colors bg-bg-primary px-4 py-2 rounded-full border border-border-primary"
+                className="md:absolute md:-left-24 lg:md:-left-32 md:top-1/2 md:-translate-y-1/2 max-md:relative max-md:mt-6 flex items-center gap-2 text-[#555] hover:text-text-primary transition-colors bg-bg-primary px-4 py-2 rounded-full border border-border-primary shadow-md z-30"
               >
                 <Grid size={14} />
                 <span className="text-xs uppercase tracking-widest font-bold">Grid</span>

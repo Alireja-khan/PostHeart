@@ -58,7 +58,7 @@ export default function RootLayout({
               }} 
             />
             <Sidebar />
-            <div className="flex-1 h-full overflow-y-auto relative bg-bg-primary">
+            <div className="flex-1 h-full overflow-hidden relative bg-bg-primary">
               <TopBar />
               <GlobalBirdTracker />
               <PageLayoutWrapper>
