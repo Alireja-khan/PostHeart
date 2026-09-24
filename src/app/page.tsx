@@ -18,7 +18,12 @@ function DeskSkeleton() {
 }
 
 async function MailboxData() {
-  const session = await getServerSession(authOptions)
+  let session = null;
+  try {
+    session = await getServerSession(authOptions)
+  } catch (err) {
+    console.error("Session retrieval error:", err)
+  }
   
   if (!session?.user?.email) {
     return <Desk initialLetters={[]} />

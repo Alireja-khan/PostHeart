@@ -8,7 +8,12 @@ import DisconnectButton from "./DisconnectButton"
 const prisma = new PrismaClient()
 
 export default async function ConnectPartnerPage() {
-  const session = await getServerSession(authOptions)
+  let session = null;
+  try {
+    session = await getServerSession(authOptions)
+  } catch (err) {
+    console.error("Session error:", err)
+  }
   
   if (!session?.user?.email) {
     return <SearchForm /> // Fallback, though middleware usually protects this route
@@ -48,12 +53,10 @@ export default async function ConnectPartnerPage() {
           
           <h1 className="text-3xl font-serif font-bold text-text-primary mb-2">{partner.name || "Anonymous User"}</h1>
           
-          {partner.showEmail && (
-            <div className="flex items-center justify-center text-text-secondary mb-6">
-              <Mail className="w-4 h-4 mr-2" />
-              {partner.email}
-            </div>
-          )}
+          <div className="flex items-center justify-center text-text-secondary mb-6">
+            <Mail className="w-4 h-4 mr-2" />
+            {partner.email}
+          </div>
 
           {partner.bio && (
             <div className="bg-bg-primary border border-border-primary rounded-2xl p-6 text-text-primary text-left mb-8">

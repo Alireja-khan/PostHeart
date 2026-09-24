@@ -11,7 +11,12 @@ const prisma = new PrismaClient()
 
 export default async function PublicProfile({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const session = await getServerSession(authOptions);
+  let session = null;
+  try {
+    session = await getServerSession(authOptions);
+  } catch (err) {
+    console.error("Session error:", err);
+  }
   
   let currentUser = null;
   if (session?.user?.email) {
@@ -77,7 +82,7 @@ export default async function PublicProfile({ params }: { params: Promise<{ id: 
           
           <h1 className="text-3xl font-serif font-bold text-text-primary mb-2">{user.name || "Anonymous User"}</h1>
           
-          {user.showEmail && (
+          {(user.showEmail || isPartner) && (
             <div className="flex items-center justify-center text-text-secondary mb-6">
               <Mail className="w-4 h-4 mr-2" />
               {user.email}

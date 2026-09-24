@@ -7,7 +7,12 @@ import LetterClientView from './LetterClientView';
 
 export default async function LetterPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
-  const session = await getServerSession(authOptions);
+  let session = null;
+  try {
+    session = await getServerSession(authOptions);
+  } catch (err) {
+    console.error("Session error:", err);
+  }
   
   if (!session?.user?.email) {
     redirect('/auth/login');
