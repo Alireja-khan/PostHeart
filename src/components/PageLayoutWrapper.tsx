@@ -12,6 +12,7 @@ export default function PageLayoutWrapper({ children }: { children: React.ReactN
   
   return (
     <div 
+      suppressHydrationWarning
       className={
         shouldAddPadding 
           ? "pt-16 md:pt-24 h-[calc(100%-4rem)] md:h-[calc(100%-6rem)] overflow-y-auto overflow-x-hidden" 

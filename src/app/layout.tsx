@@ -41,9 +41,10 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${lora.variable} ${caveat.variable} ${specialElite.variable} h-full antialiased`}
     >
-      <body className="h-full flex bg-bg-primary text-text-primary overflow-hidden">
+      <body suppressHydrationWarning className="h-full flex bg-bg-primary text-text-primary overflow-hidden">
         <Providers>
             <Toaster 
               position="top-center" 
