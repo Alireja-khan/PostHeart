@@ -55,8 +55,9 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-950 p-4 font-sans text-zinc-100">
+    <div suppressHydrationWarning className="min-h-screen flex items-center justify-center bg-zinc-950 p-4 font-sans text-zinc-100">
       <motion.div 
+        suppressHydrationWarning
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-3xl p-8 shadow-2xl"
