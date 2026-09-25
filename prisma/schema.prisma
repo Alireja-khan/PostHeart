@@ -24,6 +24,9 @@ model User {
   isPublic  Boolean  @default(true)
   showEmail Boolean  @default(false)
   worldImage String?
+  accentColor String? @default("rust")
+  emailNotifications Boolean @default(true)
+  ambientSound String? @default("none")
 
   accounts  Account[]
   sessions  Session[]

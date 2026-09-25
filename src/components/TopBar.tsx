@@ -13,14 +13,15 @@ export default function TopBar() {
   if (!session || pathname === '/login' || pathname === '/register') return null
 
   return (
-    <div className="fixed top-4 right-4 md:top-40 md:left-72 md:right-auto z-50 flex flex-col space-y-4">
+    <div className="fixed top-4 right-4 sm:top-5 sm:right-6 z-50 flex items-center space-x-3">
       <button 
         onClick={() => setSidebarOpen(true)}
-        className="relative p-3 bg-bg-secondary border border-border-primary rounded-full shadow-sm hover:bg-bg-tertiary transition-colors"
+        className="relative p-2.5 sm:p-3 bg-bg-secondary/90 backdrop-blur-md border border-border-primary rounded-full shadow-xl hover:bg-bg-tertiary transition-all hover:scale-105 active:scale-95"
+        title="Open Correspondence Notifications"
       >
-        <Mail className="w-6 h-6 text-text-primary" />
+        <Mail className="w-5 h-5 text-text-primary" />
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-text-primary bg-red-500 border-2 border-[#1a1a1a] rounded-full">
+          <span className="absolute -top-1 -right-1 inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold text-white bg-[#c2410c] border-2 border-bg-primary rounded-full">
             {unreadCount}
           </span>
         )}

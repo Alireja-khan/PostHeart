@@ -15,7 +15,7 @@ export default async function LetterPage(props: { params: Promise<{ id: string }
   }
   
   if (!session?.user?.email) {
-    redirect('/auth/login');
+    redirect('/login');
   }
 
   const user = await prisma.user.findUnique({
@@ -23,7 +23,7 @@ export default async function LetterPage(props: { params: Promise<{ id: string }
   });
 
   if (!user) {
-    redirect('/auth/login');
+    redirect('/login');
   }
 
   const letter = await prisma.letter.findUnique({
