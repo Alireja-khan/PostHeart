@@ -153,3 +153,37 @@ export async function PUT(req: Request) {
     return NextResponse.json({ message: "Internal server error" }, { status: 500 });
   }
 }
+
+export async function DELETE(req: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user?.email) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    const { requestId } = await req.json();
+    if (!requestId) {
+      return NextResponse.json({ message: "Request ID is required" }, { status: 400 });
+    }
+
+    const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+    if (!user) return NextResponse.json({ message: "User not found" }, { status: 404 });
+
+    const request = await prisma.connectionRequest.findUnique({ where: { id: requestId } });
+    if (!request || request.senderId !== user.id) {
+      return NextResponse.json({ message: "Request not found or unauthorized" }, { status: 404 });
+    }
+
+    if (request.status !== "PENDING") {
+      return NextResponse.json({ message: "Only pending requests can be cancelled" }, { status: 400 });
+    }
+
+    await prisma.connectionRequest.delete({ where: { id: requestId } });
+
+    return NextResponse.json({ message: "Invitation cancelled successfully" }, { status: 200 });
+  } catch (error) {
+    console.error("Cancel request error:", error);
+    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+  }
+}
+

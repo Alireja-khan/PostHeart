@@ -1,83 +1,133 @@
 import { PrismaClient } from "@prisma/client"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "../api/auth/[...nextauth]/route"
-import { Mail, Heart } from "lucide-react"
-import SearchForm from "./SearchForm"
-import DisconnectButton from "./DisconnectButton"
+import ConnectPartnerClient from "./ConnectPartnerClient"
+import PartneredSanctuaryView from "./PartneredSanctuaryView"
+import { redirect } from "next/navigation"
 
 const prisma = new PrismaClient()
 
+export const dynamic = "force-dynamic"
+
 export default async function ConnectPartnerPage() {
-  let session = null;
+  let session = null
   try {
     session = await getServerSession(authOptions)
   } catch (err) {
     console.error("Session error:", err)
   }
-  
+
   if (!session?.user?.email) {
-    return <SearchForm /> // Fallback, though middleware usually protects this route
+    redirect("/login")
   }
 
   const currentUser = await prisma.user.findUnique({
     where: { email: session.user.email },
-    include: { partner: true }
+    include: {
+      partner: true,
+      sentRequests: {
+        where: { status: "PENDING", type: "CONNECT" },
+        include: {
+          receiver: {
+            select: { id: true, name: true, email: true, avatarUrl: true, bio: true }
+          }
+        },
+        orderBy: { createdAt: "desc" }
+      },
+      receivedRequests: {
+        where: { status: "PENDING", type: "CONNECT" },
+        include: {
+          sender: {
+            select: { id: true, name: true, email: true, avatarUrl: true, bio: true }
+          }
+        },
+        orderBy: { createdAt: "desc" }
+      }
+    }
   })
 
-  // If user is partnered, show partner profile
-  if (currentUser?.partner) {
-    const partner = currentUser.partner
-    const currentAvatar = partner.avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${partner.name || partner.email}`
+  if (!currentUser) {
+    redirect("/login")
+  }
 
-    const existingDisconnectRequest = await prisma.connectionRequest.findFirst({
-      where: {
-        OR: [
-          { senderId: currentUser.id, receiverId: partner.id, status: "PENDING", type: "DISCONNECT" },
-          { senderId: partner.id, receiverId: currentUser.id, status: "PENDING", type: "DISCONNECT" }
-        ]
-      }
-    });
-    const isPending = !!existingDisconnectRequest;
+  // If user is partnered, render the Partnered Sanctuary
+  if (currentUser.partner) {
+    const partner = currentUser.partner
+
+    // Fetch letter statistics between the two partners
+    const [lettersSentCount, lettersReceivedCount, existingDisconnectRequest] = await Promise.all([
+      prisma.letter.count({
+        where: { senderId: currentUser.id, receiverId: partner.id }
+      }),
+      prisma.letter.count({
+        where: { senderId: partner.id, receiverId: currentUser.id }
+      }),
+      prisma.connectionRequest.findFirst({
+        where: {
+          OR: [
+            { senderId: currentUser.id, receiverId: partner.id, status: "PENDING", type: "DISCONNECT" },
+            { senderId: partner.id, receiverId: currentUser.id, status: "PENDING", type: "DISCONNECT" }
+          ]
+        }
+      })
+    ])
 
     return (
-      <div className="min-h-screen p-8 lg:p-12 font-sans bg-bg-primary flex flex-col items-center justify-center">
-        <div className="w-full max-w-md bg-bg-secondary border border-border-primary rounded-3xl p-8 shadow-sm text-center">
-          <div className="flex justify-center mb-6">
-            <div className="h-32 w-32 bg-bg-primary rounded-full flex items-center justify-center border-4 border-[#ffd5c2] shadow-md overflow-hidden relative">
-              <img src={currentAvatar} alt={partner.name || "Partner"} className="w-full h-full object-cover" />
-              <div className="absolute -bottom-2 right-0 bg-[#c2410c] text-text-primary p-1.5 rounded-full border-2 border-text-primary">
-                <Heart className="w-4 h-4" />
-              </div>
-            </div>
-          </div>
-          
-          <h1 className="text-3xl font-serif font-bold text-text-primary mb-2">{partner.name || "Anonymous User"}</h1>
-          
-          <div className="flex items-center justify-center text-text-secondary mb-6">
-            <Mail className="w-4 h-4 mr-2" />
-            {partner.email}
-          </div>
-
-          {partner.bio && (
-            <div className="bg-bg-primary border border-border-primary rounded-2xl p-6 text-text-primary text-left mb-8">
-              <p className="whitespace-pre-wrap">{partner.bio}</p>
-            </div>
-          )}
-
-          <div className="w-full bg-[#fff5f0] text-[#c2410c] rounded-xl py-3 font-medium text-center border border-[#ffd5c2]">
-            You are Officially Partners!
-          </div>
-
-          <DisconnectButton initialPending={isPending} />
-        </div>
-      </div>
+      <PartneredSanctuaryView 
+        currentUser={{
+          id: currentUser.id,
+          name: currentUser.name,
+          email: currentUser.email,
+          avatarUrl: currentUser.avatarUrl,
+          bio: currentUser.bio
+        }}
+        partner={{
+          id: partner.id,
+          name: partner.name,
+          email: partner.email,
+          avatarUrl: partner.avatarUrl,
+          bio: partner.bio,
+          createdAt: partner.createdAt
+        }}
+        lettersSentCount={lettersSentCount}
+        lettersReceivedCount={lettersReceivedCount}
+        isDisconnectPending={!!existingDisconnectRequest}
+      />
     )
   }
 
-  // Otherwise, show the search form
+  // Otherwise, render the Unpartnered Connect & Search Client
   return (
-    <div className="min-h-screen p-8 lg:p-12 font-sans bg-bg-primary flex items-center justify-center">
-      <SearchForm />
-    </div>
+    <ConnectPartnerClient 
+      currentUser={{
+        id: currentUser.id,
+        name: currentUser.name,
+        email: currentUser.email,
+        avatarUrl: currentUser.avatarUrl,
+        bio: currentUser.bio
+      }}
+      initialIncomingRequests={currentUser.receivedRequests.map(req => ({
+        id: req.id,
+        createdAt: req.createdAt,
+        sender: req.sender ? {
+          id: req.sender.id,
+          name: req.sender.name,
+          email: req.sender.email,
+          avatarUrl: req.sender.avatarUrl,
+          bio: req.sender.bio
+        } : undefined
+      }))}
+      initialOutgoingRequests={currentUser.sentRequests.map(req => ({
+        id: req.id,
+        createdAt: req.createdAt,
+        receiver: req.receiver ? {
+          id: req.receiver.id,
+          name: req.receiver.name,
+          email: req.receiver.email,
+          avatarUrl: req.receiver.avatarUrl,
+          bio: req.receiver.bio
+        } : undefined
+      }))}
+    />
   )
 }

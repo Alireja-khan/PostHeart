@@ -5,8 +5,8 @@ import { usePathname } from "next/navigation";
 export default function PageLayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   
-  // We don't want the pt-40 padding on the profile page, board page, auth pages, or letter pages
-  const noPaddingPages = ["/profile", "/login", "/register"];
+  // We don't want the pt-40 padding on the profile page, board page, auth pages, connect page, or letter pages
+  const noPaddingPages = ["/profile", "/login", "/register", "/connect"];
   const isLetterPage = pathname?.startsWith("/letter") || false;
   const isAuthPage = pathname === "/login" || pathname === "/register";
   const shouldAddPadding = !noPaddingPages.includes(pathname || "") && !isLetterPage;
