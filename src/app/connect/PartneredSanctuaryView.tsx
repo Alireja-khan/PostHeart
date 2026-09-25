@@ -55,7 +55,7 @@ export default function PartneredSanctuaryView({
   const totalLetters = lettersSentCount + lettersReceivedCount
 
   return (
-    <div className="w-full min-h-screen bg-bg-primary text-text-primary px-4 sm:px-6 md:px-10 lg:px-12 pt-28 md:pt-36 lg:pt-32 pb-20 max-w-7xl mx-auto flex flex-col justify-start">
+    <div className="w-full min-h-screen bg-bg-primary text-text-primary px-4 sm:px-6 md:px-10 lg:px-12 pt-36 md:pt-44 lg:pt-40 pb-20 max-w-7xl mx-auto flex flex-col justify-start">
       
       {/* Header Banner - Sanctuary Lore */}
       <motion.div 

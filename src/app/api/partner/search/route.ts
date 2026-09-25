@@ -34,7 +34,8 @@ export async function GET(req: Request) {
         avatarUrl: true,
         bio: true,
         isPublic: true,
-        showEmail: true
+        showEmail: true,
+        partnerId: true
       }
     })
 
@@ -49,9 +50,10 @@ export async function GET(req: Request) {
     return NextResponse.json({
       id: user.id,
       name: user.name,
-      email: user.showEmail ? user.email : null,
+      email: user.email,
       avatarUrl: user.avatarUrl,
       bio: user.bio,
+      isPartnered: !!user.partnerId
     })
   } catch (error) {
     console.error("Search error:", error)

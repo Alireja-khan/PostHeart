@@ -31,6 +31,7 @@ interface UserSummary {
   email: string
   avatarUrl: string | null
   bio?: string | null
+  isPartnered?: boolean
 }
 
 interface ConnectionRequestItem {
@@ -233,7 +234,7 @@ export default function ConnectPartnerClient({
   const myAvatar = currentUser.avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${currentUser.name || currentUser.email}`
 
   return (
-    <div className="w-full min-h-screen bg-bg-primary text-text-primary px-4 sm:px-6 md:px-10 lg:px-12 pt-28 md:pt-36 lg:pt-32 pb-20 max-w-7xl mx-auto flex flex-col justify-start">
+    <div className="w-full min-h-screen bg-bg-primary text-text-primary px-4 sm:px-6 md:px-10 lg:px-12 pt-36 md:pt-44 lg:pt-40 pb-20 max-w-7xl mx-auto flex flex-col justify-start">
       
       {/* Header Banner - Vintage Postmark Atmosphere */}
       <motion.div 
@@ -478,9 +479,24 @@ export default function ConnectPartnerClient({
                     setPartnerEmail(e.target.value)
                     if (searchError) setSearchError("")
                   }}
-                  className="w-full bg-[#0d0c0b] border border-[#2b2722] rounded-2xl py-3.5 pl-12 pr-28 text-sm sm:text-base font-typewriter text-text-primary focus:outline-none focus:border-[#c2410c] focus:ring-1 focus:ring-[#c2410c] transition-colors placeholder:text-text-secondary/40 placeholder:font-serif"
+                  className="w-full bg-[#0d0c0b] border border-[#2b2722] rounded-2xl py-3.5 pl-12 pr-36 text-sm sm:text-base font-typewriter text-text-primary focus:outline-none focus:border-[#c2410c] focus:ring-1 focus:ring-[#c2410c] transition-colors placeholder:text-text-secondary/40 placeholder:font-serif"
                   placeholder="partner@domain.com..."
                 />
+
+                {partnerEmail && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPartnerEmail("")
+                      setSearchedUser(null)
+                      setSearchError("")
+                    }}
+                    className="absolute inset-y-0 right-28 pr-1 flex items-center text-text-secondary/50 hover:text-text-primary transition-colors"
+                    title="Clear search"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
 
                 <div className="absolute inset-y-0 right-1.5 flex items-center">
                   <button 
@@ -520,68 +536,100 @@ export default function ConnectPartnerClient({
             <AnimatePresence>
               {searchedUser && (
                 <motion.div 
-                  initial={{ opacity: 0, y: 15, scale: 0.98 }}
+                  initial={{ opacity: 0, y: 12, scale: 0.98 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -10, scale: 0.98 }}
-                  transition={{ duration: 0.3 }}
-                  className="mt-6 p-6 rounded-2xl bg-[#181614] border border-[#383129] shadow-lg relative overflow-hidden"
+                  transition={{ duration: 0.25, ease: "easeOut" }}
+                  className="mt-6 rounded-2xl bg-gradient-to-b from-[#181614] to-[#121110] border border-[#383129] shadow-2xl relative overflow-hidden"
                 >
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 rounded-2xl bg-[#221f1c] border-2 border-[#3d362e] p-0.5 overflow-hidden shrink-0 shadow-sm">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img 
-                          src={searchedUser.avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${searchedUser.name || searchedUser.email}`} 
-                          alt={searchedUser.name || "Station"} 
-                          className="w-full h-full object-cover rounded-xl"
-                        />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h4 className="text-lg font-serif font-bold text-text-primary">
-                            {searchedUser.name || "Anonymous Scribe"}
-                          </h4>
-                          <span className="px-2 py-0.5 rounded-full bg-emerald-950/40 border border-emerald-800/40 text-emerald-400 text-[10px] font-mono">
-                            Public Station
-                          </span>
-                        </div>
-                        {searchedUser.email && (
-                          <span className="text-xs font-typewriter text-text-secondary block mt-0.5">
-                            {searchedUser.email}
-                          </span>
-                        )}
-                        {searchedUser.bio && (
-                          <p className="text-xs font-serif text-text-secondary italic line-clamp-2 mt-1.5">
-                            &ldquo;{searchedUser.bio}&rdquo;
-                          </p>
-                        )}
-                      </div>
+                  {/* Top Stationery Postmark Bar */}
+                  <div className="px-5 py-2.5 bg-[#141211] border-b border-[#29241f] flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                      <span className="font-mono text-[10px] uppercase tracking-wider text-emerald-400/90 font-medium">
+                        Recipient Located • Public Station
+                      </span>
                     </div>
+                    <span className="font-typewriter text-[9px] uppercase tracking-widest text-text-secondary/70">
+                      SEAL OF DISPATCH
+                    </span>
+                  </div>
 
-                    {/* Action on Found User */}
-                    <div className="w-full sm:w-auto shrink-0">
-                      {isAlreadyPending ? (
-                        <div className="px-4 py-2.5 rounded-xl bg-[#201d1a] border border-[#3a342c] text-text-secondary text-xs font-mono flex items-center justify-center gap-2">
-                          <Clock className="w-3.5 h-3.5 text-[#c2410c]" />
-                          <span>Request Pending</span>
+                  {/* Main Recipient Details Body */}
+                  <div className="p-5 sm:p-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+                      
+                      {/* Avatar & Identification */}
+                      <div className="flex items-center gap-4 min-w-0 flex-1">
+                        <div className="relative shrink-0">
+                          <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-[#1e1b18] border-2 border-[#42392f] p-1 overflow-hidden shadow-md">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img 
+                              src={searchedUser.avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${searchedUser.name || searchedUser.email}`} 
+                              alt={searchedUser.name || "Station"} 
+                              className="w-full h-full object-cover rounded-xl"
+                            />
+                          </div>
+                          <div className="absolute -bottom-1 -right-1 bg-[#141211] text-[#c2410c] p-1 rounded-full border border-[#383129] shadow-sm">
+                            <Heart className="w-3 h-3 fill-current" />
+                          </div>
                         </div>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => handleSendInvite(searchedUser.id)}
-                          disabled={sendingInvite}
-                          className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#c2410c] hover:bg-[#a3360a] text-white text-xs font-serif font-semibold transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg disabled:opacity-50"
-                        >
-                          {sendingInvite ? (
-                            <BirdLoader className="w-4 h-4 text-white" />
-                          ) : (
-                            <>
-                              <Heart className="w-3.5 h-3.5 fill-current" />
-                              <span>Dispatch Bond Invitation</span>
-                            </>
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2.5">
+                            <h4 className="text-lg sm:text-xl font-serif font-bold text-text-primary tracking-tight truncate">
+                              {searchedUser.name || "Anonymous Scribe"}
+                            </h4>
+                            <span className="shrink-0 px-2 py-0.5 rounded-md bg-[#1f2b23] border border-[#2d4734] text-emerald-400 text-[10px] font-mono tracking-wide">
+                              Public
+                            </span>
+                          </div>
+
+                          {searchedUser.email && (
+                            <div className="flex items-center gap-1.5 mt-1 text-xs text-text-secondary font-typewriter">
+                              <Mail className="w-3.5 h-3.5 text-[#c2410c] shrink-0" />
+                              <span className="truncate">{searchedUser.email}</span>
+                            </div>
                           )}
-                        </button>
-                      )}
+
+                          {searchedUser.bio && (
+                            <p className="mt-2 text-xs font-serif text-text-secondary italic line-clamp-2 pl-2.5 border-l-2 border-[#383129]">
+                              &ldquo;{searchedUser.bio}&rdquo;
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Action Button on Found User */}
+                      <div className="shrink-0 self-stretch sm:self-auto flex items-center">
+                        {searchedUser.isPartnered ? (
+                          <div className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#201d1a] border border-[#3a342c] text-text-secondary text-xs font-mono text-center">
+                            Station Already Bonded
+                          </div>
+                        ) : isAlreadyPending ? (
+                          <div className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#201d1a] border border-[#3a342c] text-[#c2410c] text-xs font-mono flex items-center justify-center gap-2 shadow-inner">
+                            <Clock className="w-3.5 h-3.5" />
+                            <span>Invitation In Flight</span>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleSendInvite(searchedUser.id)}
+                            disabled={sendingInvite}
+                            className="w-full sm:w-auto px-5 py-3 rounded-xl bg-[#c2410c] hover:bg-[#a3360a] text-white text-xs sm:text-sm font-serif font-semibold transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-[#c2410c]/25 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                          >
+                            {sendingInvite ? (
+                              <BirdLoader className="w-4 h-4 text-white" />
+                            ) : (
+                              <>
+                                <Send className="w-3.5 h-3.5" />
+                                <span>Dispatch Bond Invitation</span>
+                              </>
+                            )}
+                          </button>
+                        )}
+                      </div>
+
                     </div>
                   </div>
                 </motion.div>
