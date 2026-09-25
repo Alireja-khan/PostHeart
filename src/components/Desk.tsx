@@ -111,6 +111,7 @@ export default function Desk({ initialLetters }: DeskProps) {
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="absolute inset-0 z-[100] flex items-center justify-center bg-bg-primary"
+            suppressHydrationWarning
           >
             <BirdLoader className="w-16 h-16 text-[#c2410c]" />
           </motion.div>

@@ -1,23 +1,11 @@
 import { PrismaClient } from '@prisma/client'
-import Desk from '@/components/Desk'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from './api/auth/[...nextauth]/route'
-import { Suspense } from 'react'
-import { PackageOpen } from 'lucide-react'
+import ClientDesk from '@/components/ClientDesk'
 
 const prisma = new PrismaClient()
 
-import BirdLoader from "@/components/BirdLoader"
-
-function DeskSkeleton() {
-  return (
-    <div className="absolute inset-0 z-50 flex items-center justify-center bg-bg-primary">
-      <BirdLoader className="w-16 h-16 text-[#c2410c]" />
-    </div>
-  )
-}
-
-async function MailboxData() {
+export default async function Home() {
   let session = null;
   try {
     session = await getServerSession(authOptions)
@@ -26,7 +14,11 @@ async function MailboxData() {
   }
   
   if (!session?.user?.email) {
-    return <Desk initialLetters={[]} />
+    return (
+      <main className="w-full h-full">
+        <ClientDesk initialLetters={[]} />
+      </main>
+    )
   }
 
   const currentUser = await prisma.user.findUnique({
@@ -34,7 +26,11 @@ async function MailboxData() {
   })
 
   if (!currentUser) {
-    return <Desk initialLetters={[]} />
+    return (
+      <main className="w-full h-full">
+        <ClientDesk initialLetters={[]} />
+      </main>
+    )
   }
 
   const letters = await prisma.letter.findMany({
@@ -88,15 +84,9 @@ async function MailboxData() {
     isSentByMe: letter.senderId === currentUser.id
   }))
 
-  return <Desk initialLetters={formattedLetters} />
-}
-
-export default function Home() {
   return (
     <main className="w-full h-full">
-      <Suspense fallback={<DeskSkeleton />}>
-        <MailboxData />
-      </Suspense>
+      <ClientDesk initialLetters={formattedLetters} />
     </main>
   )
 }

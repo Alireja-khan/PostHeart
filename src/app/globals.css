@@ -1,13 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  /* Default: Midnight (Dark Theme) */
+  /* Default: Midnight (Dark Theme) - Soothing Warm Parchment Readability */
   --bg-primary: #111111;
   --bg-secondary: #1a1a1a;
   --bg-tertiary: #222222;
-  --text-primary: #f9f8f6;
-  --text-secondary: #a0a0a0;
-  --border-primary: #333333;
+  --text-primary: #f0ebe1;
+  --text-secondary: #aba296;
+  --border-primary: #2e2923;
   
   --color-sage-green: #344e41;
   --color-rust-terracotta: #c2410c;
@@ -81,4 +81,15 @@ body {
 /* Vintage Typewriter Font Integration */
 .font-typewriter {
   font-family: var(--font-special-elite), Courier, monospace;
+}
+
+/* Override browser autofill light background */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #121110 inset !important;
+  -webkit-text-fill-color: #f5f2eb !important;
+  caret-color: #f5f2eb !important;
+  transition: background-color 5000s ease-in-out 0s;
 }

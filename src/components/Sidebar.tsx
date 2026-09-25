@@ -16,6 +16,11 @@ export default function Sidebar() {
     setIsOpen(false);
   }, [pathname]);
 
+  // Auth pages (/login, /register) utilize the full screen experience
+  if (pathname === '/login' || pathname === '/register') {
+    return null;
+  }
+
   return (
     <>
       {/* Hamburger Menu Button for Mobile */}

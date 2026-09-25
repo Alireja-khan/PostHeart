@@ -8,7 +8,7 @@ interface BirdLoaderProps {
 
 export default function BirdLoader({ className = "w-10 h-10" }: BirdLoaderProps) {
   return (
-    <div className={`relative flex items-center justify-center ${className}`}>
+    <div suppressHydrationWarning className={`relative flex items-center justify-center ${className}`}>
       <motion.div
         animate={{ y: [-2, 2, -2] }}
         transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}

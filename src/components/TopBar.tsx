@@ -3,12 +3,14 @@
 import { Mail } from "lucide-react"
 import { useNotification } from "@/contexts/NotificationContext"
 import { useSession } from "next-auth/react"
+import { usePathname } from "next/navigation"
 
 export default function TopBar() {
+  const pathname = usePathname()
   const { unreadCount, setSidebarOpen } = useNotification()
   const { data: session } = useSession()
 
-  if (!session) return null
+  if (!session || pathname === '/login' || pathname === '/register') return null
 
   return (
     <div className="fixed top-4 right-4 md:top-40 md:left-72 md:right-auto z-50 flex flex-col space-y-4">

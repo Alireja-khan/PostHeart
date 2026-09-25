@@ -1,11 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence, useAnimationFrame, useMotionValue, useTransform } from 'framer-motion';
 import { X, Clock, Navigation } from 'lucide-react';
 import RadialDial from './RadialDial';
 
 export default function GlobalBirdTracker() {
+  const pathname = usePathname();
+  const { data: session } = useSession();
+
   const [profile, setProfile] = useState<any>(null);
   const [inTransitLetter, setInTransitLetter] = useState<Record<string, any> | null>(null);
   const [hasReached, setHasReached] = useState(false);
@@ -50,6 +55,8 @@ export default function GlobalBirdTracker() {
 
   // We still fetch the letter to know who is who, but the animation is now continuous
   useEffect(() => {
+    if (!session || pathname === '/login' || pathname === '/register') return;
+
     // Initialize particles here to avoid Math.random() during render (react-hooks/purity)
     setParticles(Array.from({ length: 15 }).map(() => ({
       x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000),
@@ -100,7 +107,7 @@ export default function GlobalBirdTracker() {
       clearInterval(intervalId);
       window.removeEventListener('letter-posted', fetchLetter);
     };
-  }, []);
+  }, [session, pathname]);
 
   const progress = useMotionValue(0);
 
@@ -130,6 +137,10 @@ export default function GlobalBirdTracker() {
     if (!inTransitLetter) return `calc(15% - 28px)`;
     return inTransitLetter.isSender ? `calc(${position}% - 28px)` : `calc(${100 - position}% - 28px)`;
   });
+
+  if (!session || pathname === '/login' || pathname === '/register') {
+    return null;
+  }
 
   return (
     <div className="absolute top-0 left-0 right-0 h-40 z-50 pointer-events-none overflow-hidden">
