@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Users, ArrowRight, Clock } from "lucide-react"
+import { Send, Clock, Heart, Check } from "lucide-react"
 import BirdLoader from "@/components/BirdLoader"
+import toast from "react-hot-toast"
 
 export default function ConnectButton({ partnerId, initialPending = false }: { partnerId: string, initialPending?: boolean }) {
   const router = useRouter()
@@ -31,7 +32,7 @@ export default function ConnectButton({ partnerId, initialPending = false }: { p
       }
     };
 
-    const interval = setInterval(checkStatus, 5000);
+    const interval = setInterval(checkStatus, 6000);
     return () => clearInterval(interval);
   }, [isPending, router]);
 
@@ -50,12 +51,21 @@ export default function ConnectButton({ partnerId, initialPending = false }: { p
 
       if (res.ok) {
         setIsPending(true)
+        toast.success("Invitation dispatched by carrier bird! 🕊️", {
+          style: { background: "#1a1918", color: "#f0ebe1", border: "1px solid #332d26" }
+        })
         router.refresh()
       } else {
-        setError(data.message || "Failed to connect")
+        setError(data.message || "Failed to dispatch invitation")
+        toast.error(data.message || "Failed to connect", {
+          style: { background: "#1a1918", color: "#f0ebe1", border: "1px solid #332d26" }
+        })
       }
     } catch (err) {
       setError("An error occurred. Make sure you are logged in.")
+      toast.error("Failed to reach registry.", {
+        style: { background: "#1a1918", color: "#f0ebe1", border: "1px solid #332d26" }
+      })
     } finally {
       setLoading(false)
     }
@@ -63,30 +73,35 @@ export default function ConnectButton({ partnerId, initialPending = false }: { p
 
   if (isPending) {
     return (
-      <div className="w-full bg-bg-primary text-text-secondary rounded-xl py-3 font-medium flex items-center justify-center gap-2 border border-border-primary">
-        <Clock className="w-5 h-5" /> Request Pending...
+      <div className="w-full py-3.5 px-4 rounded-xl bg-[#1b1917] text-[#c2410c] text-xs font-mono flex items-center justify-center gap-2 border border-[#383129] shadow-inner">
+        <Clock className="w-4 h-4 text-[#c2410c] animate-pulse" />
+        <span>Invitation In Flight • Awaiting Seal</span>
       </div>
     )
   }
 
   return (
-    <>
+    <div className="w-full space-y-2">
       {error && (
-        <div className="bg-red-50 text-red-600 text-sm p-4 rounded-xl mb-4 text-center border border-red-100">
+        <div className="bg-red-950/20 text-red-300 text-xs p-3 rounded-xl text-center border border-red-900/40 font-serif">
           {error}
         </div>
       )}
       <button 
+        type="button"
         onClick={handleConnect}
         disabled={loading}
-        className="w-full bg-[#c2410c] text-text-primary rounded-xl py-3 font-medium hover:bg-[#a3360a] transition-colors flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
+        className="w-full py-3.5 px-6 rounded-xl bg-[#c2410c] hover:bg-[#a3360a] text-white font-serif text-sm font-semibold transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-[#c2410c]/25 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
       >
-        {loading ? <BirdLoader className="w-6 h-6" /> : (
+        {loading ? (
+          <BirdLoader className="w-5 h-5 text-white" />
+        ) : (
           <>
-            <Users className="w-5 h-5" /> Connect Partner <ArrowRight className="w-5 h-5 ml-1" />
+            <Send className="w-4 h-4" />
+            <span>Dispatch Bond Invitation</span>
           </>
         )}
       </button>
-    </>
+    </div>
   )
 }
