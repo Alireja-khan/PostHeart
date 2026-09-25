@@ -16,6 +16,7 @@ export async function GET() {
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
       select: {
+        id: true,
         name: true,
         email: true,
         avatarUrl: true,
@@ -32,7 +33,8 @@ export async function GET() {
             name: true,
             email: true,
             avatarUrl: true,
-            gender: true
+            gender: true,
+            bio: true
           }
         },
         received: {
