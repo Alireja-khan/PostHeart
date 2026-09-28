@@ -3,13 +3,15 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Image as ImageIcon, Send, Music, Mic, X, Clock, Feather, Globe, Keyboard as KeyboardIcon, Folder, Plus, Play, Pause, SkipBack, SkipForward, Edit2, Trash2, Volume2, VolumeX, Repeat, Repeat1, Book } from 'lucide-react';
+import { Image as ImageIcon, Send, Music, Mic, X, Clock, Feather, Globe, Keyboard as KeyboardIcon, Folder, Plus, Play, Pause, SkipBack, SkipForward, Edit2, Trash2, Volume2, VolumeX, Repeat, Repeat1, Book, Eye } from 'lucide-react';
 import BirdLoader from "@/components/BirdLoader";
 import Keyboard from 'react-simple-keyboard';
 import 'react-simple-keyboard/build/css/index.css';
 import { uploadFile } from '@/lib/upload';
 import { useDialog } from '@/components/DialogProvider';
+import LetterPreviewModal from '@/components/LetterPreviewModal';
 
 const LANGUAGES = [
   { code: 'en', name: 'English' },
@@ -177,6 +179,7 @@ const VoiceNoteCard = ({
 export default function WriteLetterPage() {
   const { alert } = useDialog();
   const router = useRouter();
+  const { data: session } = useSession();
   const [content, setContent] = useState('');
   const [receiver, setReceiver] = useState('');
   const [coverTitle, setCoverTitle] = useState('');
@@ -187,11 +190,19 @@ export default function WriteLetterPage() {
   const [isDelayMenuOpen, setIsDelayMenuOpen] = useState(false);
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const [keyboardLayout, setKeyboardLayout] = useState<'default' | 'shift'>('default');
   const [isCoverMenuOpen, setIsCoverMenuOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isTransliterating, setIsTransliterating] = useState(false);
   const [hasInTransitLetter, setHasInTransitLetter] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+
+  // Autosave and Preview States
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [lastSavedTime, setLastSavedTime] = useState<string | null>(null);
+  const autosaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [uploadingImages, setUploadingImages] = useState<string[]>([]);
   const [uploadedMusic, setUploadedMusic] = useState<string | null>(null);
@@ -199,6 +210,13 @@ export default function WriteLetterPage() {
   const [isUploadingMusic, setIsUploadingMusic] = useState(false);
   const [isUploadingMusicCover, setIsUploadingMusicCover] = useState(false);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [mediaStatus, setMediaStatus] = useState<{
+    type: 'music' | 'image' | 'voice';
+    title?: string;
+    message: string;
+    progress?: number;
+    isDone?: boolean;
+  } | null>(null);
   
   const [embeddedMemories, setEmbeddedMemories] = useState<Record<number, { images: string[], music: string[], audio: string[] }>>({});
   const [nextEmbedId, setNextEmbedId] = useState(1);
@@ -214,7 +232,14 @@ export default function WriteLetterPage() {
   const [isMuted, setIsMuted] = useState(false);
   const [isRepeat, setIsRepeat] = useState(false);
   const [musicCover, setMusicCover] = useState<string | null>(null);
-  const [showCoverPrompt, setShowCoverPrompt] = useState(false);
+  
+  // Pending audio file waiting for cover & title configuration BEFORE showing in frontend
+  const [pendingMusicFile, setPendingMusicFile] = useState<File | null>(null);
+  const [pendingMusicTitle, setPendingMusicTitle] = useState('');
+  const [pendingCoverFile, setPendingCoverFile] = useState<File | null>(null);
+  const [pendingCoverPreview, setPendingCoverPreview] = useState<string | null>(null);
+  const [isCoverSetupModalOpen, setIsCoverSetupModalOpen] = useState(false);
+  const pendingCoverInputRef = useRef<HTMLInputElement>(null);
   
   // Voice Recording State
   const [isVoicePopupOpen, setIsVoicePopupOpen] = useState(false);
@@ -238,10 +263,10 @@ export default function WriteLetterPage() {
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const galleryRef = useRef<HTMLDivElement>(null);
 
-  // Load draft from sessionStorage on mount
+  // Load draft from sessionStorage or localStorage on mount
   useEffect(() => {
     try {
-      const savedDraft = sessionStorage.getItem('writeLetterDraft');
+      const savedDraft = sessionStorage.getItem('writeLetterDraft') || localStorage.getItem('postheart_letter_draft');
       if (savedDraft) {
         const draft = JSON.parse(savedDraft);
         if (draft.content) setContent(draft.content);
@@ -258,6 +283,10 @@ export default function WriteLetterPage() {
         if (draft.embeddedMemories) setEmbeddedMemories(draft.embeddedMemories);
         if (draft.nextEmbedId) setNextEmbedId(draft.nextEmbedId);
         
+        const now = new Date();
+        setLastSavedTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+        setSaveStatus('saved');
+
         // Sync keyboard state if needed, wrapped in timeout to ensure ref is mounted
         setTimeout(() => {
           if (keyboardRef.current && draft.content) {
@@ -270,33 +299,57 @@ export default function WriteLetterPage() {
     }
   }, []);
 
-  // Save draft to sessionStorage on change
+  // Save draft to sessionStorage & localStorage on change with debounce & autosave indicator
   useEffect(() => {
     try {
       // Don't save empty states that would overwrite valid drafts immediately on mount
       if (!content && !receiver && uploadedImages.length === 0 && !uploadedMusic && recordedVoices.length === 0 && Object.keys(embeddedMemories).length === 0) {
         return;
       }
-      const draft = {
-        content,
-        receiver,
-        delay,
-        language,
-        uploadedImages,
-        uploadedMusic,
-        musicTitle,
-        musicCover,
-        coverTitle,
-        coverSubtitle,
-        recordedVoices,
-        embeddedMemories,
-        nextEmbedId
-      };
-      sessionStorage.setItem('writeLetterDraft', JSON.stringify(draft));
+
+      setSaveStatus('saving');
+      if (autosaveTimeoutRef.current) clearTimeout(autosaveTimeoutRef.current);
+
+      autosaveTimeoutRef.current = setTimeout(() => {
+        const draft = {
+          content,
+          receiver,
+          delay,
+          language,
+          uploadedImages,
+          uploadedMusic,
+          musicTitle,
+          musicCover,
+          coverTitle,
+          coverSubtitle,
+          recordedVoices,
+          embeddedMemories,
+          nextEmbedId
+        };
+        sessionStorage.setItem('writeLetterDraft', JSON.stringify(draft));
+        try {
+          localStorage.setItem('postheart_letter_draft', JSON.stringify(draft));
+        } catch(e) {}
+
+        const now = new Date();
+        setLastSavedTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+        setSaveStatus('saved');
+      }, 600);
     } catch (e) {
       console.error('Error saving draft', e);
+      setSaveStatus('idle');
     }
+
+    return () => {
+      if (autosaveTimeoutRef.current) clearTimeout(autosaveTimeoutRef.current);
+    };
   }, [content, receiver, delay, language, uploadedImages, uploadedMusic, musicTitle, musicCover, coverTitle, coverSubtitle, recordedVoices, embeddedMemories, nextEmbedId]);
+
+  const onKeyPress = (button: string) => {
+    if (button === "{shift}" || button === "{lock}") {
+      setKeyboardLayout(prev => prev === 'default' ? 'shift' : 'default');
+    }
+  };
 
   useEffect(() => {
     const checkActiveLetter = async () => {
@@ -444,44 +497,139 @@ export default function WriteLetterPage() {
     
     const filesArray = Array.from(e.target.files);
     
-    // 1. Create immediate local preview URLs so UI updates instantly
+    // 1. Instant local preview URLs (0ms user feedback!)
     const localUrls = filesArray.map(f => URL.createObjectURL(f));
-    setUploadingImages(prev => [...prev, ...localUrls]);
-
-    // 2. Upload them in the background
-    filesArray.forEach(async (file, index) => {
-      try {
-        const url = await uploadFile(file);
-        setUploadedImages(prev => [...prev, url]);
-      } catch (err) {
-        console.error("Upload error", err);
-      } finally {
-        // Remove this local URL from the uploading state once done
-        setUploadingImages(prev => prev.filter(url => url !== localUrls[index]));
-      }
+    setUploadedImages(prev => [...prev, ...localUrls]);
+    setMediaStatus({
+      type: 'image',
+      message: `Enclosing ${filesArray.length} photo${filesArray.length > 1 ? 's' : ''} into letter...`,
+      progress: 25
     });
-    
-    // Reset input
-    if (fileInputRef.current) fileInputRef.current.value = '';
-    
-    // Notice: We NO LONGER open the gallery automatically!
+
+    try {
+      let completedCount = 0;
+      // Parallel upload for high speed
+      const uploadedPairs = await Promise.all(
+        filesArray.map(async (file, idx) => {
+          const url = await uploadFile(file);
+          completedCount++;
+          setMediaStatus({
+            type: 'image',
+            message: `Enclosing photos: ${completedCount}/${filesArray.length} safely vaulted...`,
+            progress: Math.round((completedCount / filesArray.length) * 100)
+          });
+          return { localUrl: localUrls[idx], permanentUrl: url };
+        })
+      );
+
+      // Smoothly replace local blob URLs with permanent Cloudinary URLs
+      setUploadedImages(prev => {
+        return prev.map(item => {
+          const pair = uploadedPairs.find(p => p.localUrl === item);
+          return pair ? pair.permanentUrl : item;
+        });
+      });
+
+      setMediaStatus({
+        type: 'image',
+        message: `${filesArray.length} photo${filesArray.length > 1 ? 's' : ''} sealed in letter!`,
+        progress: 100,
+        isDone: true
+      });
+      setTimeout(() => setMediaStatus(null), 3200);
+    } catch (err) {
+      console.error("Upload error", err);
+      setMediaStatus({
+        type: 'image',
+        message: "Some photos could not be vaulted.",
+        isDone: false
+      });
+      setTimeout(() => setMediaStatus(null), 4000);
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
 
-  const handleMusicUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMusicUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
     
-    setIsUploadingMusic(true);
     const file = e.target.files[0];
+    const cleanedTitle = file.name.replace(/\.[^/.]+$/, "").replace(/[_-]/g, " ");
+    
+    // Store pending music file and open cover & title setup modal BEFORE displaying on the frontend
+    setPendingMusicFile(file);
+    setPendingMusicTitle(cleanedTitle);
+    setPendingCoverFile(null);
+    setPendingCoverPreview(null);
+    setIsCoverSetupModalOpen(true);
+
+    if (musicInputRef.current) musicInputRef.current.value = '';
+  };
+
+  const handlePendingCoverSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    setPendingCoverFile(file);
+    setPendingCoverPreview(URL.createObjectURL(file));
+    if (pendingCoverInputRef.current) pendingCoverInputRef.current.value = '';
+  };
+
+  const handleConfirmAttachMelody = async () => {
+    if (!pendingMusicFile) return;
+
+    const audioFileToUpload = pendingMusicFile;
+    const titleToUse = pendingMusicTitle.trim() || audioFileToUpload.name.replace(/\.[^/.]+$/, "");
+    const coverFileToUpload = pendingCoverFile;
+    const coverLocalPreview = pendingCoverPreview;
+
+    // 1. Set title and cover art IMMEDIATELY so the frontend has them ready on mount
+    setMusicTitle(titleToUse);
+    if (coverLocalPreview) {
+      setMusicCover(coverLocalPreview);
+    }
+
+    // 2. Set local audio URL so music player appears WITH the cover art already set!
+    const localAudioUrl = URL.createObjectURL(audioFileToUpload);
+    setUploadedMusic(localAudioUrl);
+
+    // 3. Close the setup modal
+    setIsCoverSetupModalOpen(false);
+    setPendingMusicFile(null);
+    setPendingCoverFile(null);
+    setPendingCoverPreview(null);
+
+    // 4. Background Cloudinary uploads
+    setIsUploadingMusic(true);
     try {
-      const url = await uploadFile(file);
-      setUploadedMusic(url);
-      setShowCoverPrompt(true);
+      // Parallel upload of audio and cover image (if chosen)
+      const uploadPromises: Promise<any>[] = [uploadFile(audioFileToUpload)];
+      if (coverFileToUpload) {
+        setIsUploadingMusicCover(true);
+        uploadPromises.push(uploadFile(coverFileToUpload));
+      }
+
+      const results = await Promise.all(uploadPromises);
+      const permanentAudioUrl = results[0];
+      setUploadedMusic(permanentAudioUrl);
+
+      if (results[1]) {
+        const permanentCoverUrl = results[1];
+        setMusicCover(permanentCoverUrl);
+      }
     } catch (err) {
-      console.error("Music upload error", err);
+      console.error("Background music upload error", err);
     } finally {
       setIsUploadingMusic(false);
-      if (musicInputRef.current) musicInputRef.current.value = '';
+      setIsUploadingMusicCover(false);
     }
+  };
+
+  const handleCancelMusicSetup = () => {
+    setIsCoverSetupModalOpen(false);
+    setPendingMusicFile(null);
+    setPendingCoverFile(null);
+    setPendingCoverPreview(null);
+    setPendingMusicTitle('');
   };
 
   const handleMusicCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -492,7 +640,6 @@ export default function WriteLetterPage() {
     try {
       const url = await uploadFile(file);
       setMusicCover(url);
-      setShowCoverPrompt(false);
     } catch (err) {
       console.error("Music cover upload error", err);
     } finally {
@@ -807,6 +954,88 @@ export default function WriteLetterPage() {
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         className="w-full max-w-2xl flex flex-col z-10 relative"
       >
+          {/* Top Sanctuary Bar with Soft Pulsing Autosave Indicator */}
+          <div className="flex items-center justify-between pb-3 mb-8 border-b border-text-primary/10">
+            <div className="flex items-center gap-2 text-xs font-serif text-text-primary/50 tracking-wider">
+              <Feather size={14} className="text-[#c2410c]" />
+              <span className="uppercase text-[11px] font-mono tracking-widest text-[#a89b88]">Epistolary Sanctuary • চিঠি লেখার ডেস্ক</span>
+            </div>
+
+            {/* Soft Pulsing Autosave Badge */}
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[#181512]/90 border border-[#382f25]/80 shadow-sm backdrop-blur-md">
+              {saveStatus === 'saving' ? (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+                  <span className="text-[11px] font-mono text-[#dcd3c5]">Saving draft...</span>
+                </>
+              ) : lastSavedTime ? (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-emerald-500/90 shadow-[0_0_8px_rgba(16,185,129,0.7)]" />
+                  <span className="text-[11px] font-mono text-[#b5a998]">Draft saved at {lastSavedTime}</span>
+                </>
+              ) : (
+                <>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#8c7d6b]" />
+                  <span className="text-[11px] font-mono text-[#8c7d6b]">Sanctuary Ledger Ready</span>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Enclosed Keepsakes Active Strip */}
+          {(uploadedImages.length > 0 || uploadedMusic || recordedVoices.length > 0) && (
+            <div className="flex items-center gap-2 flex-wrap mb-6 p-2 px-3.5 rounded-2xl bg-[#16120e]/80 border border-[#33271b] backdrop-blur-sm shadow-sm">
+              <span className="text-[10px] font-mono text-[#8c7d6b] uppercase tracking-wider mr-1">Enclosed:</span>
+              
+              {/* Attached Music Pill */}
+              {uploadedMusic && (
+                <div className="flex items-center gap-1.5 bg-[#231a13] border border-[#443322] rounded-full py-1 px-3 text-xs text-[#fae1b8] font-serif shadow-xs">
+                  <Music size={12} className="text-[#c2410c] shrink-0" />
+                  <span className="max-w-[150px] truncate">{musicTitle || 'Background Audio'}</span>
+                  <button 
+                    type="button" 
+                    onClick={() => { setUploadedMusic(null); setMusicTitle(''); }}
+                    className="text-[#9c8e7c] hover:text-white ml-0.5 p-0.5 rounded-full hover:bg-white/10 transition-colors cursor-pointer"
+                    title="Remove music"
+                  >
+                    <X size={11} />
+                  </button>
+                </div>
+              )}
+
+              {/* Attached Image Thumbnails */}
+              {uploadedImages.map((img, idx) => (
+                <div key={idx} className="relative group w-8 h-8 rounded-lg overflow-hidden border border-[#443322] shrink-0 shadow-xs">
+                  <img src={img} alt={`Attached ${idx + 1}`} className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setUploadedImages(prev => prev.filter((_, i) => i !== idx))}
+                    className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity cursor-pointer"
+                    title="Remove image"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ))}
+
+              {/* Attached Voice Notes */}
+              {recordedVoices.map((voice) => (
+                <div key={voice.id} className="flex items-center gap-1.5 bg-[#231a13] border border-[#443322] rounded-full py-1 px-2.5 text-xs text-[#fae1b8] font-serif shadow-xs">
+                  <Mic size={11} className="text-[#c2410c] shrink-0" />
+                  <span className="text-[11px] max-w-[120px] truncate">{voice.title || 'Voice Note'}</span>
+                  <button
+                    type="button"
+                    onClick={() => setRecordedVoices(prev => prev.filter(v => v.id !== voice.id))}
+                    className="text-[#9c8e7c] hover:text-white p-0.5 rounded-full hover:bg-white/10 transition-colors cursor-pointer"
+                    title="Remove voice note"
+                  >
+                    <X size={10} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="flex flex-col gap-2 mb-12">
             <div className="flex items-center gap-4">
               <Feather size={20} className="text-text-primary/20" strokeWidth={1} />
@@ -1031,19 +1260,34 @@ export default function WriteLetterPage() {
                 </AnimatePresence>
               </div>
 
-              {/* Send Button */}
+              {/* Action Buttons: Preview & Send */}
               <AnimatePresence>
                 {content.trim().length > 0 && (
-                  <motion.button 
-                    initial={{ width: 0, opacity: 0, marginLeft: 0 }}
-                    animate={{ width: 'auto', opacity: 1, marginLeft: 8 }}
-                    exit={{ width: 0, opacity: 0, marginLeft: 0 }}
-                    onClick={handleSubmit}
-                    disabled={isSubmitting}
-                    className="flex items-center justify-center bg-bg-primary text-text-primary h-9 px-5 rounded-full hover:scale-105 active:scale-95 transition-all overflow-hidden whitespace-nowrap"
-                  >
-                    <Send size={14} className={isSubmitting ? 'animate-pulse' : ''} />
-                  </motion.button>
+                  <div className="flex items-center gap-1.5 ml-2">
+                    {/* Letter Preview Button */}
+                    <button 
+                      type="button"
+                      onClick={() => setIsPreviewOpen(true)}
+                      className="flex items-center gap-1.5 px-3 h-8 rounded-full bg-bg-primary/10 hover:bg-bg-primary text-bg-primary hover:text-text-primary transition-all text-xs font-serif font-bold cursor-pointer"
+                      title="Preview Sealed Envelope & Letter Look"
+                    >
+                      <Eye size={13} className="text-[#c2410c]" />
+                      <span className="hidden sm:inline">Preview</span>
+                    </button>
+
+                    {/* Send Button */}
+                    <motion.button 
+                      initial={{ width: 0, opacity: 0 }}
+                      animate={{ width: 'auto', opacity: 1 }}
+                      exit={{ width: 0, opacity: 0 }}
+                      onClick={handleSubmit}
+                      disabled={isSubmitting}
+                      className="flex items-center justify-center gap-1.5 bg-[#c2410c] hover:bg-[#ea580c] text-white h-8 px-4 rounded-full hover:scale-105 active:scale-95 transition-all overflow-hidden whitespace-nowrap cursor-pointer shadow-md font-serif font-bold text-xs uppercase tracking-wider"
+                    >
+                      <Send size={13} className={isSubmitting ? 'animate-pulse' : ''} />
+                      <span>Send</span>
+                    </motion.button>
+                  </div>
                 )}
               </AnimatePresence>
             </div>
@@ -1051,29 +1295,53 @@ export default function WriteLetterPage() {
         )}
       </AnimatePresence>
 
-    {/* Virtual Keyboard Overlay
+      {/* Clean Redesigned Virtual On-Screen Keyboard Dock with Minimize Toggle */}
       <AnimatePresence>
-        {isKeyboardOpen ? (
+        {isKeyboardOpen && (
           <motion.div 
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 bg-[#e4e4e4] dark:bg-bg-secondary p-2 pt-4 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] z-40 text-bg-primary dark:text-text-primary"
-            style={{ 
-              ['--hg-theme-default-bg' as any]: '#222',
-              ['--hg-theme-default-button-bg' as any]: '#333',
-              ['--hg-theme-default-button-hover-bg' as any]: '#444'
-            }}
+            initial={{ y: '100%', opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: '100%', opacity: 0 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+            className="fixed bottom-0 left-0 right-0 z-50 bg-[#161310]/95 backdrop-blur-xl border-t border-[#382f25] shadow-[0_-15px_45px_rgba(0,0,0,0.85)] p-2 sm:p-4 text-[#f5f0e6]"
           >
-            <div className="max-w-4xl mx-auto h-[200px] md:h-[280px]">
+            {/* Clean Minimize / Close Toolbar */}
+            <div className="max-w-3xl mx-auto flex items-center justify-between pb-2 mb-2 border-b border-[#2d251d]">
+              <div className="flex items-center gap-2">
+                <KeyboardIcon size={14} className="text-[#c2410c]" />
+                <span className="font-serif text-xs font-bold text-[#e6ded1]">Vintage Typewriter Keyboard</span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#241e17] text-[#a89b88] border border-[#3d3224]">
+                  {LANGUAGES.find(l => l.code === language)?.name || 'English'}
+                </span>
+                {language === 'bn' && (
+                  <span className="text-[10px] text-[#c5a059] font-serif hidden sm:inline">
+                    (Phonetic Typing Active: 'ami' → 'আমি')
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsKeyboardOpen(false)}
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#251e18] hover:bg-[#382b20] text-[#c7bcac] hover:text-white transition-all text-xs font-serif cursor-pointer border border-[#423628] shadow-sm"
+                  title="Minimize on-screen keyboard"
+                >
+                  <span>Minimize</span>
+                  <X size={12} />
+                </button>
+              </div>
+            </div>
+
+            {/* Responsive Keyboard Container */}
+            <div className="max-w-3xl mx-auto max-h-[190px] sm:max-h-[230px] overflow-hidden">
               <Keyboard
                 keyboardRef={r => (keyboardRef.current = r)}
+                layoutName={keyboardLayout}
                 onChange={onKeyboardChange}
+                onKeyPress={onKeyPress}
                 physicalKeyboardHighlight={true}
-                physicalKeyboardHighlightTextColor="white"
-                physicalKeyboardHighlightBgColor="#007bff"
-                theme={"hg-theme-default hg-layout-default myTheme"}
+                theme="hg-theme-default custom-vintage-keyboard"
                 layout={{
                   default: [
                     "` 1 2 3 4 5 6 7 8 9 0 - = {bksp}",
@@ -1090,12 +1358,39 @@ export default function WriteLetterPage() {
                     "{space}"
                   ]
                 }}
+                display={{
+                  '{bksp}': '⌫ Delete',
+                  '{enter}': '↵ Return',
+                  '{shift}': '⇧ Shift',
+                  '{tab}': 'Tab',
+                  '{lock}': 'Caps',
+                  '{space}': 'Space'
+                }}
               />
             </div>
           </motion.div>
-        ) : null}
+        )}
       </AnimatePresence>
-      */}
+
+      {/* Letter Preview Modal */}
+      <LetterPreviewModal
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        onSend={handleSubmit}
+        isSubmitting={isSubmitting}
+        content={content}
+        receiver={receiver}
+        delay={delay}
+        coverTitle={coverTitle}
+        coverSubtitle={coverSubtitle}
+        uploadedImages={uploadedImages}
+        uploadedMusic={uploadedMusic}
+        musicTitle={musicTitle}
+        musicCover={musicCover}
+        recordedVoices={recordedVoices}
+        embeddedMemories={embeddedMemories}
+        senderName={session?.user?.name || 'Scribe'}
+      />
 
       {/* Background Audio Element */}
       {uploadedMusic && (
@@ -1115,47 +1410,145 @@ export default function WriteLetterPage() {
         if (audioRef.current) audioRef.current.volume = volume;
       }, [volume])}
 
-      {/* Prompt for cover art */}
+      {/* Upfront Cover & Title Setup Modal (BEFORE showing song in frontend) */}
       <AnimatePresence>
-        {showCoverPrompt && (
+        {isCoverSetupModalOpen && pendingMusicFile && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-bg-primary/40 backdrop-blur-sm p-6"
+            className="fixed inset-0 z-[110] flex items-center justify-center bg-black/85 backdrop-blur-md p-4 sm:p-6"
           >
-            <div className="bg-bg-secondary border border-text-primary/20 p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center">
-              <h3 className="text-text-primary text-xl font-serif mb-2">Music Uploaded</h3>
-              <p className="text-text-primary/60 mb-4 text-sm">Would you like to add a title and cover art?</p>
-              
-              <input 
-                type="text"
-                placeholder="Music Title (Optional)"
-                value={musicTitle}
-                onChange={(e) => setMusicTitle(e.target.value)}
-                className="w-full bg-bg-primary/40 border border-text-primary/20 rounded-xl px-4 py-3 text-text-primary text-sm mb-6 focus:outline-none focus:border-text-primary transition-colors"
-              />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 15 }}
+              transition={{ duration: 0.25 }}
+              className="bg-[#16120e] border border-[#3d3122] rounded-3xl p-6 sm:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.95)] max-w-md w-full relative"
+            >
+              <button 
+                type="button"
+                onClick={handleCancelMusicSetup}
+                className="absolute top-5 right-5 text-[#8c7d6b] hover:text-[#f5f0e6] transition-colors p-1"
+                title="Cancel"
+              >
+                <X size={18} />
+              </button>
 
-              <div className="flex gap-4 justify-center">
-                <button 
-                  onClick={() => setShowCoverPrompt(false)}
-                  className="px-6 py-2 rounded-full border border-text-primary/20 text-text-primary/60 hover:text-text-primary hover:bg-text-primary/5 transition-colors"
+              <div className="flex items-center gap-2.5 mb-2">
+                <Music size={18} className="text-[#c2410c]" />
+                <h3 className="font-serif text-lg font-bold text-[#f5f0e6]">
+                  Enclose Melody • সুর ও কভার আর্ট
+                </h3>
+              </div>
+              <p className="text-xs text-[#9c8e7c] font-serif mb-5">
+                Set title and cover photo before placing this melody into your letter.
+              </p>
+
+              {/* Selected Audio File Badge */}
+              <div className="flex items-center gap-2.5 p-2.5 px-3 rounded-xl bg-[#201811] border border-[#382b1d] mb-4 text-xs font-mono text-[#d8cebe]">
+                <Music size={13} className="text-[#c2410c] shrink-0" />
+                <span className="truncate flex-1">{pendingMusicFile.name}</span>
+                <span className="text-[10px] text-[#8c7d6b] shrink-0">
+                  {(pendingMusicFile.size / (1024 * 1024)).toFixed(1)} MB
+                </span>
+              </div>
+
+              {/* Title Input */}
+              <div className="flex flex-col gap-1.5 mb-5">
+                <label className="text-[11px] font-mono uppercase tracking-wider text-[#a89b88]">
+                  Song Title
+                </label>
+                <input 
+                  type="text" 
+                  placeholder="Song Title (e.g. Qaraar, Midnight Waltz)" 
+                  value={pendingMusicTitle}
+                  onChange={(e) => setPendingMusicTitle(e.target.value)}
+                  className="w-full bg-[#201811] border border-[#3d2f20] focus:border-[#c2410c] rounded-xl px-3.5 py-2.5 text-sm text-[#f5f0e6] focus:outline-none transition-colors font-serif"
+                />
+              </div>
+
+              {/* Cover Photo Picker */}
+              <div className="flex flex-col gap-1.5 mb-6">
+                <label className="text-[11px] font-mono uppercase tracking-wider text-[#a89b88]">
+                  Cover Photo (Optional)
+                </label>
+                
+                {pendingCoverPreview ? (
+                  <div className="flex items-center gap-3 p-2 rounded-xl bg-[#201811] border border-[#3d2f20]">
+                    <div className="w-16 h-16 rounded-lg overflow-hidden border border-[#4a3a29] shrink-0 shadow-md">
+                      <img src={pendingCoverPreview} alt="Cover Preview" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex flex-col gap-1.5 flex-1 min-w-0">
+                      <span className="text-xs font-serif text-[#f5f0e6] truncate">
+                        {pendingCoverFile?.name || 'Selected Cover Image'}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => pendingCoverInputRef.current?.click()}
+                          className="text-[11px] font-serif text-[#c5a059] hover:underline cursor-pointer"
+                        >
+                          Change Photo
+                        </button>
+                        <span className="text-[#4a3a29]">•</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPendingCoverFile(null);
+                            setPendingCoverPreview(null);
+                          }}
+                          className="text-[11px] font-serif text-red-400/80 hover:text-red-400 hover:underline cursor-pointer"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div 
+                    onClick={() => pendingCoverInputRef.current?.click()}
+                    className="w-full border-2 border-dashed border-[#3d2f20] hover:border-[#c2410c]/70 rounded-xl p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors bg-[#201811]/40 hover:bg-[#201811]/70 group"
+                  >
+                    <div className="w-9 h-9 rounded-full bg-[#2a2016] group-hover:bg-[#382b1d] flex items-center justify-center text-[#c2410c] transition-colors">
+                      <ImageIcon size={18} />
+                    </div>
+                    <span className="text-xs font-serif text-[#d8cebe] group-hover:text-white transition-colors">
+                      Click to choose cover photo
+                    </span>
+                    <span className="text-[10px] font-mono text-[#7a6c5b]">
+                      JPG, PNG, WebP (Square looks best)
+                    </span>
+                  </div>
+                )}
+
+                <input 
+                  type="file" 
+                  ref={pendingCoverInputRef}
+                  accept="image/*"
+                  onChange={handlePendingCoverSelect}
+                  className="hidden"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-end gap-3 pt-2 border-t border-[#2a2016]">
+                <button
+                  type="button"
+                  onClick={handleCancelMusicSetup}
+                  className="px-4 py-2 rounded-full border border-[#3a2d1e] text-xs font-serif text-[#9c8e7c] hover:text-white transition-colors cursor-pointer"
                 >
-                  Skip
+                  Cancel
                 </button>
-                <button 
-                  onClick={() => musicCoverInputRef.current?.click()}
-                  disabled={isUploadingMusicCover}
-                  className="px-6 py-2 rounded-full bg-text-primary text-bg-primary hover:scale-105 transition-transform flex items-center justify-center gap-2 disabled:opacity-80"
+                <button
+                  type="button"
+                  onClick={handleConfirmAttachMelody}
+                  className="px-5 py-2 rounded-full bg-[#c2410c] hover:bg-[#ea580c] text-white text-xs font-serif font-bold uppercase tracking-wider transition-all shadow-md hover:scale-105 active:scale-95 cursor-pointer"
                 >
-                  {isUploadingMusicCover ? (
-                    <><BirdLoader className="w-4 h-4 text-bg-primary" /> Adding...</>
-                  ) : (
-                    "Add Cover Art"
-                  )}
+                  Attach Melody
                 </button>
               </div>
-            </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -131,7 +131,34 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
     }
 
-    const { currentPassword, newPassword } = await req.json()
+    const body = await req.json()
+
+    // Handle test postal dispatch notification
+    if (body.action === 'test-dispatch') {
+      const user = await prisma.user.findUnique({
+        where: { email: session.user.email }
+      })
+      if (!user) {
+        return NextResponse.json({ message: "User not found" }, { status: 404 })
+      }
+
+      await prisma.notification.create({
+        data: {
+          userId: user.id,
+          title: "Postal Dispatch Test Alert",
+          message: `✉️ Carrier bird dispatch tested successfully! Email letter arrival alerts are active for ${user.email}.`,
+          type: "SYSTEM",
+          read: false
+        }
+      })
+
+      return NextResponse.json({
+        success: true,
+        message: `Postal dispatch alert simulated! Check notifications for ${user.email}`
+      })
+    }
+
+    const { currentPassword, newPassword } = body
 
     if (!newPassword || newPassword.length < 6) {
       return NextResponse.json({ message: "New password must be at least 6 characters long." }, { status: 400 })
@@ -170,7 +197,7 @@ export async function POST(req: Request) {
       message: user.password ? "Password changed successfully" : "Password set successfully"
     })
   } catch (error) {
-    console.error("Password update error:", error)
+    console.error("Settings POST error:", error)
     return NextResponse.json({ message: "Internal server error" }, { status: 500 })
   }
 }

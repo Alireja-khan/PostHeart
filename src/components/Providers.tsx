@@ -10,6 +10,21 @@ import { useEffect } from 'react'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
+    try {
+      const savedAccent = localStorage.getItem('post_heart_accent');
+      if (savedAccent) {
+        const hexMap: Record<string, string> = {
+          rust: '#c2410c',
+          sage: '#344e41',
+          gold: '#d97706',
+          charcoal: '#4b5563'
+        };
+        const hex = hexMap[savedAccent] || '#c2410c';
+        document.documentElement.style.setProperty('--color-rust-terracotta', hex);
+        document.documentElement.style.setProperty('--accent-color', hex);
+      }
+    } catch(e) {}
+
     const origError = console.error;
     console.error = function(...args: any[]) {
       for (const arg of args) {

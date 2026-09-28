@@ -134,6 +134,24 @@ const AMBIENT_SOUNDS = [
   }
 ];
 
+const ACCENT_HEX_MAP: Record<string, { primary: string; glow: string }> = {
+  rust: { primary: '#c2410c', glow: 'rgba(194, 65, 12, 0.25)' },
+  sage: { primary: '#344e41', glow: 'rgba(52, 78, 65, 0.25)' },
+  gold: { primary: '#d97706', glow: 'rgba(217, 119, 6, 0.25)' },
+  charcoal: { primary: '#4b5563', glow: 'rgba(75, 85, 99, 0.25)' }
+};
+
+export const applyThemeAccent = (colorId: string) => {
+  if (typeof window === 'undefined') return;
+  const config = ACCENT_HEX_MAP[colorId] || ACCENT_HEX_MAP.rust;
+  document.documentElement.style.setProperty('--color-rust-terracotta', config.primary);
+  document.documentElement.style.setProperty('--accent-color', config.primary);
+  document.documentElement.style.setProperty('--accent-glow', config.glow);
+  try {
+    localStorage.setItem('post_heart_accent', colorId);
+  } catch(e) {}
+};
+
 export default function SettingsPage() {
   const { data: session, status, update } = useSession();
   const router = useRouter();
@@ -141,6 +159,7 @@ export default function SettingsPage() {
 
   const [loading, setLoading] = useState(true);
   const [savingGeneral, setSavingGeneral] = useState(false);
+  const [testingEmail, setTestingEmail] = useState(false);
   const [activeTab, setActiveTab] = useState<'profile' | 'appearance' | 'notifications' | 'security' | 'danger'>('profile');
 
   // Form State
@@ -173,6 +192,14 @@ export default function SettingsPage() {
     }
   }, [status, router]);
 
+  // Restore cached accent on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('post_heart_accent');
+      if (saved) applyThemeAccent(saved);
+    } catch(e) {}
+  }, []);
+
   // Fetch settings data
   useEffect(() => {
     if (status === 'authenticated') {
@@ -189,6 +216,7 @@ export default function SettingsPage() {
       setUserData(data);
       setName(data.name || '');
       setAccentColor(data.accentColor || 'rust');
+      applyThemeAccent(data.accentColor || 'rust');
       setEmailNotifications(data.emailNotifications ?? true);
       setAmbientSound(data.ambientSound || 'none');
       setIsPublic(data.isPublic ?? true);
@@ -211,6 +239,8 @@ export default function SettingsPage() {
 
     try {
       setSavingGeneral(true);
+      applyThemeAccent(accentColor);
+
       const res = await fetch('/api/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -233,12 +263,31 @@ export default function SettingsPage() {
       // Update NextAuth local session name
       await update({ name: name.trim() });
 
-      toast.success('Sanctuary preferences sealed into parchment!');
+      toast.success('পছন্দসমূহ সংরক্ষণ করা হয়েছে! • Sanctuary preferences sealed into parchment!');
     } catch (error: any) {
       console.error(error);
       toast.error(error.message || 'Error saving settings.');
     } finally {
       setSavingGeneral(false);
+    }
+  };
+
+  // Test Email Dispatch Alert
+  const handleTestEmailDispatch = async () => {
+    try {
+      setTestingEmail(true);
+      const res = await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'test-dispatch' })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Failed to dispatch test alert');
+      toast.success('✉️ Postal dispatch test alert sent! Check your top notification dock.');
+    } catch (err: any) {
+      toast.error(err.message || 'Error simulating test dispatch');
+    } finally {
+      setTestingEmail(false);
     }
   };
 
@@ -588,7 +637,7 @@ export default function SettingsPage() {
 
                     <div className="flex items-center gap-3">
                       <Link
-                        href="/find-partner"
+                        href="/connect"
                         className="px-4 py-2 rounded-xl bg-[#231d17] hover:bg-[#2e261f] border border-[#3f3427] text-xs font-serif text-[#d6cdbe] transition-colors inline-flex items-center gap-2"
                       >
                         <Heart size={14} className="text-[#c2410c]" />
@@ -608,7 +657,7 @@ export default function SettingsPage() {
                       </p>
                     </div>
                     <Link
-                      href="/find-partner"
+                      href="/connect"
                       className="inline-flex items-center gap-2 bg-[#c2410c] hover:bg-[#d9480f] text-white px-5 py-2.5 rounded-xl text-xs font-serif font-bold uppercase tracking-wider transition-all shadow-md shadow-[#c2410c]/20"
                     >
                       <Sparkles size={14} />
@@ -730,7 +779,10 @@ export default function SettingsPage() {
                     return (
                       <div
                         key={accent.id}
-                        onClick={() => setAccentColor(accent.id)}
+                        onClick={() => {
+                          setAccentColor(accent.id);
+                          applyThemeAccent(accent.id);
+                        }}
                         className={`p-4 rounded-xl border transition-all cursor-pointer relative overflow-hidden group ${
                           isSelected 
                             ? 'bg-[#1e1813] border-[#c2410c] shadow-lg shadow-[#c2410c]/15 ring-1 ring-[#c2410c]/40' 
@@ -945,12 +997,22 @@ export default function SettingsPage() {
                   </button>
                 </div>
 
-                <div className="pt-3 border-t border-[#292219] flex items-center justify-between text-xs text-[#8c8275]">
-                  <span className="flex items-center gap-1.5 font-mono text-[11px]">
+                <div className="pt-4 border-t border-[#292219] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-1.5 font-mono text-[11px] text-[#8c8275]">
                     <CheckCircle2 size={13} className={emailNotifications ? 'text-emerald-500' : 'text-neutral-500'} />
-                    Status: {emailNotifications ? 'Email alerts enabled for incoming letters' : 'Muted (Check mailbox manually)'}
-                  </span>
-                  <span className="font-mono text-[10px] text-[#635b50]">Delivery SLA: &lt; 30 seconds</span>
+                    <span>Status: {emailNotifications ? 'Email alerts enabled for incoming letters' : 'Muted (Check mailbox manually)'}</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleTestEmailDispatch}
+                    disabled={testingEmail || !emailNotifications}
+                    className="inline-flex items-center justify-center gap-2 px-3.5 py-1.5 rounded-lg bg-[#251e17] hover:bg-[#34291e] border border-[#453625] text-xs font-serif text-[#e8dfd1] hover:text-white transition-all disabled:opacity-40 cursor-pointer shadow-sm"
+                    title="Send a simulated carrier bird dispatch to your notifications"
+                  >
+                    <Send size={12} className="text-[#c2410c]" />
+                    <span>{testingEmail ? 'Dispatching Test...' : 'Send Test Alert'}</span>
+                  </button>
                 </div>
               </div>
 

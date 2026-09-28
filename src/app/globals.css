@@ -38,10 +38,12 @@ body {
 }
 
 /* Hide scrollbars utility */
-.no-scrollbar::-webkit-scrollbar {
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-none::-webkit-scrollbar {
   display: none;
 }
-.no-scrollbar {
+.no-scrollbar,
+.scrollbar-none {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
@@ -93,3 +95,46 @@ input:-webkit-autofill:active {
   caret-color: #f5f2eb !important;
   transition: background-color 5000s ease-in-out 0s;
 }
+
+/* Custom Vintage Typewriter On-Screen Keyboard */
+.custom-vintage-keyboard.hg-theme-default {
+  background-color: transparent !important;
+  padding: 0 !important;
+  font-family: var(--font-special-elite), Courier, monospace !important;
+}
+.custom-vintage-keyboard .hg-row {
+  margin-bottom: 5px !important;
+}
+.custom-vintage-keyboard .hg-button {
+  background-color: #221c17 !important;
+  color: #f5f0e6 !important;
+  border: 1px solid #3d3224 !important;
+  border-radius: 8px !important;
+  height: 38px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  transition: all 0.15s ease !important;
+}
+.custom-vintage-keyboard .hg-button:hover {
+  background-color: #352b21 !important;
+  border-color: #c2410c !important;
+  color: #ffffff !important;
+  transform: translateY(-1px) !important;
+}
+.custom-vintage-keyboard .hg-button:active {
+  background-color: #c2410c !important;
+  color: #ffffff !important;
+  transform: translateY(1px) !important;
+}
+.custom-vintage-keyboard .hg-button-space {
+  min-width: 180px !important;
+}
+.custom-vintage-keyboard .hg-button-bksp,
+.custom-vintage-keyboard .hg-button-enter,
+.custom-vintage-keyboard .hg-button-shift {
+  background-color: #1a1511 !important;
+  color: #d8cebe !important;
+  font-size: 11px !important;
+}
+
