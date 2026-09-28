@@ -5,7 +5,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Image as ImageIcon, Send, Music, Mic, X, Clock, Feather, Globe, Keyboard as KeyboardIcon, Folder, Plus, Play, Pause, SkipBack, SkipForward, Edit2, Trash2, Volume2, VolumeX, Repeat, Repeat1, Book, Eye } from 'lucide-react';
+import { Image as ImageIcon, Send, Music, Mic, X, Clock, Feather, Globe, Keyboard as KeyboardIcon, Folder, Plus, Play, Pause, SkipBack, SkipForward, Edit2, Trash2, Volume2, VolumeX, Repeat, Repeat1, Book, Eye, RotateCcw } from 'lucide-react';
 import BirdLoader from "@/components/BirdLoader";
 import Keyboard from 'react-simple-keyboard';
 import 'react-simple-keyboard/build/css/index.css';
@@ -23,8 +23,134 @@ const LANGUAGES = [
   { code: 'ar', name: 'Arabic' },
 ];
 
+// Pre-seeded high-frequency romantic / letter vocabulary for 0ms instant transliteration
+const COMMON_BN_WORDS: Record<string, string> = {
+  ami: 'আমি',
+  amio: 'আমিও',
+  amra: 'আমরা',
+  amader: 'আমাদের',
+  amar: 'আমার',
+  amake: 'আমাকে',
+  tumi: 'তুমি',
+  tumio: 'তুমিও',
+  tomra: 'তোমরা',
+  tomader: 'তোমাদের',
+  tomar: 'তোমার',
+  tomake: 'তোমাকে',
+  tui: 'তুই',
+  tor: 'তোর',
+  toke: 'তোকে',
+  apni: 'আপনি',
+  apnar: 'আপনার',
+  apnake: 'আপনাকে',
+  she: 'সে',
+  tar: 'তার',
+  take: 'তাকে',
+  tara: 'তারা',
+  tader: 'তাদের',
+  kemon: 'কেমন',
+  acho: 'আছো',
+  achho: 'আছো',
+  achen: 'আছেন',
+  achi: 'আছি',
+  achhi: 'আছি',
+  bhalo: 'ভালো',
+  valo: 'ভালো',
+  bhalobashi: 'ভালোবাসি',
+  valobashi: 'ভালোবাসি',
+  bhalobasha: 'ভালোবাসা',
+  valobasha: 'ভালোবাসা',
+  priyo: 'প্রিয়',
+  jaan: 'জান',
+  poran: 'পরাণ',
+  mon: 'মন',
+  mone: 'মনে',
+  kotha: 'কথা',
+  shob: 'সব',
+  shobai: 'সবাই',
+  shune: 'শুনে',
+  dekhe: 'দেখে',
+  dekhi: 'দেখি',
+  dekho: 'দেখো',
+  jani: 'জানি',
+  bolo: 'বলো',
+  boli: 'বলি',
+  shunbo: 'শুনবো',
+  shuno: 'শুনো',
+  ki: 'কি',
+  keno: 'কেন',
+  kothay: 'কোথায়',
+  kobe: 'কবে',
+  kokhon: 'কখন',
+  shomoy: 'সময়',
+  din: 'দিন',
+  raat: 'রাত',
+  shokal: 'সকাল',
+  shondha: 'সন্ধ্যা',
+  bikel: 'বিকেল',
+  aaj: 'আজ',
+  aajke: 'আজকে',
+  kal: 'কাল',
+  kalke: 'কালকে',
+  ekhon: 'এখন',
+  pore: 'পরে',
+  age: 'আগে',
+  onek: 'অনেক',
+  khub: 'খুব',
+  ektu: 'একটু',
+  kichu: 'কিছু',
+  kisu: 'কিছু',
+  shathe: 'সাথে',
+  songe: 'সঙ্গে',
+  hobe: 'হবে',
+  holo: 'হলো',
+  hoyeche: 'হয়েছে',
+  hoy: 'হয়',
+  ache: 'আছে',
+  chilo: 'ছিল',
+  chilam: 'ছিলাম',
+  chobi: 'ছবি',
+  gaan: 'গান',
+  chithi: 'চিঠি',
+  postheart: 'পোস্টহার্ট',
+  dhonnobad: 'ধন্যবাদ',
+  dhonobad: 'ধন্যবাদ',
+  shundor: 'সুন্দর',
+  shotti: 'সত্যি',
+  beshi: 'বেশি',
+  kom: 'কম',
+  shanto: 'শান্ত',
+  ei: 'এই',
+  oi: 'ওই',
+  shei: 'সেই',
+  eta: 'এটা',
+  ota: 'ওটা',
+  sheta: 'সেটা',
+  hasi: 'হাসি',
+  kanna: 'কান্না',
+  chokh: 'চোখ',
+  mukhe: 'মুখে',
+  hridoy: 'হৃদয়',
+  pagol: 'পাগল',
+  pagli: 'পাগলী',
+  babu: 'বাবু',
+  bou: 'বউ',
+  meye: 'মেয়ে',
+  chele: 'ছেলে',
+  basha: 'বাসা',
+  bari: 'বাড়ি',
+  pakhi: 'পাখি',
+  akash: 'আকাশ',
+  megh: 'মেঘ',
+  brishti: 'বৃষ্টি',
+  batash: 'বাতাস',
+};
+
 // Global in-memory cache for maximum speed on repeated words
 const transliterationCache = new Map<string, string>();
+Object.entries(COMMON_BN_WORDS).forEach(([k, v]) => {
+  transliterationCache.set(`bn-${k}`, v);
+});
 const VoiceNoteCard = ({ 
   id, url, title, onRemove, onAdd, isTop, hasMultiple, onNext, onPrev, onTitleChange 
 }: { 
@@ -203,6 +329,7 @@ export default function WriteLetterPage() {
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [lastSavedTime, setLastSavedTime] = useState<string | null>(null);
   const autosaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isSubmittedRef = useRef(false);
 
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [uploadingImages, setUploadingImages] = useState<string[]>([]);
@@ -302,6 +429,7 @@ export default function WriteLetterPage() {
 
   // Save draft to sessionStorage & localStorage on change with debounce & autosave indicator
   useEffect(() => {
+    if (isSubmittedRef.current) return;
     try {
       // Don't save empty states that would overwrite valid drafts immediately on mount
       if (!content && !receiver && uploadedImages.length === 0 && !uploadedMusic && recordedVoices.length === 0 && Object.keys(embeddedMemories).length === 0) {
@@ -312,6 +440,7 @@ export default function WriteLetterPage() {
       if (autosaveTimeoutRef.current) clearTimeout(autosaveTimeoutRef.current);
 
       autosaveTimeoutRef.current = setTimeout(() => {
+        if (isSubmittedRef.current) return;
         const draft = {
           content,
           receiver,
@@ -360,6 +489,30 @@ export default function WriteLetterPage() {
           const json = await res.json();
           if (json.success && json.data && json.data.isSender) {
             setHasInTransitLetter(true);
+            // If the user already sent a letter and it is currently in transit,
+            // clean up any leftover draft of that sent letter from storage!
+            sessionStorage.removeItem('writeLetterDraft');
+            try {
+              localStorage.removeItem('postheart_letter_draft');
+              localStorage.removeItem('dear_you_letter_draft');
+              localStorage.removeItem('letter_draft_title');
+              localStorage.removeItem('letter_draft_content');
+            } catch (e) {}
+            setContent('');
+            setReceiver('');
+            setCoverTitle('');
+            setCoverSubtitle('');
+            setUploadedImages([]);
+            setUploadedMusic(null);
+            setMusicTitle('');
+            setMusicCover(null);
+            setRecordedVoices([]);
+            setEmbeddedMemories({});
+            setNextEmbedId(1);
+            setLastSavedTime(null);
+            setSaveStatus('idle');
+            if (keyboardRef.current) keyboardRef.current.setInput('');
+            if (textAreaRef.current) textAreaRef.current.value = '';
           }
         }
       } catch (err) {}
@@ -403,75 +556,88 @@ export default function WriteLetterPage() {
     }
   };
 
-  const applyTransliteration = (translated: string, cursor: number, lastWordLength: number, textAfterCursor: string) => {
-    const newContent = content.substring(0, cursor - lastWordLength) + translated + ' ' + textAfterCursor;
+  const applyTransliteration = (
+    finalReplacement: string,
+    startIndex: number,
+    textAfterCursor: string,
+    currentFullText: string
+  ) => {
+    const newContent = currentFullText.substring(0, startIndex) + finalReplacement + ' ' + textAfterCursor;
     setContent(newContent);
     if (keyboardRef.current) keyboardRef.current.setInput(newContent);
     
-    setTimeout(() => {
-      if (textAreaRef.current) {
-        const newCursorPos = cursor - lastWordLength + translated.length + 1;
-        textAreaRef.current.focus();
-        textAreaRef.current.setSelectionRange(newCursorPos, newCursorPos);
-      }
-    }, 0);
+    if (textAreaRef.current) {
+      textAreaRef.current.value = newContent;
+      autoResizeTextarea();
+      const newCursorPos = startIndex + finalReplacement.length + 1;
+      textAreaRef.current.focus();
+      textAreaRef.current.setSelectionRange(newCursorPos, newCursorPos);
+    }
   };
 
-  const applyFallbackSpace = (textBeforeCursor: string, textAfterCursor: string, cursor: number) => {
+  const applyFallbackSpace = (
+    textBeforeCursor: string,
+    textAfterCursor: string,
+    cursor: number
+  ) => {
     const newContent = textBeforeCursor + ' ' + textAfterCursor;
     setContent(newContent);
     if (keyboardRef.current) keyboardRef.current.setInput(newContent);
     
-    setTimeout(() => {
-      if (textAreaRef.current) {
-        textAreaRef.current.focus();
-        const newCursorPos = cursor + 1;
-        textAreaRef.current.setSelectionRange(newCursorPos, newCursorPos);
-      }
-    }, 0);
+    if (textAreaRef.current) {
+      textAreaRef.current.value = newContent;
+      autoResizeTextarea();
+      const newCursorPos = cursor + 1;
+      textAreaRef.current.focus();
+      textAreaRef.current.setSelectionRange(newCursorPos, newCursorPos);
+    }
   };
 
-  // Phonetic Transliteration Logic
+  // Phonetic Transliteration Logic: converts English phonetics into Bengali/target language on pressing Space
   const handleKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (language !== 'en' && e.key === ' ' && !isTransliterating) {
-      e.preventDefault();
-      
       const target = e.target as HTMLTextAreaElement;
       const cursor = target.selectionStart;
-      const textBeforeCursor = content.substring(0, cursor);
-      const textAfterCursor = content.substring(cursor);
+      const currentVal = target.value;
+      const textBeforeCursor = currentVal.substring(0, cursor);
+      const textAfterCursor = currentVal.substring(cursor);
       
       const words = textBeforeCursor.split(/[\s\n]+/);
       const lastWordChunk = words[words.length - 1];
 
       // Extract optional prefix, the actual english word, and optional suffix (punctuation)
-      const match = lastWordChunk.match(/^([^a-zA-Z]*)([a-zA-Z]+)([^a-zA-Z]*)$/);
+      const match = lastWordChunk ? lastWordChunk.match(/^([^a-zA-Z]*)([a-zA-Z]+)([^a-zA-Z]*)$/) : null;
 
       if (match && match[2].length > 0) {
+        e.preventDefault();
         const prefix = match[1];
         const wordToTranslate = match[2];
         const suffix = match[3];
         const cacheKey = `${language}-${wordToTranslate.toLowerCase()}`;
+        const startIndex = cursor - lastWordChunk.length;
         
-        // INSTANT CACHE HIT
+        // 1. Instant Cache Hit (0ms!)
         if (transliterationCache.has(cacheKey)) {
           const finalReplacement = prefix + transliterationCache.get(cacheKey) + suffix;
-          applyTransliteration(finalReplacement, cursor, lastWordChunk.length, textAfterCursor);
+          applyTransliteration(finalReplacement, startIndex, textAfterCursor, currentVal);
           return;
         }
 
-        // DIRECT API FETCH (Bypass Next.js proxy for max speed)
+        // 2. Reliable Next.js API Proxy (Bypasses browser CORS completely)
         setIsTransliterating(true);
         try {
-          const url = `https://inputtools.google.com/request?text=${encodeURIComponent(wordToTranslate)}&itc=${language}-t-i0-und&num=1&cp=0&cs=1&ie=utf-8&oe=utf-8&app=demopage`;
-          const res = await fetch(url);
+          const res = await fetch('/api/transliterate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: wordToTranslate, lang: language }),
+          });
           const data = await res.json();
           
-          if (data[0] === 'SUCCESS' && data[1] && data[1][0] && data[1][0][1] && data[1][0][1].length > 0) {
-            const translated = data[1][0][1][0];
+          if (data.success && data.options && data.options.length > 0) {
+            const translated = data.options[0];
             transliterationCache.set(cacheKey, translated); // Save to instant cache
             const finalReplacement = prefix + translated + suffix;
-            applyTransliteration(finalReplacement, cursor, lastWordChunk.length, textAfterCursor);
+            applyTransliteration(finalReplacement, startIndex, textAfterCursor, currentVal);
           } else {
             applyFallbackSpace(textBeforeCursor, textAfterCursor, cursor);
           }
@@ -480,9 +646,40 @@ export default function WriteLetterPage() {
         } finally {
           setIsTransliterating(false);
         }
-      } else {
-        applyFallbackSpace(textBeforeCursor, textAfterCursor, cursor);
       }
+    }
+  };
+
+  const handleClearDraft = () => {
+    if (autosaveTimeoutRef.current) {
+      clearTimeout(autosaveTimeoutRef.current);
+      autosaveTimeoutRef.current = null;
+    }
+    sessionStorage.removeItem('writeLetterDraft');
+    try {
+      localStorage.removeItem('postheart_letter_draft');
+      localStorage.removeItem('dear_you_letter_draft');
+      localStorage.removeItem('letter_draft_title');
+      localStorage.removeItem('letter_draft_content');
+    } catch(e) {}
+
+    setContent('');
+    setReceiver('');
+    setCoverTitle('');
+    setCoverSubtitle('');
+    setUploadedImages([]);
+    setUploadedMusic(null);
+    setMusicTitle('');
+    setMusicCover(null);
+    setRecordedVoices([]);
+    setEmbeddedMemories({});
+    setNextEmbedId(1);
+    setLastSavedTime(null);
+    setSaveStatus('idle');
+    if (keyboardRef.current) keyboardRef.current.setInput('');
+    if (textAreaRef.current) {
+      textAreaRef.current.value = '';
+      autoResizeTextarea();
     }
   };
 
@@ -862,6 +1059,20 @@ export default function WriteLetterPage() {
 
       const data = await response.json();
       if (data.success) {
+        isSubmittedRef.current = true;
+        if (autosaveTimeoutRef.current) {
+          clearTimeout(autosaveTimeoutRef.current);
+          autosaveTimeoutRef.current = null;
+        }
+
+        sessionStorage.removeItem('writeLetterDraft');
+        try {
+          localStorage.removeItem('postheart_letter_draft');
+          localStorage.removeItem('dear_you_letter_draft');
+          localStorage.removeItem('letter_draft_title');
+          localStorage.removeItem('letter_draft_content');
+        } catch (e) {}
+
         setContent('');
         setReceiver('');
         setCoverTitle('');
@@ -869,10 +1080,15 @@ export default function WriteLetterPage() {
         setUploadedImages([]);
         setUploadedMusic(null);
         setMusicTitle('');
+        setMusicCover(null);
         setRecordedVoices([]);
         setEmbeddedMemories({});
-        sessionStorage.removeItem('writeLetterDraft');
+        setNextEmbedId(1);
+        setLastSavedTime(null);
+        setSaveStatus('idle');
         if (keyboardRef.current) keyboardRef.current.setInput('');
+        if (textAreaRef.current) textAreaRef.current.value = '';
+
         // Add slight delay to show success state before redirect
         window.dispatchEvent(new Event('letter-posted'));
         setTimeout(() => {
@@ -962,23 +1178,37 @@ export default function WriteLetterPage() {
               <span className="uppercase text-[11px] font-mono tracking-widest text-[#a89b88]">Epistolary Sanctuary • চিঠি লেখার ডেস্ক</span>
             </div>
 
-            {/* Soft Pulsing Autosave Badge */}
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[#181512]/90 border border-[#382f25]/80 shadow-sm backdrop-blur-md">
-              {saveStatus === 'saving' ? (
-                <>
-                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
-                  <span className="text-[11px] font-mono text-[#dcd3c5]">Saving draft...</span>
-                </>
-              ) : lastSavedTime ? (
-                <>
-                  <span className="w-2 h-2 rounded-full bg-emerald-500/90 shadow-[0_0_8px_rgba(16,185,129,0.7)]" />
-                  <span className="text-[11px] font-mono text-[#b5a998]">Draft saved at {lastSavedTime}</span>
-                </>
-              ) : (
-                <>
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#8c7d6b]" />
-                  <span className="text-[11px] font-mono text-[#8c7d6b]">Sanctuary Ledger Ready</span>
-                </>
+            {/* Soft Pulsing Autosave Badge & Reset Draft Button */}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[#181512]/90 border border-[#382f25]/80 shadow-sm backdrop-blur-md">
+                {saveStatus === 'saving' ? (
+                  <>
+                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+                    <span className="text-[11px] font-mono text-[#dcd3c5]">Saving draft...</span>
+                  </>
+                ) : lastSavedTime ? (
+                  <>
+                    <span className="w-2 h-2 rounded-full bg-emerald-500/90 shadow-[0_0_8px_rgba(16,185,129,0.7)]" />
+                    <span className="text-[11px] font-mono text-[#b5a998]">Draft saved at {lastSavedTime}</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#8c7d6b]" />
+                    <span className="text-[11px] font-mono text-[#8c7d6b]">Sanctuary Ledger Ready</span>
+                  </>
+                )}
+              </div>
+
+              {(content || uploadedImages.length > 0 || uploadedMusic || recordedVoices.length > 0 || coverTitle) && (
+                <button
+                  type="button"
+                  onClick={handleClearDraft}
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#201410] hover:bg-red-950/70 border border-[#48281d] hover:border-red-800/60 text-[#cda490] hover:text-red-200 text-[10px] font-mono uppercase tracking-wider transition-all cursor-pointer shadow-xs"
+                  title="Discard Current Draft & Start Fresh"
+                >
+                  <RotateCcw size={10} />
+                  <span>Start Fresh</span>
+                </button>
               )}
             </div>
           </div>
