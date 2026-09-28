@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 :root {
@@ -25,7 +26,7 @@
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  font-family: var(--font-lora), serif;
+  font-family: var(--font-lora), 'Noto Serif Bengali', 'Hind Siliguri', serif;
   margin: 0;
   padding: 0;
   -webkit-font-smoothing: antialiased;
@@ -80,9 +81,9 @@ body {
   font-family: 'MyHandwriting', var(--font-caveat), cursive;
 }
 
-/* Vintage Typewriter Font Integration */
+/* Vintage Typewriter Font Integration with poetic Bengali typography */
 .font-typewriter {
-  font-family: var(--font-special-elite), Courier, monospace;
+  font-family: var(--font-special-elite), 'Noto Serif Bengali', 'Hind Siliguri', 'Kalpurush', 'SolaimanLipi', Courier, monospace;
 }
 
 /* Override browser autofill light background */

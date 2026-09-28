@@ -1370,7 +1370,7 @@ export default function WriteLetterPage() {
 
           <div className="flex flex-col gap-2 mb-12">
             <div className="flex items-center gap-4">
-              <Feather size={20} className="text-text-primary/20" strokeWidth={1} />
+              <Feather size={20} className="text-text-primary/20 shrink-0 self-center" strokeWidth={1} />
               <input 
                 type="text" 
                 placeholder="To my love..." 
@@ -1379,7 +1379,7 @@ export default function WriteLetterPage() {
                 onKeyDown={(e) => handleTransliterateKeyDown(e, receiver, setReceiver)}
                 disabled={hasInTransitLetter || isSubmitting}
                 spellCheck="false"
-                className="w-full bg-transparent border-none text-3xl md:text-5xl text-text-primary/90 focus:outline-none placeholder-white/20 font-typewriter"
+                className="w-full bg-transparent border-none text-3xl md:text-5xl text-text-primary/90 focus:outline-none placeholder-white/20 font-typewriter leading-normal md:leading-[1.35] py-2 md:py-3.5 h-auto overflow-visible"
               />
             </div>
           </div>
@@ -1396,7 +1396,7 @@ export default function WriteLetterPage() {
         >
           {/* Backdrop for syntax highlighting inline images */}
           <div 
-            className="absolute inset-0 w-full h-full text-xl md:text-2xl leading-relaxed md:leading-loose whitespace-pre-wrap break-words pointer-events-none z-10 p-0 m-0 font-typewriter"
+            className="absolute inset-0 w-full h-full text-xl md:text-2xl leading-relaxed md:leading-loose whitespace-pre-wrap break-words pointer-events-none z-10 px-0 py-2.5 m-0 font-typewriter"
             style={{ color: isFocused || content ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.5)' }}
           >
             {renderRichText(content)}
@@ -1418,7 +1418,7 @@ export default function WriteLetterPage() {
             spellCheck="false"
             lang={language}
             dir={language === 'ar' ? 'rtl' : 'ltr'}
-            className="w-full relative z-0 bg-transparent border-none text-xl md:text-2xl leading-relaxed md:leading-loose focus:outline-none resize-none transition-colors duration-500 min-h-[300px] overflow-hidden p-0 m-0 text-transparent caret-white font-typewriter"
+            className="w-full relative z-0 bg-transparent border-none text-xl md:text-2xl leading-relaxed md:leading-loose focus:outline-none resize-none transition-colors duration-500 min-h-[300px] overflow-hidden px-0 py-2.5 m-0 text-transparent caret-white font-typewriter"
             style={{ outline: 'none' }}
           />
           {isTransliterating && (
@@ -1475,7 +1475,7 @@ export default function WriteLetterPage() {
                           onKeyDown={(e) => handleTransliterateKeyDown(e, coverTitle, setCoverTitle)}
                           disabled={hasInTransitLetter || isSubmitting}
                           spellCheck="false"
-                          className="w-full bg-bg-primary/5 rounded-xl border-none text-sm text-bg-primary focus:outline-none placeholder-black/40 font-serif px-3 py-2"
+                          className="w-full bg-bg-primary/5 rounded-xl border-none text-sm text-bg-primary focus:outline-none placeholder-black/40 font-serif px-3 py-2.5 leading-normal"
                         />
                         <input 
                           type="text" 
@@ -1485,7 +1485,7 @@ export default function WriteLetterPage() {
                           onKeyDown={(e) => handleTransliterateKeyDown(e, coverSubtitle, setCoverSubtitle)}
                           disabled={hasInTransitLetter || isSubmitting}
                           spellCheck="false"
-                          className="w-full bg-bg-primary/5 rounded-xl border-none text-xs text-bg-primary focus:outline-none placeholder-black/40 font-mono uppercase tracking-widest px-3 py-2"
+                          className="w-full bg-bg-primary/5 rounded-xl border-none text-xs text-bg-primary focus:outline-none placeholder-black/40 font-mono uppercase tracking-widest px-3 py-2.5 leading-normal"
                         />
                       </div>
                     </motion.div>
