@@ -46,6 +46,23 @@ export async function GET() {
       }
     });
 
+    // Find recent letters sent by the current user to help detect already-posted drafts
+    const recentSentLetters = await prisma.letter.findMany({
+      where: { senderId: currentUser.id },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      select: {
+        id: true,
+        createdAt: true,
+        content: true,
+        coverTitle: true,
+        coverSubtitle: true,
+        receiver: { select: { name: true } },
+      }
+    });
+
+    const lastSentLetter = recentSentLetters[0] || null;
+
     return NextResponse.json({
       success: true,
       userGender: currentUser.gender,
@@ -61,6 +78,20 @@ export async function GET() {
         senderGender: inTransitLetter.sender?.gender,
         receiverGender: inTransitLetter.receiver?.gender
       } : null,
+      lastSentLetter: lastSentLetter ? {
+        id: lastSentLetter.id,
+        createdAt: lastSentLetter.createdAt,
+        content: lastSentLetter.content,
+        receiverName: lastSentLetter.receiver?.name || '',
+      } : null,
+      recentSentLetters: recentSentLetters.map(l => ({
+        id: l.id,
+        createdAt: l.createdAt,
+        content: l.content,
+        coverTitle: l.coverTitle,
+        coverSubtitle: l.coverSubtitle,
+        receiverName: l.receiver?.name || '',
+      })),
     });
   } catch (error) {
     console.error('Error in GET /api/letters/in-transit:', error);

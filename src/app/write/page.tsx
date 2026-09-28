@@ -391,45 +391,120 @@ export default function WriteLetterPage() {
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const galleryRef = useRef<HTMLDivElement>(null);
 
-  // Load draft from sessionStorage or localStorage on mount
+  // Synchronized Draft & Sent Letter Initialization on Mount
   useEffect(() => {
+    // 1. Restore preferred language
     try {
-      const savedDraft = sessionStorage.getItem('writeLetterDraft') || localStorage.getItem('postheart_letter_draft');
-      if (savedDraft) {
-        const draft = JSON.parse(savedDraft);
-        if (draft.content) setContent(draft.content);
-        if (draft.receiver) setReceiver(draft.receiver);
-        if (draft.delay) setDelay(draft.delay);
-        if (draft.language) setLanguage(draft.language);
-        if (draft.uploadedImages) setUploadedImages(draft.uploadedImages);
-        if (draft.uploadedMusic !== undefined) setUploadedMusic(draft.uploadedMusic);
-        if (draft.musicTitle !== undefined) setMusicTitle(draft.musicTitle);
-        if (draft.musicCover !== undefined) setMusicCover(draft.musicCover);
-        if (draft.coverTitle !== undefined) setCoverTitle(draft.coverTitle);
-        if (draft.coverSubtitle !== undefined) setCoverSubtitle(draft.coverSubtitle);
-        if (draft.recordedVoices) setRecordedVoices(draft.recordedVoices);
-        if (draft.embeddedMemories) setEmbeddedMemories(draft.embeddedMemories);
-        if (draft.nextEmbedId) setNextEmbedId(draft.nextEmbedId);
-        
-        const now = new Date();
-        setLastSavedTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-        setSaveStatus('saved');
+      const savedLang = localStorage.getItem('postheart_selected_language');
+      if (savedLang) setLanguage(savedLang);
+    } catch (e) {}
 
-        // Sync keyboard state if needed, wrapped in timeout to ensure ref is mounted
-        setTimeout(() => {
-          if (keyboardRef.current && draft.content) {
-            keyboardRef.current.setInput(draft.content);
+    // 2. Fetch in-transit and recent sent letters, then safely evaluate draft
+    const initDraft = async () => {
+      try {
+        let inTransitData = null;
+        let recentSent: any[] = [];
+
+        try {
+          const res = await fetch('/api/letters/in-transit');
+          if (res.ok) {
+            const json = await res.json();
+            if (json.success) {
+              inTransitData = json.data;
+              recentSent = json.recentSentLetters || (json.lastSentLetter ? [json.lastSentLetter] : []);
+              if (json.data && json.data.isSender) {
+                setHasInTransitLetter(true);
+              }
+            }
           }
-        }, 100);
+        } catch (apiErr) {
+          console.error('Error checking active letters:', apiErr);
+        }
+
+        const savedDraft = sessionStorage.getItem('writeLetterDraft') || localStorage.getItem('postheart_letter_draft');
+        if (savedDraft) {
+          const draft = JSON.parse(savedDraft);
+          const draftContent = (draft.content || '').trim();
+          const draftClean = draftContent.replace(/\s+/g, ' ').toLowerCase();
+          const draftTitle = (draft.coverTitle || '').trim().toLowerCase();
+
+          // Check if this draft matches any letter the user already SENT
+          const isSentLetter = recentSent.some((sent: any) => {
+            const rawSent = (sent.content || '')
+              .replace(/^\[To:.*?\](?:\r?\n)+/, '')
+              .replace(/\[\[(.*?)\|.*?\]\]/g, '$1')
+              .trim();
+            const sentClean = rawSent.replace(/\s+/g, ' ').toLowerCase();
+            const sentTitle = (sent.coverTitle || '').trim().toLowerCase();
+
+            if (!draftClean && !draft.receiver) return false;
+
+            // Direct content match or significant substring match
+            if (draftClean && sentClean) {
+              if (draftClean === sentClean) return true;
+              if (draftClean.length > 15 && sentClean.includes(draftClean)) return true;
+              if (sentClean.length > 15 && draftClean.includes(sentClean)) return true;
+            }
+
+            // Cover title match with partial content overlap
+            if (draftTitle && sentTitle && draftTitle === sentTitle && draftTitle !== 'dear you.') {
+              return true;
+            }
+
+            return false;
+          });
+
+          const lastSentSnippet = typeof window !== 'undefined' ? localStorage.getItem('postheart_last_sent_snippet') : null;
+          const isRecentlySent = lastSentSnippet && draftClean && draftClean.includes(lastSentSnippet.replace(/\s+/g, ' ').trim().toLowerCase());
+
+          // If letter is currently in transit or belongs to an already-sent letter: PURGE IT!
+          if (isSentLetter || isRecentlySent || (inTransitData && inTransitData.isSender)) {
+            sessionStorage.removeItem('writeLetterDraft');
+            try {
+              localStorage.removeItem('postheart_letter_draft');
+              localStorage.removeItem('dear_you_letter_draft');
+              localStorage.removeItem('letter_draft_title');
+              localStorage.removeItem('letter_draft_content');
+            } catch (e) {}
+            return;
+          }
+
+          // Legit un-sent draft: restore fields
+          if (draft.content) setContent(draft.content);
+          if (draft.receiver) setReceiver(draft.receiver);
+          if (draft.delay) setDelay(draft.delay);
+          if (draft.language) setLanguage(draft.language);
+          if (draft.uploadedImages) setUploadedImages(draft.uploadedImages);
+          if (draft.uploadedMusic !== undefined) setUploadedMusic(draft.uploadedMusic);
+          if (draft.musicTitle !== undefined) setMusicTitle(draft.musicTitle);
+          if (draft.musicCover !== undefined) setMusicCover(draft.musicCover);
+          if (draft.coverTitle !== undefined) setCoverTitle(draft.coverTitle);
+          if (draft.coverSubtitle !== undefined) setCoverSubtitle(draft.coverSubtitle);
+          if (draft.recordedVoices) setRecordedVoices(draft.recordedVoices);
+          if (draft.embeddedMemories) setEmbeddedMemories(draft.embeddedMemories);
+          if (draft.nextEmbedId) setNextEmbedId(draft.nextEmbedId);
+          
+          const now = new Date();
+          setLastSavedTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+          setSaveStatus('saved');
+
+          setTimeout(() => {
+            if (keyboardRef.current && draft.content) {
+              keyboardRef.current.setInput(draft.content);
+            }
+          }, 100);
+        }
+      } catch (e) {
+        console.error('Error initializing draft', e);
       }
-    } catch (e) {
-      console.error('Error loading draft', e);
-    }
+    };
+
+    initDraft();
   }, []);
 
   // Save draft to sessionStorage & localStorage on change with debounce & autosave indicator
   useEffect(() => {
-    if (isSubmittedRef.current) return;
+    if (isSubmittedRef.current || hasInTransitLetter) return;
     try {
       // Don't save empty states that would overwrite valid drafts immediately on mount
       if (!content && !receiver && uploadedImages.length === 0 && !uploadedMusic && recordedVoices.length === 0 && Object.keys(embeddedMemories).length === 0) {
@@ -440,7 +515,7 @@ export default function WriteLetterPage() {
       if (autosaveTimeoutRef.current) clearTimeout(autosaveTimeoutRef.current);
 
       autosaveTimeoutRef.current = setTimeout(() => {
-        if (isSubmittedRef.current) return;
+        if (isSubmittedRef.current || hasInTransitLetter) return;
         const draft = {
           content,
           receiver,
@@ -454,7 +529,8 @@ export default function WriteLetterPage() {
           coverSubtitle,
           recordedVoices,
           embeddedMemories,
-          nextEmbedId
+          nextEmbedId,
+          lastSavedAt: new Date().toISOString()
         };
         sessionStorage.setItem('writeLetterDraft', JSON.stringify(draft));
         try {
@@ -473,7 +549,7 @@ export default function WriteLetterPage() {
     return () => {
       if (autosaveTimeoutRef.current) clearTimeout(autosaveTimeoutRef.current);
     };
-  }, [content, receiver, delay, language, uploadedImages, uploadedMusic, musicTitle, musicCover, coverTitle, coverSubtitle, recordedVoices, embeddedMemories, nextEmbedId]);
+  }, [content, receiver, delay, language, uploadedImages, uploadedMusic, musicTitle, musicCover, coverTitle, coverSubtitle, recordedVoices, embeddedMemories, nextEmbedId, hasInTransitLetter]);
 
   const onKeyPress = (button: string) => {
     if (button === "{shift}" || button === "{lock}") {
@@ -481,44 +557,6 @@ export default function WriteLetterPage() {
     }
   };
 
-  useEffect(() => {
-    const checkActiveLetter = async () => {
-      try {
-        const res = await fetch('/api/letters/in-transit');
-        if (res.ok) {
-          const json = await res.json();
-          if (json.success && json.data && json.data.isSender) {
-            setHasInTransitLetter(true);
-            // If the user already sent a letter and it is currently in transit,
-            // clean up any leftover draft of that sent letter from storage!
-            sessionStorage.removeItem('writeLetterDraft');
-            try {
-              localStorage.removeItem('postheart_letter_draft');
-              localStorage.removeItem('dear_you_letter_draft');
-              localStorage.removeItem('letter_draft_title');
-              localStorage.removeItem('letter_draft_content');
-            } catch (e) {}
-            setContent('');
-            setReceiver('');
-            setCoverTitle('');
-            setCoverSubtitle('');
-            setUploadedImages([]);
-            setUploadedMusic(null);
-            setMusicTitle('');
-            setMusicCover(null);
-            setRecordedVoices([]);
-            setEmbeddedMemories({});
-            setNextEmbedId(1);
-            setLastSavedTime(null);
-            setSaveStatus('idle');
-            if (keyboardRef.current) keyboardRef.current.setInput('');
-            if (textAreaRef.current) textAreaRef.current.value = '';
-          }
-        }
-      } catch (err) {}
-    };
-    checkActiveLetter();
-  }, []);
 
   // Close menus when clicking outside
   useEffect(() => {
@@ -541,7 +579,55 @@ export default function WriteLetterPage() {
   }, []);
 
   // Virtual Keyboard Sync
-  const onKeyboardChange = (input: string) => {
+  const onKeyboardChange = async (input: string) => {
+    // If language is not English and user pressed space on virtual keyboard
+    if (language !== 'en' && input.endsWith(' ') && !content.endsWith(' ')) {
+      const trimmed = input.slice(0, -1);
+      const words = trimmed.split(/[\s\n]+/);
+      const lastWord = words[words.length - 1];
+      const match = lastWord ? lastWord.match(/^([^a-zA-Z]*)([a-zA-Z]+)([^a-zA-Z]*)$/) : null;
+      if (match && match[2].length > 0) {
+        const prefix = match[1];
+        const word = match[2];
+        const suffix = match[3];
+        const cacheKey = `${language}-${word.toLowerCase()}`;
+        const startIndex = trimmed.length - lastWord.length;
+
+        if (transliterationCache.has(cacheKey)) {
+          const translated = transliterationCache.get(cacheKey)!;
+          const converted = trimmed.substring(0, startIndex) + prefix + translated + suffix + ' ';
+          setContent(converted);
+          if (textAreaRef.current) {
+            textAreaRef.current.value = converted;
+            autoResizeTextarea();
+          }
+          if (keyboardRef.current) keyboardRef.current.setInput(converted);
+          return;
+        }
+
+        try {
+          const res = await fetch('/api/transliterate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: word, lang: language }),
+          });
+          const data = await res.json();
+          if (data.success && data.options && data.options.length > 0) {
+            const translated = data.options[0];
+            transliterationCache.set(cacheKey, translated);
+            const converted = trimmed.substring(0, startIndex) + prefix + translated + suffix + ' ';
+            setContent(converted);
+            if (textAreaRef.current) {
+              textAreaRef.current.value = converted;
+              autoResizeTextarea();
+            }
+            if (keyboardRef.current) keyboardRef.current.setInput(converted);
+            return;
+          }
+        } catch(e) {}
+      }
+    }
+
     setContent(input);
     if (textAreaRef.current) {
       textAreaRef.current.value = input;
@@ -556,49 +642,20 @@ export default function WriteLetterPage() {
     }
   };
 
-  const applyTransliteration = (
-    finalReplacement: string,
-    startIndex: number,
-    textAfterCursor: string,
-    currentFullText: string
+  // Universal Phonetic Transliteration Handler: converts English phonetics into Bengali/target language on pressing Space
+  const handleTransliterateKeyDown = async (
+    e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
+    currentValue: string,
+    setValue: (val: string) => void,
+    isMainTextarea = false
   ) => {
-    const newContent = currentFullText.substring(0, startIndex) + finalReplacement + ' ' + textAfterCursor;
-    setContent(newContent);
-    if (keyboardRef.current) keyboardRef.current.setInput(newContent);
-    
-    if (textAreaRef.current) {
-      textAreaRef.current.value = newContent;
-      autoResizeTextarea();
-      const newCursorPos = startIndex + finalReplacement.length + 1;
-      textAreaRef.current.focus();
-      textAreaRef.current.setSelectionRange(newCursorPos, newCursorPos);
-    }
-  };
+    const effectiveLang = language || (typeof window !== 'undefined' ? localStorage.getItem('postheart_selected_language') : 'en') || 'en';
+    const isSpaceKey = e.key === ' ' || e.code === 'Space' || e.keyCode === 32 || (e as any).which === 32;
 
-  const applyFallbackSpace = (
-    textBeforeCursor: string,
-    textAfterCursor: string,
-    cursor: number
-  ) => {
-    const newContent = textBeforeCursor + ' ' + textAfterCursor;
-    setContent(newContent);
-    if (keyboardRef.current) keyboardRef.current.setInput(newContent);
-    
-    if (textAreaRef.current) {
-      textAreaRef.current.value = newContent;
-      autoResizeTextarea();
-      const newCursorPos = cursor + 1;
-      textAreaRef.current.focus();
-      textAreaRef.current.setSelectionRange(newCursorPos, newCursorPos);
-    }
-  };
-
-  // Phonetic Transliteration Logic: converts English phonetics into Bengali/target language on pressing Space
-  const handleKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (language !== 'en' && e.key === ' ' && !isTransliterating) {
-      const target = e.target as HTMLTextAreaElement;
-      const cursor = target.selectionStart;
-      const currentVal = target.value;
+    if (effectiveLang !== 'en' && isSpaceKey && !isTransliterating) {
+      const target = e.currentTarget;
+      const cursor = target.selectionStart ?? currentValue.length;
+      const currentVal = target.value ?? currentValue;
       const textBeforeCursor = currentVal.substring(0, cursor);
       const textAfterCursor = currentVal.substring(cursor);
       
@@ -606,20 +663,41 @@ export default function WriteLetterPage() {
       const lastWordChunk = words[words.length - 1];
 
       // Extract optional prefix, the actual english word, and optional suffix (punctuation)
-      const match = lastWordChunk ? lastWordChunk.match(/^([^a-zA-Z]*)([a-zA-Z]+)([^a-zA-Z]*)$/) : null;
+      const match = lastWordChunk ? lastWordChunk.match(/^([^a-zA-Z]*)([a-zA-Z'-]+)([^a-zA-Z]*)$/) : null;
 
       if (match && match[2].length > 0) {
         e.preventDefault();
         const prefix = match[1];
         const wordToTranslate = match[2];
         const suffix = match[3];
-        const cacheKey = `${language}-${wordToTranslate.toLowerCase()}`;
+        const cacheKey = `${effectiveLang}-${wordToTranslate.toLowerCase()}`;
         const startIndex = cursor - lastWordChunk.length;
+        const domTarget = target;
         
+        const applyResult = (translatedWord: string) => {
+          const finalReplacement = prefix + translatedWord + suffix;
+          const newContent = currentVal.substring(0, startIndex) + finalReplacement + ' ' + textAfterCursor;
+          setValue(newContent);
+          
+          if (domTarget) {
+            domTarget.value = newContent;
+            if (isMainTextarea) {
+              autoResizeTextarea();
+              if (keyboardRef.current) keyboardRef.current.setInput(newContent);
+            }
+            const newCursorPos = startIndex + finalReplacement.length + 1;
+            setTimeout(() => {
+              try {
+                domTarget.focus();
+                domTarget.setSelectionRange(newCursorPos, newCursorPos);
+              } catch(e) {}
+            }, 0);
+          }
+        };
+
         // 1. Instant Cache Hit (0ms!)
         if (transliterationCache.has(cacheKey)) {
-          const finalReplacement = prefix + transliterationCache.get(cacheKey) + suffix;
-          applyTransliteration(finalReplacement, startIndex, textAfterCursor, currentVal);
+          applyResult(transliterationCache.get(cacheKey)!);
           return;
         }
 
@@ -629,20 +707,41 @@ export default function WriteLetterPage() {
           const res = await fetch('/api/transliterate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: wordToTranslate, lang: language }),
+            body: JSON.stringify({ text: wordToTranslate, lang: effectiveLang }),
           });
           const data = await res.json();
           
           if (data.success && data.options && data.options.length > 0) {
             const translated = data.options[0];
             transliterationCache.set(cacheKey, translated); // Save to instant cache
-            const finalReplacement = prefix + translated + suffix;
-            applyTransliteration(finalReplacement, startIndex, textAfterCursor, currentVal);
+            applyResult(translated);
           } else {
-            applyFallbackSpace(textBeforeCursor, textAfterCursor, cursor);
+            const fallback = textBeforeCursor + ' ' + textAfterCursor;
+            setValue(fallback);
+            if (domTarget) {
+              domTarget.value = fallback;
+              const newPos = cursor + 1;
+              setTimeout(() => {
+                try {
+                  domTarget.focus();
+                  domTarget.setSelectionRange(newPos, newPos);
+                } catch(e) {}
+              }, 0);
+            }
           }
         } catch (error) {
-          applyFallbackSpace(textBeforeCursor, textAfterCursor, cursor);
+          const fallback = textBeforeCursor + ' ' + textAfterCursor;
+          setValue(fallback);
+          if (domTarget) {
+            domTarget.value = fallback;
+            const newPos = cursor + 1;
+            setTimeout(() => {
+              try {
+                domTarget.focus();
+                domTarget.setSelectionRange(newPos, newPos);
+              } catch(e) {}
+            }, 0);
+          }
         } finally {
           setIsTransliterating(false);
         }
@@ -1071,6 +1170,8 @@ export default function WriteLetterPage() {
           localStorage.removeItem('dear_you_letter_draft');
           localStorage.removeItem('letter_draft_title');
           localStorage.removeItem('letter_draft_content');
+          localStorage.setItem('postheart_last_sent_snippet', finalContent.slice(0, 50));
+          localStorage.setItem('postheart_last_sent_time', Date.now().toString());
         } catch (e) {}
 
         setContent('');
@@ -1199,7 +1300,7 @@ export default function WriteLetterPage() {
                 )}
               </div>
 
-              {(content || uploadedImages.length > 0 || uploadedMusic || recordedVoices.length > 0 || coverTitle) && (
+              {(content || receiver || uploadedImages.length > 0 || uploadedMusic || recordedVoices.length > 0 || coverTitle || lastSavedTime) && (
                 <button
                   type="button"
                   onClick={handleClearDraft}
@@ -1275,6 +1376,7 @@ export default function WriteLetterPage() {
                 placeholder="To my love..." 
                 value={receiver}
                 onChange={(e) => setReceiver(e.target.value)}
+                onKeyDown={(e) => handleTransliterateKeyDown(e, receiver, setReceiver)}
                 disabled={hasInTransitLetter || isSubmitting}
                 spellCheck="false"
                 className="w-full bg-transparent border-none text-3xl md:text-5xl text-text-primary/90 focus:outline-none placeholder-white/20 font-typewriter"
@@ -1304,7 +1406,7 @@ export default function WriteLetterPage() {
             ref={textAreaRef}
             value={content}
             onChange={handleInput}
-            onKeyDown={handleKeyDown}
+            onKeyDown={(e) => handleTransliterateKeyDown(e, content, setContent, true)}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
             onSelect={() => {
@@ -1370,6 +1472,7 @@ export default function WriteLetterPage() {
                           placeholder="Title (e.g. Dear You.)" 
                           value={coverTitle}
                           onChange={(e) => setCoverTitle(e.target.value)}
+                          onKeyDown={(e) => handleTransliterateKeyDown(e, coverTitle, setCoverTitle)}
                           disabled={hasInTransitLetter || isSubmitting}
                           spellCheck="false"
                           className="w-full bg-bg-primary/5 rounded-xl border-none text-sm text-bg-primary focus:outline-none placeholder-black/40 font-serif px-3 py-2"
@@ -1379,6 +1482,7 @@ export default function WriteLetterPage() {
                           placeholder="Subtitle (e.g. A Private Space)" 
                           value={coverSubtitle}
                           onChange={(e) => setCoverSubtitle(e.target.value)}
+                          onKeyDown={(e) => handleTransliterateKeyDown(e, coverSubtitle, setCoverSubtitle)}
                           disabled={hasInTransitLetter || isSubmitting}
                           spellCheck="false"
                           className="w-full bg-bg-primary/5 rounded-xl border-none text-xs text-bg-primary focus:outline-none placeholder-black/40 font-mono uppercase tracking-widest px-3 py-2"
@@ -1424,7 +1528,14 @@ export default function WriteLetterPage() {
                   className={`p-2.5 rounded-full transition-colors relative group ${isLangMenuOpen ? 'text-bg-primary bg-bg-primary/5' : 'text-bg-primary/40 hover:text-bg-primary'}`}
                 >
                   <Globe size={16} strokeWidth={2} />
-                  <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-bg-primary text-text-primary text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-medium">Language</span>
+                  {language !== 'en' && (
+                    <span className="absolute -top-1 -right-1 text-[8px] font-black px-1 py-0.5 rounded-full bg-[#c2410c] text-white uppercase shadow-sm leading-none">
+                      {language}
+                    </span>
+                  )}
+                  <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-bg-primary text-text-primary text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none font-medium">
+                    Language ({language.toUpperCase()})
+                  </span>
                 </button>
 
                 <AnimatePresence>
@@ -1442,6 +1553,9 @@ export default function WriteLetterPage() {
                           onClick={() => {
                             setLanguage(lang.code);
                             setIsLangMenuOpen(false);
+                            try {
+                              localStorage.setItem('postheart_selected_language', lang.code);
+                            } catch (e) {}
                           }}
                           className={`text-left px-3 py-2 text-[12px] rounded-xl font-bold transition-colors ${language === lang.code ? 'bg-bg-primary text-text-primary' : 'text-bg-primary/60 hover:text-bg-primary hover:bg-bg-primary/5'}`}
                         >
