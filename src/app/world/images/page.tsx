@@ -8,6 +8,7 @@ import { ArrowLeft, Image as ImageIcon } from 'lucide-react';
 import BirdLoader from '@/components/BirdLoader';
 import WorldMediaTabs from '@/components/WorldMediaTabs';
 import ImageCard from '@/components/ImageCard';
+import ScrapbookLightboxModal from '@/components/ScrapbookLightboxModal';
 
 import { Suspense } from 'react';
 
@@ -22,6 +23,7 @@ function WorldImagesPageContent() {
   const [loading, setLoading] = useState(true);
   const [images, setImages] = useState<{url: string, letter: any}[]>([]);
   const [years, setYears] = useState<string[]>([]);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login');
@@ -140,17 +142,28 @@ function WorldImagesPageContent() {
           <p className="font-serif text-text-primary/40 text-lg">No photos found in this category.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6 pt-2">
           {images.map((img, index) => (
             <ImageCard 
               key={`${img.letter.id}-${index}`} 
               letter={img.letter} 
               imageUrl={img.url} 
+              index={index}
+              onOpenLightbox={(idx) => setLightboxIndex(idx)}
               onUpdate={handleUpdateLetter} 
             />
           ))}
         </div>
       )}
+
+      {/* Scrapbook Lightbox Modal with Zoom & Slide Transitions */}
+      <ScrapbookLightboxModal
+        isOpen={lightboxIndex !== null}
+        onClose={() => setLightboxIndex(null)}
+        items={images}
+        initialIndex={lightboxIndex ?? 0}
+        onUpdateLetter={handleUpdateLetter}
+      />
     </div>
   );
 }

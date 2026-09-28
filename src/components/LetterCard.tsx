@@ -1,11 +1,21 @@
 'use client';
 
-import { useState } from 'react';
-import { MoreHorizontal, Image as ImageIcon, Music, Mic, Pin, Star } from 'lucide-react';
+import React, { useState } from 'react';
+import { 
+  MoreHorizontal, 
+  Image as ImageIcon, 
+  Music, 
+  Mic, 
+  Pin, 
+  Star,
+  Mail,
+  Stamp
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import FolderDropdown from '@/components/FolderDropdown';
 
-function timeAgo(date: string | Date) {
+function timeAgo(date: string | Date | undefined) {
+  if (!date) return '';
   const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
   let interval = seconds / 31536000;
   if (interval > 1) return Math.floor(interval) + " years ago";
@@ -23,14 +33,18 @@ function timeAgo(date: string | Date) {
 interface LetterCardProps {
   letter: any;
   onUpdate: (id: string, data: any) => void;
-  currentUserId?: string; // Optional, to know if we are sender or receiver, but we can just blindly toggle
+  currentUserId?: string;
+  index?: number;
 }
 
-export default function LetterCard({ letter, onUpdate, currentUserId }: LetterCardProps) {
+export default function LetterCard({ letter, onUpdate, currentUserId, index = 0 }: LetterCardProps) {
   const [showMenu, setShowMenu] = useState(false);
   const router = useRouter();
+  
   const rawBgImage = letter.images && letter.images.length > 0 ? letter.images[0] : null;
-  const bgImage = rawBgImage?.includes('res.cloudinary.com') ? rawBgImage.replace('/upload/', '/upload/q_auto,f_auto,w_800/') : rawBgImage;
+  const bgImage = rawBgImage?.includes('res.cloudinary.com') 
+    ? rawBgImage.replace('/upload/', '/upload/q_auto,f_auto,w_800/') 
+    : rawBgImage;
 
   const handleTogglePin = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -38,7 +52,6 @@ export default function LetterCard({ letter, onUpdate, currentUserId }: LetterCa
     setShowMenu(false);
     
     const newPinnedStatus = !letter.isPinned;
-    // Optimistic UI update via parent
     onUpdate(letter.id, { isPinned: newPinnedStatus });
     
     await fetch('/api/world/media', {
@@ -64,91 +77,140 @@ export default function LetterCard({ letter, onUpdate, currentUserId }: LetterCa
     });
   };
 
-  const handleCardClick = (e: React.MouseEvent) => {
-    // If the click was on the menu or its children, don't navigate
+  const handleCardClick = () => {
     if (showMenu) return;
     router.push(`/letter/${letter.id}`);
   };
 
-  const titleText = letter.coverSubtitle || (letter.content.substring(0, 50) + (letter.content.length > 50 ? '...' : ''));
+  const titleText = letter.coverSubtitle || (letter.content?.substring(0, 52) + (letter.content?.length > 52 ? '...' : '')) || 'Untitled Dispatch';
+  const coverTitle = letter.coverTitle;
 
   return (
     <div 
       onClick={handleCardClick}
-      className="relative block w-full aspect-[16/10] bg-bg-secondary border border-border-primary rounded-xl group hover:border-[#c2410c]/50 transition-colors cursor-pointer"
+      className="group relative block w-full aspect-[16/10] bg-[#181410] border border-[#3d2f21] rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-[0_12px_28px_rgba(0,0,0,0.65)] hover:shadow-[0_22px_44px_rgba(0,0,0,0.9),0_0_24px_rgba(194,65,12,0.12)] hover:border-[#c2410c]/50 hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden"
     >
-      <div className="absolute inset-0 rounded-xl overflow-hidden pointer-events-none">
-        {/* Background Image & Gradient */}
-      {bgImage && (
-        <>
-          <img src={bgImage} alt="Cover" className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/80" />
-        </>
-      )}
-      {!bgImage && (
-        <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a1a] to-[#111111]" />
-      )}
+      {/* Background Image / Texture Layer */}
+      <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
+        {bgImage ? (
+          <>
+            <img 
+              src={bgImage} 
+              alt="Manuscript Cover" 
+              className="absolute inset-0 w-full h-full object-cover opacity-35 group-hover:opacity-45 group-hover:scale-105 transition-all duration-700 filter brightness-75 contrast-125" 
+            />
+            {/* Vintage sepia vignette overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#14100c] via-[#181410]/85 to-[#1c1611]/70" />
+          </>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-[#221a13] via-[#1a140f] to-[#120e0a]" />
+        )}
+
+        {/* Vintage Inner Decorative Border */}
+        <div className="absolute inset-2 border border-[#523f2d]/30 rounded-xl pointer-events-none" />
       </div>
 
-      {/* Content Container */}
-      <div className="absolute inset-0 p-5 flex flex-col justify-between z-10 rounded-xl">
+      {/* Top Header Row: From stamp & Postal Date */}
+      <div className="relative z-10 flex justify-between items-start gap-2">
+        {/* From Badge / Typewriter Style */}
+        <div className="flex items-center gap-1.5 bg-[#120f0d]/85 backdrop-blur-md px-3 py-1 rounded-md border border-[#3d2f21] text-[10px] font-mono tracking-widest text-[#fae1b8] shadow-sm">
+          <Mail size={11} className="text-[#c2410c]" />
+          <span>FROM {letter.sender?.name ? letter.sender.name.toUpperCase() : 'UNKNOWN'}</span>
+        </div>
+
+        {/* Right Badges: Pinned / Special Wax Seal / Date */}
+        <div className="flex items-center gap-2">
+          {letter.isPinned && (
+            <div 
+              className="bg-[#241a12]/90 backdrop-blur-md px-2 py-0.5 rounded-md border border-[#c2410c]/50 text-[#c2410c] flex items-center gap-1 shadow-sm"
+              title="Pinned Letter"
+            >
+              <Pin size={10} className="fill-current" />
+              <span className="text-[9px] font-mono uppercase tracking-wider hidden sm:inline">Pinned</span>
+            </div>
+          )}
+
+          {letter.isSpecial && (
+            <div 
+              className="bg-gradient-to-r from-[#854d0e]/80 to-[#a16207]/80 backdrop-blur-md px-2 py-0.5 rounded-md border border-[#eab308]/40 text-[#fef08a] flex items-center gap-1 shadow-sm"
+              title="Special Keepsake Letter"
+            >
+              <Star size={10} className="fill-current text-[#fef08a]" />
+              <span className="text-[9px] font-mono uppercase tracking-wider hidden sm:inline">Special</span>
+            </div>
+          )}
+
+          {/* Postal timestamp */}
+          <div className="bg-[#120f0d]/85 backdrop-blur-md px-2.5 py-1 rounded-md border border-[#3d2f21] text-[10px] font-mono text-[#a89b88] shadow-sm">
+            {timeAgo(letter.createdAt)}
+          </div>
+        </div>
+      </div>
+
+      {/* Center Excerpt / Letter Title with Vintage Postmark Watermark */}
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 my-2 text-center">
+        {coverTitle && (
+          <span className="font-mono text-[10px] text-[#c5a059] uppercase tracking-[0.25em] mb-1 opacity-80">
+            {coverTitle}
+          </span>
+        )}
+        <h3 className="font-serif italic text-lg sm:text-2xl text-[#fae1b8] font-light leading-snug drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] group-hover:text-white transition-colors max-w-md line-clamp-2">
+          "{titleText}"
+        </h3>
+
+        {/* Subtle Decorative Postal Stamp Background Accent */}
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-10 pointer-events-none group-hover:opacity-20 transition-opacity">
+          <Stamp size={72} className="text-[#c5a059] -rotate-12" />
+        </div>
+      </div>
+
+      {/* Bottom Bar: Media Indicators & Action Dropdown */}
+      <div className="relative z-10 flex justify-between items-center pt-2 border-t border-[#3d2f21]/50">
         
-        {/* Top Row: From & Date */}
-        <div className="flex justify-between items-start">
-          <div className="bg-bg-primary/50 backdrop-blur-sm px-3 py-1.5 rounded text-[10px] uppercase font-mono tracking-widest text-text-primary/80 font-semibold border border-text-primary/5">
-            FROM {letter.sender?.name || 'UNKNOWN'}
+        {/* Media Attachments Pill */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center space-x-2.5 bg-[#120f0d]/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-[#3d2f21] shadow-sm">
+            <span title="Photos Attached">
+              <ImageIcon 
+                size={13} 
+                className={letter.images && letter.images.length > 0 ? "text-[#c5a059]" : "text-[#5a4838]"} 
+              />
+            </span>
+            <span title="Music Attached">
+              <Music 
+                size={13} 
+                className={letter.music ? "text-[#c2410c]" : "text-[#5a4838]"} 
+              />
+            </span>
+            <span title="Voice Note Attached">
+              <Mic 
+                size={13} 
+                className={letter.voices && letter.voices.length > 0 ? "text-[#38bdf8]" : "text-[#5a4838]"} 
+              />
+            </span>
           </div>
-          
-          <div className="flex items-center space-x-2">
-            {letter.isPinned && (
-              <div className="bg-bg-primary/50 backdrop-blur-sm p-1.5 rounded border border-text-primary/5 text-[#c2410c]" title="Pinned">
-                <Pin size={12} className="fill-current" />
-              </div>
-            )}
-            {letter.isSpecial && (
-              <div className="bg-bg-primary/50 backdrop-blur-sm p-1.5 rounded border border-text-primary/5 text-[#c2410c]" title="Special">
-                <Star size={12} className="fill-current" />
-              </div>
-            )}
-            <div className="bg-bg-primary/50 backdrop-blur-sm px-3 py-1.5 rounded text-[10px] font-mono text-text-primary/80 border border-text-primary/5">
-              {timeAgo(letter.createdAt)}
-            </div>
-          </div>
-        </div>
 
-        {/* Center Text */}
-        <div className="flex-1 flex items-center justify-center px-4">
-          <h3 className="font-serif text-2xl text-text-primary text-center leading-tight drop-shadow-md">
-            "{titleText}"
-          </h3>
-        </div>
-
-        {/* Bottom Row: Icons & Menu */}
-        <div className="flex justify-between items-end relative">
-          
-          {/* Media Icons */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center space-x-3 bg-bg-primary/60 backdrop-blur-md px-4 py-2 rounded-xl border border-text-primary/5 shadow-lg">
-              <ImageIcon size={14} className={letter.images?.length > 0 ? "text-text-primary" : "text-text-primary/20"} />
-              <Music size={14} className={letter.music ? "text-text-primary" : "text-text-primary/20"} />
-              <Mic size={14} className={letter.voices?.length > 0 ? "text-text-primary" : "text-text-primary/20"} />
-            </div>
+          <div onClick={(e) => e.stopPropagation()}>
             <FolderDropdown itemId={letter.id} mediaType="letters" />
           </div>
+        </div>
 
-          {/* Three Dots Menu */}
-          <div 
-            className="bg-bg-primary/60 backdrop-blur-md p-2 rounded-xl border border-text-primary/5 hover:bg-[#c2410c]/20 hover:border-[#c2410c]/50 transition-colors cursor-pointer"
+        {/* Options Button */}
+        <div className="relative">
+          <button 
+            type="button"
+            className="bg-[#120f0d]/90 backdrop-blur-md p-1.5 rounded-xl border border-[#3d2f21] hover:bg-[#c2410c] hover:border-[#c2410c] text-[#a89b88] hover:text-white transition-all cursor-pointer shadow-sm"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
               setShowMenu(!showMenu);
             }}
+            title="Options"
           >
-            <MoreHorizontal size={16} className="text-text-primary/80" />
-          </div>
+            <MoreHorizontal size={15} />
+          </button>
 
-          {/* Dropdown Menu */}
+          {/* Floating Dropdown Menu */}
           {showMenu && (
             <>
               <div 
@@ -159,26 +221,31 @@ export default function LetterCard({ letter, onUpdate, currentUserId }: LetterCa
                   setShowMenu(false);
                 }}
               />
-              <div className="absolute bottom-12 right-0 bg-bg-secondary border border-border-primary rounded-lg shadow-xl p-2 w-48 z-50">
+              <div 
+                className="absolute bottom-10 right-0 bg-[#16120e] border border-[#3d2f21] rounded-xl shadow-2xl p-1.5 w-44 z-50 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <button 
+                  type="button"
                   onClick={handleTogglePin}
-                  className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-text-primary/70 hover:text-text-primary hover:bg-[#333333] rounded-md transition-colors relative z-50"
+                  className="w-full flex items-center space-x-2.5 px-3 py-2 text-xs text-[#dcd1c4] hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
                 >
-                  <Pin size={14} className={letter.isPinned ? "text-[#c2410c]" : ""} />
-                  <span>{letter.isPinned ? 'Unpin letter' : 'Pin letter'}</span>
+                  <Pin size={13} className={letter.isPinned ? "text-[#c2410c] fill-current" : "text-[#a89b88]"} />
+                  <span>{letter.isPinned ? 'Unpin from Archive' : 'Pin to Archive'}</span>
                 </button>
                 <button 
+                  type="button"
                   onClick={handleToggleSpecial}
-                  className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-text-primary/70 hover:text-text-primary hover:bg-[#333333] rounded-md transition-colors relative z-50"
+                  className="w-full flex items-center space-x-2.5 px-3 py-2 text-xs text-[#dcd1c4] hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
                 >
-                  <Star size={14} className={letter.isSpecial ? "text-[#c2410c]" : ""} />
-                  <span className="whitespace-nowrap">{letter.isSpecial ? 'Remove special' : 'Put as special'}</span>
+                  <Star size={13} className={letter.isSpecial ? "text-[#fef08a] fill-current" : "text-[#a89b88]"} />
+                  <span>{letter.isSpecial ? 'Remove Special' : 'Mark as Special'}</span>
                 </button>
               </div>
             </>
           )}
-
         </div>
+
       </div>
     </div>
   );

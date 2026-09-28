@@ -27,6 +27,7 @@ import { useDialog } from '@/components/DialogProvider';
 import { uploadFile } from '@/lib/upload';
 import toast from 'react-hot-toast';
 import { useAudio } from '@/contexts/AudioContext';
+import ScrapbookLightboxModal from '@/components/ScrapbookLightboxModal';
 
 interface WorldStats {
   musicSent: number;
@@ -246,71 +247,99 @@ export default function MyWorld() {
         {/* Left Column: Interactive Hanging Photo Frame (Polaroid representation) */}
         <div className="lg:col-span-6 flex flex-col items-center">
           
-          {/* Minimalist Picture Frame */}
-          <div className="w-full max-w-xl aspect-[4/5] bg-[#121212] relative group overflow-hidden border border-text-primary/5">
-            {uploading ? (
-              <div className="absolute inset-0 bg-bg-primary/75 z-20 flex flex-col items-center justify-center">
-                <BirdLoader className="w-12 h-12 text-[#c2410c]" />
-                <span className="text-[10px] uppercase tracking-wider text-text-primary/50 mt-4 font-mono">Updating...</span>
-              </div>
-            ) : null}
+          {/* Vintage Polaroid / Wooden Hanging Keepsake Frame */}
+          <div className="relative w-full max-w-md bg-[#181410] border border-[#3d2f21] rounded-2xl p-3 sm:p-4 pb-8 sm:pb-9 shadow-[0_20px_50px_rgba(0,0,0,0.85)] group">
+            {/* Washi Tape Top Hanging Accent */}
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-24 h-4 bg-[#e8dcbe]/30 border-x border-[#c2b295]/40 backdrop-blur-xs -rotate-1 pointer-events-none z-30 shadow-xs" />
 
-            {data.worldImage ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img 
-                src={data.worldImage} 
-                alt="My World" 
-                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-              />
-            ) : (
-              <div className="flex flex-col items-center justify-center h-full p-6 text-center text-text-primary/30">
-                <Camera size={36} className="mb-4 stroke-[1.2]" />
-                <p className="font-serif text-sm italic">"Your featured photo"</p>
-                <button 
-                  onClick={() => fileInputRef.current?.click()}
-                  className="mt-6 text-[10px] tracking-widest uppercase bg-text-primary/10 hover:bg-text-primary/20 text-text-primary font-mono py-2 px-4 rounded-full transition-all"
-                >
-                  Select Photo
-                </button>
-              </div>
-            )}
+            <div className="relative aspect-[4/5] w-full bg-[#100d0a] border border-[#2a2016] rounded-xl overflow-hidden">
+              {uploading ? (
+                <div className="absolute inset-0 bg-bg-primary/80 z-20 flex flex-col items-center justify-center">
+                  <BirdLoader className="w-12 h-12 text-[#c2410c]" />
+                  <span className="text-[10px] uppercase tracking-wider text-text-primary/50 mt-4 font-mono">Developing Photo...</span>
+                </div>
+              ) : null}
 
-            {/* Hover Overlay Controls */}
-            {data.worldImage && (
-              <div className="absolute inset-0 bg-bg-primary/40 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                <div className="absolute bottom-4 right-4 flex gap-3">
-                  <button
-                    onClick={() => setLightboxOpen(true)}
-                    className="p-3 bg-bg-primary hover:bg-text-primary hover:text-bg-primary rounded-full text-text-primary transition-all shadow-lg"
-                    title="View Fullscreen"
-                  >
-                    <Maximize2 size={16} />
-                  </button>
-                  <button
+              {data.worldImage ? (
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img 
+                    src={data.worldImage} 
+                    alt="My World" 
+                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                  />
+                  {/* Vintage Vignette Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full p-6 text-center text-[#a89b88]">
+                  <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-4 text-[#c5a059]">
+                    <Camera size={28} className="stroke-[1.3]" />
+                  </div>
+                  <p className="font-serif text-base italic text-[#fae1b8]">"Your featured haven portrait"</p>
+                  <p className="text-xs text-[#a89b88]/70 mt-1 max-w-xs font-mono">
+                    Add a photograph that anchors your shared world.
+                  </p>
+                  <button 
+                    type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="p-3 bg-bg-primary hover:bg-text-primary hover:text-bg-primary rounded-full text-text-primary transition-all shadow-lg"
-                    title="Change Photo"
+                    className="mt-6 text-[10px] tracking-widest uppercase bg-[#c2410c] hover:bg-[#ea580c] text-white font-mono py-2.5 px-6 rounded-full transition-all shadow-md cursor-pointer"
                   >
-                    <Upload size={16} />
-                  </button>
-                  <button
-                    onClick={handleRemoveImage}
-                    className="p-3 bg-bg-primary hover:bg-red-950 hover:text-red-400 rounded-full text-text-primary/80 transition-all shadow-lg"
-                    title="Remove Photo"
-                  >
-                    <Trash2 size={16} />
+                    Select Keepsake Photo
                   </button>
                 </div>
-              </div>
-            )}
+              )}
 
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              onChange={handleImageUpload} 
-              accept="image/*" 
-              className="hidden" 
-            />
+              {/* Hover Overlay Controls */}
+              {data.worldImage && (
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity z-20 flex items-end justify-end p-4">
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setLightboxOpen(true)}
+                      className="p-2.5 bg-[#120f0d]/90 hover:bg-[#c2410c] text-white/90 hover:text-white rounded-xl border border-white/10 transition-all shadow-lg cursor-pointer"
+                      title="View Fullscreen in Scrapbook Lightbox"
+                    >
+                      <Maximize2 size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="p-2.5 bg-[#120f0d]/90 hover:bg-[#c2410c] text-white/90 hover:text-white rounded-xl border border-white/10 transition-all shadow-lg cursor-pointer"
+                      title="Change Photo"
+                    >
+                      <Upload size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="p-2.5 bg-[#120f0d]/90 hover:bg-red-950 hover:text-red-400 text-white/90 rounded-xl border border-white/10 transition-all shadow-lg cursor-pointer"
+                      title="Remove Photo"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleImageUpload} 
+                accept="image/*" 
+                className="hidden" 
+              />
+            </div>
+
+            {/* Vintage Polaroid Bottom Chin */}
+            <div className="mt-3 flex items-center justify-between px-1">
+              <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#c5a059]">
+                Shared Haven • আমাদের ভুবন
+              </span>
+              <span className="font-mono text-[9px] text-[#a89b88]/60">
+                POST HEART VAULT
+              </span>
+            </div>
           </div>
           
         </div>
@@ -615,6 +644,25 @@ export default function MyWorld() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Scrapbook Lightbox for Featured World Photo */}
+      {data?.worldImage && (
+        <ScrapbookLightboxModal
+          isOpen={lightboxOpen}
+          onClose={() => setLightboxOpen(false)}
+          items={[{
+            url: data.worldImage,
+            letter: {
+              id: 'world-featured-photo',
+              coverTitle: 'Featured Sacred Keepsake',
+              coverSubtitle: 'Our World Centerpiece',
+              createdAt: new Date(),
+              sender: { name: session?.user?.name || 'Couple' }
+            }
+          }]}
+          initialIndex={0}
+        />
+      )}
     </>
   );
 }

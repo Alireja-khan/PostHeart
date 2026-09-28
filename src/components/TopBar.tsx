@@ -6,6 +6,7 @@ import { useNotification } from "@/contexts/NotificationContext";
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import AtmosphereButton from "@/components/AtmosphereButton";
 
 export default function TopBar() {
   const pathname = usePathname();
@@ -17,7 +18,11 @@ export default function TopBar() {
   if (!session || pathname === "/login" || pathname === "/register") return null;
 
   return (
-    <div className="fixed top-5 right-5 sm:top-6 sm:right-8 z-50 pointer-events-none">
+    <div className="fixed top-5 right-5 sm:top-6 sm:right-8 z-50 pointer-events-none flex items-center gap-2.5">
+      <div className="pointer-events-auto">
+        <AtmosphereButton variant="badge" label="Ambience" />
+      </div>
+
       <motion.div
         initial={{ opacity: 0, y: -10, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}

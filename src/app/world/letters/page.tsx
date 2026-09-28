@@ -133,8 +133,14 @@ function WorldLettersPageContent() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {letters.map((letter) => (
-            <LetterCard key={letter.id} letter={letter} onUpdate={handleUpdateLetter} currentUserId={currentUserId || undefined} />
+          {letters.map((letter, index) => (
+            <LetterCard 
+              key={letter.id} 
+              letter={letter} 
+              index={index}
+              onUpdate={handleUpdateLetter} 
+              currentUserId={currentUserId || undefined} 
+            />
           ))}
         </div>
       )}

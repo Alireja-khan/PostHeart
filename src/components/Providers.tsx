@@ -5,6 +5,8 @@ import { SessionProvider } from 'next-auth/react'
 import { NotificationProvider } from '@/contexts/NotificationContext'
 import { DialogProvider } from '@/components/DialogProvider'
 import { AudioProvider } from '@/contexts/AudioContext'
+import { AtmosphereProvider } from '@/contexts/AtmosphereContext'
+import AtmosphereSoundboardModal from '@/components/AtmosphereSoundboardModal'
 
 import { useEffect } from 'react'
 
@@ -41,7 +43,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <DialogProvider>
         <NotificationProvider>
           <AudioProvider>
-            {children}
+            <AtmosphereProvider>
+              {children}
+              <AtmosphereSoundboardModal />
+            </AtmosphereProvider>
           </AudioProvider>
         </NotificationProvider>
       </DialogProvider>

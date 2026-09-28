@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-import { MoreHorizontal, Pin, Star, Maximize2, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { MoreHorizontal, Pin, Star, Maximize2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import FolderDropdown from '@/components/FolderDropdown';
 
-function timeAgo(date: string | Date) {
+function timeAgo(date: string | Date | undefined) {
+  if (!date) return '';
   const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
   let interval = seconds / 31536000;
   if (interval > 1) return Math.floor(interval) + " years ago";
@@ -25,16 +25,26 @@ interface ImageCardProps {
   letter: any;
   imageUrl: string;
   onUpdate: (id: string, data: any) => void;
+  index?: number;
+  onOpenLightbox?: (index: number) => void;
 }
 
-export default function ImageCard({ letter, imageUrl, onUpdate }: ImageCardProps) {
+export default function ImageCard({ 
+  letter, 
+  imageUrl, 
+  onUpdate,
+  index = 0,
+  onOpenLightbox
+}: ImageCardProps) {
   const [showMenu, setShowMenu] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const router = useRouter();
   
-  const titleText = letter.coverTitle || (letter.content.substring(0, 50) + '...');
+  const titleText = letter.coverTitle || (letter.content ? letter.content.substring(0, 45) + '...' : 'Photographic Memory');
   const isImagePinned = letter.pinnedImages?.includes(imageUrl) || false;
   const isImageSpecial = letter.specialImages?.includes(imageUrl) || false;
+
+  // Alternate natural organic tilts for scrapbook feel
+  const tiltClasses = index % 3 === 0 ? '-rotate-1' : index % 3 === 1 ? 'rotate-1' : 'rotate-0';
 
   const handleTogglePin = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -83,134 +93,125 @@ export default function ImageCard({ letter, imageUrl, onUpdate }: ImageCardProps
       setShowMenu(false);
       return;
     }
-    router.push(`/letter/${letter.id}`);
+    // If lightbox trigger exists, open lightbox; otherwise open letter
+    if (onOpenLightbox) {
+      onOpenLightbox(index);
+    } else {
+      router.push(`/letter/${letter.id}`);
+    }
   };
 
   return (
     <div 
       onClick={handleCardClick}
-      className="relative aspect-square group bg-bg-secondary border border-text-primary/5 rounded-xl block cursor-pointer hover:border-[#c2410c]/50 transition-colors"
+      className={`group relative bg-[#181410] border border-[#3d2f21] rounded-2xl p-2.5 sm:p-3 pb-8 sm:pb-9 shadow-[0_12px_28px_rgba(0,0,0,0.7)] hover:shadow-[0_20px_45px_rgba(0,0,0,0.95)] hover:border-[#c2410c]/50 transition-all duration-300 cursor-pointer ${tiltClasses} hover:rotate-0 hover:scale-[1.02] flex flex-col justify-between`}
     >
-      <div className="absolute inset-0 rounded-xl overflow-hidden pointer-events-none">
+      {/* Semi-transparent Vintage Washi Tape Top Accent */}
+      <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-16 h-3 bg-[#e8dcbe]/25 border-x border-[#c2b295]/40 backdrop-blur-xs -rotate-1 pointer-events-none z-20 shadow-xs" />
+
+      {/* Main Photographic Frame */}
+      <div className="relative aspect-[4/3] sm:aspect-square w-full rounded-xl overflow-hidden bg-[#100d0a] border border-[#2a2016]">
         <img 
           src={imageUrl.includes('res.cloudinary.com') ? imageUrl.replace('/upload/', '/upload/q_auto,f_auto,w_800/') : imageUrl} 
-          alt="Letter attachment" 
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-40"
+          alt={titleText} 
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-90 group-hover:opacity-100"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 opacity-0 group-hover:opacity-100 transition-opacity" />
-      </div>
-      
-      <div className="absolute inset-0 flex flex-col justify-between p-4 rounded-xl">
         
-        {/* Top bar with menu and badges */}
-        <div className="flex justify-between items-start w-full">
-          <div className="flex items-center gap-2">
-            {isImagePinned && (
-              <div className="bg-bg-primary/50 backdrop-blur-sm p-1.5 rounded border border-text-primary/5 text-[#c2410c]" title="Pinned">
-                <Pin size={12} className="fill-current" />
-              </div>
-            )}
-            {isImageSpecial && (
-              <div className="bg-bg-primary/50 backdrop-blur-sm p-1.5 rounded border border-text-primary/5 text-[#c2410c]" title="Special">
-                <Star size={12} className="fill-current" />
-              </div>
-            )}
+        {/* Subtle vintage film vignette overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
+
+        {/* Hover Action Overlay */}
+        <div className="absolute inset-0 flex justify-between items-start p-2.5 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+          <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
             <FolderDropdown itemId={imageUrl} mediaType="images" />
           </div>
 
-          <div className="flex gap-2 relative">
+          <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
             <button 
-              className="bg-bg-primary/60 backdrop-blur-md p-2 rounded-xl border border-text-primary/5 hover:bg-[#c2410c]/20 hover:border-[#c2410c]/50 transition-colors cursor-pointer text-text-primary/80"
+              className="bg-[#120f0d]/85 backdrop-blur-md p-1.5 rounded-lg border border-white/10 hover:bg-[#c2410c] hover:border-[#c2410c] text-white/90 transition-all cursor-pointer shadow-md"
               onClick={(e) => {
-                e.preventDefault();
                 e.stopPropagation();
-                setIsFullscreen(true);
+                if (onOpenLightbox) {
+                  onOpenLightbox(index);
+                }
               }}
-              title="View Fullscreen"
+              title="Open Scrapbook Lightbox"
             >
-              <Maximize2 size={16} />
+              <Maximize2 size={13} />
             </button>
+            
             <button 
-              className="bg-bg-primary/60 backdrop-blur-md p-2 rounded-xl border border-text-primary/5 hover:bg-[#c2410c]/20 hover:border-[#c2410c]/50 transition-colors cursor-pointer text-text-primary/80"
+              className="bg-[#120f0d]/85 backdrop-blur-md p-1.5 rounded-lg border border-white/10 hover:bg-[#c2410c] hover:border-[#c2410c] text-white/90 transition-all cursor-pointer shadow-md"
               onClick={(e) => {
-                e.preventDefault();
                 e.stopPropagation();
                 setShowMenu(!showMenu);
               }}
+              title="Options"
             >
-              <MoreHorizontal size={16} />
+              <MoreHorizontal size={13} />
             </button>
-            
-            {showMenu && (
-              <>
-                <div 
-                  className="fixed inset-0 z-40"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setShowMenu(false);
-                  }}
-                />
-                <div className="absolute right-0 top-full mt-2 bg-bg-secondary border border-border-primary rounded-lg shadow-xl p-2 w-48 z-50">
-                  <button 
-                    onClick={handleTogglePin}
-                    className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-text-primary/70 hover:text-text-primary hover:bg-[#333333] rounded-md transition-colors relative z-50"
-                  >
-                    <Pin size={14} className={isImagePinned ? "text-[#c2410c]" : ""} />
-                    <span>{isImagePinned ? 'Unpin image' : 'Pin image'}</span>
-                  </button>
-                  <button 
-                    onClick={handleToggleSpecial}
-                    className="w-full flex items-center space-x-3 px-3 py-2 text-sm text-text-primary/70 hover:text-text-primary hover:bg-[#333333] rounded-md transition-colors relative z-50"
-                  >
-                    <Star size={14} className={isImageSpecial ? "text-[#c2410c]" : ""} />
-                    <span className="whitespace-nowrap">{isImageSpecial ? 'Remove special' : 'Put as special'}</span>
-                  </button>
-                </div>
-              </>
-            )}
           </div>
         </div>
 
-        {/* Bottom text info */}
-        <div>
-          <div className="text-[10px] uppercase font-mono tracking-widest text-text-primary/50 mb-1">
-            {timeAgo(letter.createdAt)}
-          </div>
-          <h3 className="font-serif text-lg text-text-primary leading-tight drop-shadow-md">
-            From: {titleText}
-          </h3>
-          <p className="text-[10px] uppercase font-mono tracking-widest text-[#c2410c] mt-2 font-semibold">
-            By {letter.sender?.name || 'Unknown'}
-          </p>
+        {/* Status Stamp Badges (Pinned & Special) */}
+        <div className="absolute bottom-2 left-2 flex items-center gap-1.5 z-10 pointer-events-none">
+          {isImagePinned && (
+            <div className="bg-[#16120e]/85 backdrop-blur-md px-1.5 py-0.5 rounded-md border border-[#c2410c]/50 text-[#c2410c] flex items-center gap-1 shadow-sm" title="Pinned to Archive">
+              <Pin size={10} className="fill-current" />
+              <span className="text-[9px] font-mono uppercase tracking-wider">Pinned</span>
+            </div>
+          )}
+          {isImageSpecial && (
+            <div className="bg-[#16120e]/85 backdrop-blur-md px-1.5 py-0.5 rounded-md border border-[#c5a059]/50 text-[#c5a059] flex items-center gap-1 shadow-sm" title="Special Keepsake">
+              <Star size={10} className="fill-current" />
+              <span className="text-[9px] font-mono uppercase tracking-wider">Special</span>
+            </div>
+          )}
         </div>
       </div>
 
-      {isFullscreen && (
-        <div 
-          className="fixed inset-0 z-[100] bg-bg-primary/95 flex items-center justify-center p-4 backdrop-blur-sm"
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsFullscreen(false);
-          }}
-        >
-          <button 
-            className="absolute top-6 right-6 p-3 bg-text-primary/10 hover:bg-text-primary/20 rounded-full text-text-primary transition-colors border border-text-primary/10"
+      {/* Floating Options Dropdown */}
+      {showMenu && (
+        <>
+          <div 
+            className="fixed inset-0 z-40"
             onClick={(e) => {
               e.stopPropagation();
-              setIsFullscreen(false);
+              setShowMenu(false);
             }}
-          >
-            <X size={24} />
-          </button>
-          <img 
-            src={imageUrl} 
-            alt="Fullscreen view" 
-            className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl border border-text-primary/10"
-            onClick={(e) => e.stopPropagation()}
           />
-        </div>
+          <div className="absolute right-3 top-12 bg-[#1b1510] border border-[#3d2f21] rounded-xl shadow-2xl p-1.5 w-44 z-50 text-xs font-serif" onClick={(e) => e.stopPropagation()}>
+            <button 
+              onClick={handleTogglePin}
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-[#d8cebe] hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
+            >
+              <Pin size={13} className={isImagePinned ? "text-[#c2410c]" : ""} />
+              <span>{isImagePinned ? 'Unpin photo' : 'Pin photo'}</span>
+            </button>
+            <button 
+              onClick={handleToggleSpecial}
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-[#d8cebe] hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
+            >
+              <Star size={13} className={isImageSpecial ? "text-[#c5a059]" : ""} />
+              <span>{isImageSpecial ? 'Remove special' : 'Mark special'}</span>
+            </button>
+          </div>
+        </>
       )}
+
+      {/* Polaroid Bottom Chin - Handwritten/Typewriter Caption */}
+      <div className="pt-3 px-1 flex flex-col justify-between">
+        <h4 className="font-typewriter text-xs sm:text-sm text-[#f5f0e6] leading-snug line-clamp-1 group-hover:text-[#c2410c] transition-colors">
+          &ldquo;{titleText}&rdquo;
+        </h4>
+        
+        <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-[#2a2016] text-[10px] font-mono text-[#8c7d6b]">
+          <span>{timeAgo(letter.createdAt)}</span>
+          <span className="text-[#c5a059] font-medium truncate max-w-[100px]">
+            {letter.sender?.name ? `— ${letter.sender.name}` : ''}
+          </span>
+        </div>
+      </div>
     </div>
   );
 }

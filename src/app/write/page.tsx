@@ -12,6 +12,7 @@ import 'react-simple-keyboard/build/css/index.css';
 import { uploadFile } from '@/lib/upload';
 import { useDialog } from '@/components/DialogProvider';
 import LetterPreviewModal from '@/components/LetterPreviewModal';
+import AtmosphereButton from '@/components/AtmosphereButton';
 
 const LANGUAGES = [
   { code: 'en', name: 'English' },
@@ -1221,6 +1222,15 @@ export default function WriteLetterPage() {
                   )}
                 </AnimatePresence>
               </div>
+
+              <div className="w-[1px] h-4 bg-bg-primary/10 mx-1" />
+
+              {/* Ambient Atmosphere Engine Button */}
+              <AtmosphereButton 
+                variant="badge" 
+                label="Ambience" 
+                className="!bg-bg-primary/10 hover:!bg-bg-primary/20 !text-bg-primary !border-transparent h-8 !px-2.5 sm:!px-3"
+              />
 
               <div className="w-[1px] h-4 bg-bg-primary/10 mx-1" />
 

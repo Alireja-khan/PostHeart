@@ -6,6 +6,8 @@ import HTMLFlipBook from 'react-pageflip';
 import { Image as ImageIcon, Music, Mic, X, Folder, Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Repeat, Repeat1, ArrowLeft, Feather } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAudio } from '@/contexts/AudioContext';
+import ScrapbookLightboxModal from '@/components/ScrapbookLightboxModal';
+import AtmosphereButton from '@/components/AtmosphereButton';
 
 interface User {
   id: string;
@@ -199,7 +201,7 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
   const [embedGalleryType, setEmbedGalleryType] = useState<'images' | 'music' | 'audio'>('images');
 
   // Lightbox State
-  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const [lightboxState, setLightboxState] = useState<{ list: string[], index: number } | null>(null);
 
   // Parse music cover
   const [musicUrl, musicCoverUrl] = letter.music ? letter.music.split('|') : [null, null];
@@ -339,15 +341,21 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
   return (
     <div className="w-full h-screen overflow-hidden bg-transparent text-text-primary relative flex flex-col items-center pt-32 pb-12 px-6 font-sans">
       
-      {/* Back Button (Ultra Minimal, matches top left back style of Details page screenshot) */}
-      <div className="absolute top-56 left-8 z-50">
+      {/* Navigation & Atmosphere Controls */}
+      <div className="absolute top-56 left-8 z-50 flex items-center gap-2.5">
         <button 
           onClick={() => router.back()}
-          className="flex items-center gap-2 border border-text-primary/10 px-4 py-2 rounded-full bg-text-primary/5 backdrop-blur-md text-[10px] uppercase tracking-widest text-text-secondary hover:text-text-primary transition-colors font-bold"
+          className="flex items-center gap-2 border border-text-primary/10 px-4 py-2 rounded-full bg-text-primary/5 backdrop-blur-md text-[10px] uppercase tracking-widest text-text-secondary hover:text-text-primary transition-colors font-bold cursor-pointer"
         >
           <ArrowLeft size={12} />
           <span>Back</span>
         </button>
+
+        <AtmosphereButton 
+          variant="badge" 
+          label="Atmosphere" 
+          className="!bg-text-primary/5 hover:!bg-text-primary/10 !border-text-primary/10 backdrop-blur-md !text-text-secondary hover:!text-text-primary text-[10px] uppercase tracking-widest py-2 px-3.5 font-bold"
+        />
       </div>
 
       {/* Removed local background audio element */}
@@ -757,7 +765,7 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
                    <div 
                      key={`final-${idx}`} 
                      className="relative group aspect-square rounded-2xl overflow-hidden bg-bg-primary/20 border border-text-primary/10 cursor-zoom-in"
-                     onClick={() => setLightboxImage(url)}
+                     onClick={() => setLightboxState({ list: letter.images || [], index: idx })}
                    >
                      <img src={url.includes('res.cloudinary.com') ? url.replace('/upload/', '/upload/q_auto,f_auto,w_500/') : url} alt={`Memory ${idx+1}`} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
                    </div>
@@ -885,7 +893,7 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
                     <div 
                       key={`embed-img-${idx}`} 
                       className="relative group aspect-square rounded-2xl overflow-hidden bg-bg-primary/20 border border-text-primary/10 cursor-zoom-in"
-                      onClick={() => setLightboxImage(url)}
+                      onClick={() => setLightboxState({ list: selectedMemory.images || [], index: idx })}
                     >
                       <img src={url} alt={`Memory ${idx+1}`} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
                     </div>
@@ -919,38 +927,24 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
         )}
       </AnimatePresence>
 
-      {/* Lightbox Modal */}
-      <AnimatePresence>
-        {lightboxImage && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setLightboxImage(null)}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-bg-primary/95 backdrop-blur-md p-4 cursor-zoom-out"
-          >
-            <motion.div
-              initial={{ scale: 0.95 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.95 }}
-              className="relative max-w-full max-h-full"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <img 
-                src={lightboxImage} 
-                alt="Full view" 
-                className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl border border-text-primary/10" 
-              />
-              <button 
-                onClick={() => setLightboxImage(null)}
-                className="absolute top-4 right-4 bg-bg-primary/60 hover:bg-bg-primary text-text-primary p-2 rounded-full backdrop-blur-md transition-colors"
-              >
-                <X size={20} />
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Scrapbook Lightbox Modal */}
+      {lightboxState && (
+        <ScrapbookLightboxModal
+          isOpen={true}
+          onClose={() => setLightboxState(null)}
+          items={lightboxState.list.map(url => ({
+            url,
+            letter: {
+              id: letter.id,
+              coverTitle: letter.coverTitle,
+              coverSubtitle: letter.coverSubtitle,
+              createdAt: letter.deliverAt,
+              sender: { name: letter.sender.name },
+            }
+          }))}
+          initialIndex={lightboxState.index}
+        />
+      )}
 
     </div>
   );
