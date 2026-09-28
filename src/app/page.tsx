@@ -49,7 +49,10 @@ export default async function Home() {
           ]
         },
         {
-          replyToId: null // Top-level letters only; replies are nested inside their correspondence thread
+          OR: [
+            { replyToId: null },
+            { replyToId: { isSet: false } }
+          ]
         }
       ]
     },

@@ -6,7 +6,6 @@ import { Mail, Image as ImageIcon, Music, Mic, Grid, PackageOpen, ArrowLeft, X, 
 import { useRouter } from 'next/navigation';
 import BirdLoader from './BirdLoader';
 import { textureBase64 } from './TextureBase64';
-import AntiqueEmptyDesk from './AntiqueEmptyDesk';
 
 interface User {
   id: string;
@@ -41,7 +40,6 @@ export default function Desk({ initialLetters }: DeskProps) {
   const [isEnvelopeOpen, setIsEnvelopeOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'envelope' | 'grid'>('envelope');
   const [flapZIndex, setFlapZIndex] = useState(30);
-  const [previewEnvelopeAnyway, setPreviewEnvelopeAnyway] = useState(false);
   const isFirstRender = useRef(true);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -121,10 +119,6 @@ export default function Desk({ initialLetters }: DeskProps) {
     }
   };
 
-  // Should we show the poetic antique empty desk?
-  // When there are no letters for the current tab and the user hasn't explicitly chosen to preview envelope
-  const shouldShowEmptyDesk = filteredLetters.length === 0 && !previewEnvelopeAnyway;
-
   return (
     <>
       <AnimatePresence>
@@ -153,21 +147,8 @@ export default function Desk({ initialLetters }: DeskProps) {
           </defs>
         </svg>
 
-        {/* CONDITION 1: EMPTY STATE -> Antique Wooden Desk with Extinguished Candle */}
-        {shouldShowEmptyDesk ? (
-          <AntiqueEmptyDesk
-            activeTab={activeTab}
-            onSwitchTab={handleTabChange}
-            onPreviewEnvelope={() => {
-              setPreviewEnvelopeAnyway(true);
-              setIsEnvelopeOpen(true);
-            }}
-            receivedCount={receivedCount}
-            sentCount={sentCount}
-          />
-        ) : (
-          /* CONDITION 2: LETTERS PRESENT OR PREVIEW ENVELOPE REQUESTED */
-          <div className="w-full max-w-4xl flex flex-col items-center justify-center flex-1 my-auto">
+        {/* ALWAYS RENDER DESK ENVELOPE / GRID */}
+        <div className="w-full max-w-4xl flex flex-col items-center justify-center flex-1 my-auto">
             
             {/* Top Centered Tab Switcher Bar - Leaves top-right clean for TopBar */}
             <div className="relative z-30 flex items-center gap-2 sm:gap-3 p-1.5 rounded-full bg-[#181512]/90 border border-[#382f25]/80 shadow-[0_8px_30px_rgba(0,0,0,0.6)] backdrop-blur-md mb-4 sm:mb-6">
@@ -202,18 +183,6 @@ export default function Desk({ initialLetters }: DeskProps) {
                   {sentCount}
                 </span>
               </button>
-
-              {/* If previewing an empty mailbox, allow returning to Antique Desk */}
-              {previewEnvelopeAnyway && filteredLetters.length === 0 && (
-                <button
-                  onClick={() => setPreviewEnvelopeAnyway(false)}
-                  className="font-serif text-xs text-[#c5a059] hover:text-[#e8dfd1] px-3 py-1.5 rounded-full border border-[#8c734b]/40 hover:bg-[#8c734b]/20 transition-all flex items-center gap-1.5"
-                  title="Return to Antique Desk"
-                >
-                  <Feather size={12} />
-                  <span className="hidden sm:inline">Antique Desk</span>
-                </button>
-              )}
             </div>
 
             {/* MAIN DESK DISPLAY: ENVELOPE MODE VS GRID MODE */}
@@ -283,11 +252,11 @@ export default function Desk({ initialLetters }: DeskProps) {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setPreviewEnvelopeAnyway(false);
+                                  router.push('/write');
                                 }}
                                 className="px-4 py-2 rounded-full bg-[#c2410c] text-white text-xs font-serif tracking-wider shadow hover:bg-[#ea580c] transition-colors"
                               >
-                                অ্যান্টিক ডেস্কে ফিরুন
+                                একটি চিঠি লিখুন
                               </button>
                             </div>
                           )}
@@ -440,17 +409,6 @@ export default function Desk({ initialLetters }: DeskProps) {
                       <span>Close</span>
                     </button>
                   )}
-
-                  {/* Back to Antique Desk (if previewing empty) */}
-                  {filteredLetters.length === 0 && previewEnvelopeAnyway && (
-                    <button 
-                      onClick={() => setPreviewEnvelopeAnyway(false)}
-                      className="flex items-center gap-1.5 text-[#c5a059] hover:text-[#fae1b8] transition-all bg-[#1a1612]/90 hover:bg-[#25201a] px-3.5 py-2 rounded-full border border-[#8c734b]/40 shadow-md text-xs font-serif tracking-wider"
-                    >
-                      <Feather size={13} />
-                      <span>অ্যান্টিক ডেস্ক</span>
-                    </button>
-                  )}
                 </div>
 
                 {/* Scroll Indicator Prompt when envelope has multiple letters */}
@@ -555,7 +513,6 @@ export default function Desk({ initialLetters }: DeskProps) {
             )}
 
           </div>
-        )}
 
       </div>
     </>
