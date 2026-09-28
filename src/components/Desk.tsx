@@ -25,6 +25,8 @@ interface Letter {
   voices?: string[];
   deliverAt?: string;
   createdAt?: string;
+  replies?: any[];
+  repliesCount?: number;
 }
 
 interface DeskProps {
@@ -313,9 +315,17 @@ export default function Desk({ initialLetters }: DeskProps) {
                                 
                                 <div className="relative z-10 h-full p-4 sm:p-5 flex flex-col justify-between">
                                   <div className="flex justify-between items-start">
-                                    <span className="text-[10px] uppercase tracking-widest text-[#d8cfbf] font-bold bg-[#120f0d]/80 px-2.5 py-1 rounded-full backdrop-blur-md border border-[#382d20]">
-                                      {letter.isSentByMe ? `To ${letter.receiver?.name || 'Someone'}` : `From ${letter.sender.name}`}
-                                    </span>
+                                    <div className="flex items-center gap-1.5 flex-wrap max-w-[70%]">
+                                      <span className="text-[10px] uppercase tracking-widest text-[#d8cfbf] font-bold bg-[#120f0d]/80 px-2.5 py-1 rounded-full backdrop-blur-md border border-[#382d20]">
+                                        {letter.isSentByMe ? `To ${letter.receiver?.name || 'Someone'}` : `From ${letter.sender.name}`}
+                                      </span>
+                                      {letter.repliesCount && letter.repliesCount > 0 ? (
+                                        <span className="text-[9px] font-serif text-[#c5a059] bg-[#1a140f] border border-[#8c734b]/40 px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm font-semibold">
+                                          <Feather size={10} />
+                                          <span>{letter.repliesCount} {letter.repliesCount === 1 ? 'Reply' : 'Replies'}</span>
+                                        </span>
+                                      ) : null}
+                                    </div>
                                     <span className="text-[10px] font-mono text-[#a89e90] bg-[#120f0d]/80 px-2 py-0.5 rounded backdrop-blur-md">
                                       {formatTime(letter.deliverAt)}
                                     </span>
@@ -507,9 +517,17 @@ export default function Desk({ initialLetters }: DeskProps) {
                           <div className={`absolute inset-0 bg-gradient-to-r ${coverImage ? 'from-black/95 via-black/70 to-black/40' : 'from-[#14110e] to-[#1f1a15]'}`} />
                           <div className="relative z-10 h-full p-5 flex flex-col justify-between">
                             <div className="flex justify-between items-start">
-                              <span className="text-[10px] tracking-wider text-[#d8cfbf] uppercase font-bold bg-black/60 px-2 py-0.5 rounded">
-                                {letter.isSentByMe ? `To ${letter.receiver?.name || 'Someone'}` : `From ${letter.sender.name}`}
-                              </span>
+                              <div className="flex items-center gap-1.5 flex-wrap max-w-[70%]">
+                                <span className="text-[10px] tracking-wider text-[#d8cfbf] uppercase font-bold bg-black/60 px-2 py-0.5 rounded">
+                                  {letter.isSentByMe ? `To ${letter.receiver?.name || 'Someone'}` : `From ${letter.sender.name}`}
+                                </span>
+                                {letter.repliesCount && letter.repliesCount > 0 ? (
+                                  <span className="text-[9px] font-serif text-[#c5a059] bg-[#1a140f] border border-[#8c734b]/40 px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm font-semibold">
+                                    <Feather size={10} />
+                                    <span>{letter.repliesCount} {letter.repliesCount === 1 ? 'Reply' : 'Replies'}</span>
+                                  </span>
+                                ) : null}
+                              </div>
                               <span className="text-[10px] text-[#a89b88] font-mono bg-black/60 px-2 py-0.5 rounded">
                                 {formatTime(letter.deliverAt)}
                               </span>

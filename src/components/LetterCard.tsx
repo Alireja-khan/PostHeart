@@ -9,7 +9,8 @@ import {
   Pin, 
   Star,
   Mail,
-  Stamp
+  Stamp,
+  Feather
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import FolderDropdown from '@/components/FolderDropdown';
@@ -137,6 +138,17 @@ export default function LetterCard({ letter, onUpdate, currentUserId, index = 0 
             >
               <Star size={10} className="fill-current text-[#fef08a]" />
               <span className="text-[9px] font-mono uppercase tracking-wider hidden sm:inline">Special</span>
+            </div>
+          )}
+
+          {/* Reply indicator */}
+          {((letter.replies && letter.replies.length > 0) || letter.repliesCount > 0) && (
+            <div 
+              className="bg-[#1b1510]/90 backdrop-blur-md px-2 py-0.5 rounded-md border border-[#8c734b]/40 text-[#c5a059] flex items-center gap-1 shadow-sm text-[9px] font-serif"
+              title="Has letter replies"
+            >
+              <Feather size={10} />
+              <span>{(letter.replies?.length || letter.repliesCount)} {((letter.replies?.length || letter.repliesCount) === 1 ? 'Reply' : 'Replies')}</span>
             </div>
           )}
 

@@ -47,12 +47,30 @@ export default async function Home() {
             { deliverAt: { lte: new Date() } },
             { deliverAt: null }
           ]
+        },
+        {
+          replyToId: null // Top-level letters only; replies are nested inside their correspondence thread
         }
       ]
     },
     include: {
       sender: true,
-      receiver: true
+      receiver: true,
+      replies: {
+        where: {
+          OR: [
+            { deliverAt: { lte: new Date() } },
+            { deliverAt: null }
+          ]
+        },
+        include: {
+          sender: true,
+          receiver: true
+        },
+        orderBy: {
+          createdAt: 'asc'
+        }
+      }
     },
     orderBy: {
       deliverAt: 'desc'
@@ -81,7 +99,32 @@ export default async function Home() {
       email: letter.receiver.email,
       name: letter.receiver.name
     } : null,
-    isSentByMe: letter.senderId === currentUser.id
+    isSentByMe: letter.senderId === currentUser.id,
+    replies: (letter.replies || []).map(r => ({
+      id: r.id.toString(),
+      content: r.content,
+      images: r.images || [],
+      music: r.music || null,
+      musicTitle: r.musicTitle || null,
+      voices: r.voices || [],
+      voiceTitles: r.voiceTitles || [],
+      coverTitle: r.coverTitle || null,
+      coverSubtitle: r.coverSubtitle || null,
+      deliverAt: r.deliverAt?.toISOString() || r.createdAt.toISOString(),
+      createdAt: r.createdAt.toISOString(),
+      sender: {
+        id: r.sender.id.toString(),
+        email: r.sender.email,
+        name: r.sender.name
+      },
+      receiver: r.receiver ? {
+        id: r.receiver.id.toString(),
+        email: r.receiver.email,
+        name: r.receiver.name
+      } : null,
+      isSentByMe: r.senderId === currentUser.id
+    })),
+    repliesCount: letter.replies?.length || 0,
   }))
 
   return (

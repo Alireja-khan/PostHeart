@@ -84,6 +84,22 @@ export async function POST(req: Request) {
 
     let finalReceiverId = sender.partnerId;
     
+    // Support replying to an existing letter
+    let parentLetter = null;
+    if (body.replyToId) {
+      parentLetter = await prisma.letter.findUnique({
+        where: { id: body.replyToId },
+        include: { sender: true, receiver: true }
+      });
+      if (parentLetter) {
+        if (parentLetter.senderId !== sender.id) {
+          finalReceiverId = parentLetter.senderId;
+        } else if (parentLetter.receiverId && parentLetter.receiverId !== sender.id) {
+          finalReceiverId = parentLetter.receiverId;
+        }
+      }
+    }
+    
     // Fallback: If not partnered, try to find a user by name or email if provided
     if (!finalReceiverId && body.receiverName) {
       const fallbackReceiver = await prisma.user.findFirst({
@@ -124,13 +140,32 @@ export async function POST(req: Request) {
         deliverAt,
         status: 'IN_TRANSIT',
         senderId: sender.id,
-        receiverId: finalReceiverId, 
+        receiverId: finalReceiverId,
+        replyToId: parentLetter ? parentLetter.id : null,
       },
       include: {
         sender: true,
-        receiver: true
+        receiver: true,
+        replyTo: true,
       }
     });
+
+    if (finalReceiverId) {
+      try {
+        await prisma.notification.create({
+          data: {
+            userId: finalReceiverId,
+            type: parentLetter ? 'LETTER_REPLY' : 'NEW_LETTER',
+            title: parentLetter ? 'Letter Reply' : 'New Letter',
+            message: parentLetter 
+              ? `${sender.name || 'Your love'} sent a reply to your letter!` 
+              : `${sender.name || 'Your love'} sent you a letter!`,
+          }
+        });
+      } catch (notifErr) {
+        console.error('Failed to create notification', notifErr);
+      }
+    }
 
     return NextResponse.json({
       success: true,

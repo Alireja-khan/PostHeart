@@ -30,7 +30,28 @@ export default async function LetterPage(props: { params: Promise<{ id: string }
     where: { id: params.id },
     include: {
       sender: true,
-      receiver: true
+      receiver: true,
+      replyTo: {
+        include: {
+          sender: true,
+          receiver: true
+        }
+      },
+      replies: {
+        where: {
+          OR: [
+            { deliverAt: { lte: new Date() } },
+            { deliverAt: null }
+          ]
+        },
+        include: {
+          sender: true,
+          receiver: true
+        },
+        orderBy: {
+          createdAt: 'asc'
+        }
+      }
     }
   });
 
@@ -38,8 +59,9 @@ export default async function LetterPage(props: { params: Promise<{ id: string }
     redirect('/'); // Not found
   }
 
-  // Security: only sender or receiver can view
-  if (letter.senderId !== user.id && letter.receiverId !== user.id) {
+  // Security: only sender or receiver (or parent letter participant) can view
+  const isParticipant = letter.senderId === user.id || letter.receiverId === user.id;
+  if (!isParticipant) {
     redirect('/');
   }
 
@@ -66,7 +88,43 @@ export default async function LetterPage(props: { params: Promise<{ id: string }
       email: letter.receiver.email,
       name: letter.receiver.name
     } : null,
+    replyToId: letter.replyToId,
+    replyTo: letter.replyTo ? {
+      id: letter.replyTo.id.toString(),
+      content: letter.replyTo.content,
+      coverTitle: letter.replyTo.coverTitle,
+      coverSubtitle: letter.replyTo.coverSubtitle,
+      createdAt: letter.replyTo.createdAt.toISOString(),
+      sender: {
+        id: letter.replyTo.sender.id.toString(),
+        name: letter.replyTo.sender.name,
+        email: letter.replyTo.sender.email,
+      }
+    } : null,
+    replies: (letter.replies || []).map(r => ({
+      id: r.id.toString(),
+      content: r.content,
+      images: r.images || [],
+      music: r.music || null,
+      musicTitle: r.musicTitle || null,
+      voices: r.voices || [],
+      voiceTitles: r.voiceTitles || [],
+      coverTitle: r.coverTitle,
+      coverSubtitle: r.coverSubtitle,
+      deliverAt: r.deliverAt?.toISOString(),
+      createdAt: r.createdAt.toISOString(),
+      sender: {
+        id: r.sender.id.toString(),
+        email: r.sender.email,
+        name: r.sender.name
+      },
+      receiver: r.receiver ? {
+        id: r.receiver.id.toString(),
+        email: r.receiver.email,
+        name: r.receiver.name
+      } : null,
+    }))
   };
 
-  return <LetterClientView letter={formattedLetter} />;
+  return <LetterClientView letter={formattedLetter} currentUserId={user.id} />;
 }

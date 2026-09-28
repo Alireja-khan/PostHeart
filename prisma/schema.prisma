@@ -113,6 +113,10 @@ model Letter {
   
   receiverId  String?  @db.ObjectId
   receiver    User?    @relation("ReceivedLetters", fields: [receiverId], references: [id])
+
+  replyToId   String?  @db.ObjectId
+  replyTo     Letter?  @relation("LetterReplies", fields: [replyToId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies     Letter[] @relation("LetterReplies")
 }
 
 model TimelineMilestone {

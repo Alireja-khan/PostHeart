@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useMemo, forwardRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import HTMLFlipBook from 'react-pageflip';
-import { Image as ImageIcon, Music, Mic, X, Folder, Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Repeat, Repeat1, ArrowLeft, Feather } from 'lucide-react';
+import { Image as ImageIcon, Music, Mic, X, Folder, Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Repeat, Repeat1, ArrowLeft, Feather, Mail } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAudio } from '@/contexts/AudioContext';
 import ScrapbookLightboxModal from '@/components/ScrapbookLightboxModal';
@@ -27,6 +27,10 @@ interface Letter {
   coverTitle?: string | null;
   coverSubtitle?: string | null;
   deliverAt?: string;
+  createdAt?: string;
+  replyToId?: string | null;
+  replyTo?: any | null;
+  replies?: any[];
 }
 
 const VoiceNoteCard = ({ 
@@ -174,7 +178,7 @@ const getPaginatedContent = (text: string, charsPerPage: number = 380) => {
   return pages.length > 0 ? pages : [''];
 };
 
-export default function LetterClientView({ letter }: { letter: Letter }) {
+export default function LetterClientView({ letter, currentUserId }: { letter: Letter; currentUserId?: string }) {
   const router = useRouter();
   
   // Global audio context for background music and voice notes
@@ -202,6 +206,9 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
 
   // Lightbox State
   const [lightboxState, setLightboxState] = useState<{ list: string[], index: number } | null>(null);
+
+  // Replies Thread Modal State
+  const [isRepliesModalOpen, setIsRepliesModalOpen] = useState(false);
 
   // Parse music cover
   const [musicUrl, musicCoverUrl] = letter.music ? letter.music.split('|') : [null, null];
@@ -342,7 +349,7 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
     <div className="w-full h-screen overflow-hidden bg-transparent text-text-primary relative flex flex-col items-center pt-32 pb-12 px-6 font-sans">
       
       {/* Navigation & Atmosphere Controls */}
-      <div className="absolute top-56 left-8 z-50 flex items-center gap-2.5">
+      <div className="absolute top-56 left-8 z-50 flex items-center gap-2.5 flex-wrap max-w-[85vw]">
         <button 
           onClick={() => router.back()}
           className="flex items-center gap-2 border border-text-primary/10 px-4 py-2 rounded-full bg-text-primary/5 backdrop-blur-md text-[10px] uppercase tracking-widest text-text-secondary hover:text-text-primary transition-colors font-bold cursor-pointer"
@@ -356,6 +363,35 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
           label="Atmosphere" 
           className="!bg-text-primary/5 hover:!bg-text-primary/10 !border-text-primary/10 backdrop-blur-md !text-text-secondary hover:!text-text-primary text-[10px] uppercase tracking-widest py-2 px-3.5 font-bold"
         />
+
+        {letter.replyTo && (
+          <button 
+            onClick={() => router.push(`/letter/${letter.replyTo.id}`)}
+            className="flex items-center gap-1.5 border border-text-primary/15 px-3.5 py-2 rounded-full bg-text-primary/5 backdrop-blur-md text-[10px] uppercase tracking-widest text-text-secondary hover:text-text-primary transition-colors font-bold cursor-pointer"
+            title="Read original letter"
+          >
+            <ArrowLeft size={11} />
+            <span>Original Letter</span>
+          </button>
+        )}
+
+        {letter.replies && letter.replies.length > 0 && (
+          <button 
+            onClick={() => setIsRepliesModalOpen(true)}
+            className="flex items-center gap-1.5 border border-amber-500/30 px-3.5 py-2 rounded-full bg-amber-500/10 backdrop-blur-md text-[10px] uppercase tracking-widest text-amber-300 hover:bg-amber-500/20 transition-all font-bold cursor-pointer shadow-lg shadow-amber-500/5"
+          >
+            <Mail size={12} />
+            <span>Replies ({letter.replies.length})</span>
+          </button>
+        )}
+
+        <button 
+          onClick={() => router.push(`/write?replyTo=${letter.id}`)}
+          className="flex items-center gap-1.5 border border-[#ff9f1c]/40 px-3.5 py-2 rounded-full bg-gradient-to-r from-[#ff9f1c]/20 to-[#ffd166]/20 backdrop-blur-md text-[10px] uppercase tracking-widest text-[#ff9f1c] hover:border-[#ff9f1c] hover:scale-105 transition-all font-bold cursor-pointer shadow-lg shadow-[#ff9f1c]/10"
+        >
+          <Feather size={12} />
+          <span>Reply</span>
+        </button>
       </div>
 
       {/* Removed local background audio element */}
@@ -445,8 +481,72 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
               <div data-density="soft" className="bg-bg-primary border border-text-primary/5 h-full"></div>
             )}
 
-            {/* Inside Back Cover (Blank) */}
-            <div data-density="hard" className="bg-bg-primary border border-text-primary/5 h-full"></div>
+            {/* Inside Back Cover (Epistolary Exchange Sanctuary) */}
+            <div data-density="hard" className="bg-bg-primary border border-text-primary/5 p-6 md:p-8 h-full flex flex-col justify-between relative overflow-y-auto">
+              <div className="flex flex-col items-center text-center mt-3">
+                <div className="w-10 h-10 rounded-full border border-amber-500/20 bg-amber-500/10 flex items-center justify-center text-amber-400 mb-2 shadow-sm">
+                  <Feather size={18} />
+                </div>
+                <h3 className="text-xs uppercase tracking-widest font-mono text-text-secondary mb-1">
+                  Epistolary Exchange
+                </h3>
+                <p className="text-xs font-serif italic text-text-primary/80">
+                  {letter.replyTo 
+                    ? `This letter was penned in reply to an earlier correspondence.`
+                    : `Every whispered word waits for an echo.`}
+                </p>
+              </div>
+
+              {/* Middle Section: Replies count or Parent link */}
+              <div className="flex flex-col gap-2.5 my-3">
+                {letter.replyTo && (
+                  <button
+                    onClick={() => router.push(`/letter/${letter.replyTo.id}`)}
+                    className="w-full py-2.5 px-3 rounded-xl border border-text-primary/10 bg-text-primary/5 hover:bg-text-primary/10 transition-colors flex items-center justify-between text-left group"
+                  >
+                    <div>
+                      <div className="text-[9px] uppercase tracking-wider text-text-secondary font-mono">Original Letter</div>
+                      <div className="text-xs font-serif text-text-primary truncate max-w-[170px]">{letter.replyTo.coverTitle || 'Dear You'}</div>
+                    </div>
+                    <ArrowLeft size={13} className="text-text-secondary group-hover:text-text-primary group-hover:translate-x-1 transition-transform rotate-180" />
+                  </button>
+                )}
+
+                {letter.replies && letter.replies.length > 0 ? (
+                  <div className="border border-amber-500/20 bg-amber-500/5 rounded-xl p-3 flex flex-col gap-2">
+                    <div className="flex items-center justify-between text-xs text-amber-300/90 font-medium">
+                      <span className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider">
+                        <Mail size={12} /> {letter.replies.length} {letter.replies.length === 1 ? 'Reply Penned' : 'Replies Penned'}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setIsRepliesModalOpen(true)}
+                      className="w-full py-1.5 px-3 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 text-xs font-medium transition-colors flex items-center justify-center gap-1.5"
+                    >
+                      <span>Read Correspondence ({letter.replies.length})</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="text-center py-2 text-text-secondary/60 text-xs font-serif italic">
+                    No replies penned to this letter yet.
+                  </div>
+                )}
+              </div>
+
+              {/* Bottom CTA to Pen Reply */}
+              <div className="flex flex-col items-center text-center pb-2">
+                <button
+                  onClick={() => router.push(`/write?replyTo=${letter.id}`)}
+                  className="w-full py-2.5 px-4 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 border border-amber-500/40 text-amber-300 font-medium text-xs tracking-wider uppercase transition-all shadow-md hover:scale-[1.02] flex items-center justify-center gap-2"
+                >
+                  <Feather size={13} />
+                  <span>Write a Reply</span>
+                </button>
+                <span className="text-[9px] text-text-secondary/50 mt-1.5 font-mono">
+                  PostHeart Epistolary Sanctuary
+                </span>
+              </div>
+            </div>
 
             {/* Back Cover */}
             <div data-density="hard" className="bg-[#0a0a0a] border border-text-primary/10 p-6 md:p-8 h-full overflow-hidden flex flex-col justify-center items-center relative text-center">
@@ -922,6 +1022,139 @@ export default function LetterClientView({ letter }: { letter: Letter }) {
                   ))}
                 </div>
               )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Correspondence Replies Modal */}
+      <AnimatePresence>
+        {isRepliesModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md"
+            onClick={() => setIsRepliesModalOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 15 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-lg max-h-[80vh] flex flex-col bg-bg-primary border border-text-primary/10 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-xl"
+            >
+              {/* Modal Header */}
+              <div className="p-5 border-b border-text-primary/10 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                    <Mail size={15} />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-text-primary">Correspondence Thread</h3>
+                    <p className="text-[11px] text-text-secondary">
+                      {letter.replies?.length || 0} {(letter.replies?.length || 0) === 1 ? 'reply' : 'replies'} penned for this letter
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsRepliesModalOpen(false)}
+                  className="p-1.5 rounded-full hover:bg-text-primary/5 text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Replies List */}
+              <div className="flex-1 overflow-y-auto p-5 space-y-3">
+                {letter.replies && letter.replies.length > 0 ? (
+                  letter.replies.map((reply: any, idx: number) => {
+                    const replyDate = reply.createdAt 
+                      ? new Date(reply.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+                      : '';
+                    const replyExcerpt = reply.content
+                      ?.replace(/\[To:.*?\]\n*/g, '')
+                      ?.replace(/\[Font:.*?\]\n*/g, '')
+                      ?.replace(/\[Memory:[^\]]+\]\(([^)]+)\)/g, '$1')
+                      ?.slice(0, 100);
+
+                    return (
+                      <div 
+                        key={reply.id || idx}
+                        onClick={() => {
+                          setIsRepliesModalOpen(false);
+                          router.push(`/letter/${reply.id}`);
+                        }}
+                        className="group p-4 rounded-xl border border-text-primary/10 bg-text-primary/[0.02] hover:bg-text-primary/[0.06] hover:border-amber-500/40 transition-all cursor-pointer flex flex-col gap-2"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-semibold text-text-primary">
+                              {reply.sender?.name || 'Partner'}
+                            </span>
+                            <span className="text-[10px] text-text-secondary/70">
+                              {replyDate}
+                            </span>
+                          </div>
+                          <span className="text-[10px] uppercase font-mono tracking-wider text-amber-400 group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
+                            Read <ArrowLeft size={10} className="rotate-180" />
+                          </span>
+                        </div>
+
+                        {reply.coverTitle && (
+                          <div className="text-xs font-serif italic font-medium text-text-primary/90">
+                            {reply.coverTitle}
+                          </div>
+                        )}
+
+                        <div className="text-xs text-text-secondary font-serif line-clamp-2 leading-relaxed">
+                          {replyExcerpt}...
+                        </div>
+
+                        {/* Badges for media attachments */}
+                        <div className="flex items-center gap-2 pt-1">
+                          {reply.images && reply.images.length > 0 && (
+                            <span className="inline-flex items-center gap-1 text-[10px] text-text-secondary/80 bg-text-primary/5 px-2 py-0.5 rounded-full">
+                              <ImageIcon size={10} /> {reply.images.length}
+                            </span>
+                          )}
+                          {reply.voices && reply.voices.length > 0 && (
+                            <span className="inline-flex items-center gap-1 text-[10px] text-text-secondary/80 bg-text-primary/5 px-2 py-0.5 rounded-full">
+                              <Mic size={10} /> {reply.voices.length}
+                            </span>
+                          )}
+                          {reply.music && (
+                            <span className="inline-flex items-center gap-1 text-[10px] text-text-secondary/80 bg-text-primary/5 px-2 py-0.5 rounded-full">
+                              <Music size={10} /> Track
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="py-8 text-center text-text-secondary text-sm font-serif italic">
+                    No replies have been penned yet.
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div className="p-4 border-t border-text-primary/10 bg-text-primary/[0.02] flex items-center justify-between gap-3">
+                <span className="text-[11px] text-text-secondary font-mono">
+                  {letter.sender?.name ? `Letter to/from ${letter.sender.name}` : ''}
+                </span>
+                <button
+                  onClick={() => {
+                    setIsRepliesModalOpen(false);
+                    router.push(`/write?replyTo=${letter.id}`);
+                  }}
+                  className="px-4 py-2 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 border border-amber-500/40 text-amber-300 text-xs font-semibold uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Feather size={12} />
+                  <span>Write Reply</span>
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}

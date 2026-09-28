@@ -1,11 +1,11 @@
 // @ts-nocheck 
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useRef, useMemo, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Image as ImageIcon, Send, Music, Mic, X, Clock, Feather, Globe, Keyboard as KeyboardIcon, Folder, Plus, Play, Pause, SkipBack, SkipForward, Edit2, Trash2, Volume2, VolumeX, Repeat, Repeat1, Book, Eye, RotateCcw } from 'lucide-react';
+import { Image as ImageIcon, Send, Music, Mic, X, Clock, Feather, Globe, Keyboard as KeyboardIcon, Folder, Plus, Play, Pause, SkipBack, SkipForward, Edit2, Trash2, Volume2, VolumeX, Repeat, Repeat1, Book, Eye, RotateCcw, Mail } from 'lucide-react';
 import BirdLoader from "@/components/BirdLoader";
 import Keyboard from 'react-simple-keyboard';
 import 'react-simple-keyboard/build/css/index.css';
@@ -303,9 +303,14 @@ const VoiceNoteCard = ({
   );
 };
 
-export default function WriteLetterPage() {
+function WriteLetterContent() {
   const { alert } = useDialog();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const replyToId = searchParams.get('replyTo');
+  const [parentLetter, setParentLetter] = useState<any | null>(null);
+  const [isLoadingParent, setIsLoadingParent] = useState(false);
+
   const { data: session } = useSession();
   const [content, setContent] = useState('');
   const [receiver, setReceiver] = useState('');
@@ -391,6 +396,32 @@ export default function WriteLetterPage() {
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const galleryRef = useRef<HTMLDivElement>(null);
 
+  // Fetch parent letter details if writing a reply
+  useEffect(() => {
+    if (!replyToId) return;
+    setIsLoadingParent(true);
+    fetch(`/api/letters/${replyToId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data) {
+          const parent = data.data;
+          setParentLetter(parent);
+          
+          // Auto-set receiver to partner
+          const partnerName = parent.sender?.name || '';
+          if (partnerName) {
+            setReceiver(partnerName);
+          }
+          
+          // Auto-suggest cover title if not set
+          const parentTitle = parent.coverTitle || 'Dear You';
+          setCoverTitle(prev => prev ? prev : (parentTitle.startsWith('Re: ') ? parentTitle : `Re: ${parentTitle}`));
+        }
+      })
+      .catch(err => console.error("Error fetching parent letter:", err))
+      .finally(() => setIsLoadingParent(false));
+  }, [replyToId]);
+
   // Synchronized Draft & Sent Letter Initialization on Mount
   useEffect(() => {
     // 1. Restore preferred language
@@ -421,7 +452,8 @@ export default function WriteLetterPage() {
           console.error('Error checking active letters:', apiErr);
         }
 
-        const savedDraft = sessionStorage.getItem('writeLetterDraft') || localStorage.getItem('postheart_letter_draft');
+        const draftStorageKey = replyToId ? `writeLetterDraft_reply_${replyToId}` : 'writeLetterDraft';
+        const savedDraft = sessionStorage.getItem(draftStorageKey) || (!replyToId ? localStorage.getItem('postheart_letter_draft') : null);
         if (savedDraft) {
           const draft = JSON.parse(savedDraft);
           const draftContent = (draft.content || '').trim();
@@ -459,13 +491,15 @@ export default function WriteLetterPage() {
 
           // If letter is currently in transit or belongs to an already-sent letter: PURGE IT!
           if (isSentLetter || isRecentlySent || (inTransitData && inTransitData.isSender)) {
-            sessionStorage.removeItem('writeLetterDraft');
-            try {
-              localStorage.removeItem('postheart_letter_draft');
-              localStorage.removeItem('dear_you_letter_draft');
-              localStorage.removeItem('letter_draft_title');
-              localStorage.removeItem('letter_draft_content');
-            } catch (e) {}
+            sessionStorage.removeItem(draftStorageKey);
+            if (!replyToId) {
+              try {
+                localStorage.removeItem('postheart_letter_draft');
+                localStorage.removeItem('dear_you_letter_draft');
+                localStorage.removeItem('letter_draft_title');
+                localStorage.removeItem('letter_draft_content');
+              } catch (e) {}
+            }
             return;
           }
 
@@ -532,10 +566,13 @@ export default function WriteLetterPage() {
           nextEmbedId,
           lastSavedAt: new Date().toISOString()
         };
-        sessionStorage.setItem('writeLetterDraft', JSON.stringify(draft));
-        try {
-          localStorage.setItem('postheart_letter_draft', JSON.stringify(draft));
-        } catch(e) {}
+        const draftStorageKey = replyToId ? `writeLetterDraft_reply_${replyToId}` : 'writeLetterDraft';
+        sessionStorage.setItem(draftStorageKey, JSON.stringify(draft));
+        if (!replyToId) {
+          try {
+            localStorage.setItem('postheart_letter_draft', JSON.stringify(draft));
+          } catch(e) {}
+        }
 
         const now = new Date();
         setLastSavedTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
@@ -754,13 +791,16 @@ export default function WriteLetterPage() {
       clearTimeout(autosaveTimeoutRef.current);
       autosaveTimeoutRef.current = null;
     }
-    sessionStorage.removeItem('writeLetterDraft');
-    try {
-      localStorage.removeItem('postheart_letter_draft');
-      localStorage.removeItem('dear_you_letter_draft');
-      localStorage.removeItem('letter_draft_title');
-      localStorage.removeItem('letter_draft_content');
-    } catch(e) {}
+    const draftStorageKey = replyToId ? `writeLetterDraft_reply_${replyToId}` : 'writeLetterDraft';
+    sessionStorage.removeItem(draftStorageKey);
+    if (!replyToId) {
+      try {
+        localStorage.removeItem('postheart_letter_draft');
+        localStorage.removeItem('dear_you_letter_draft');
+        localStorage.removeItem('letter_draft_title');
+        localStorage.removeItem('letter_draft_content');
+      } catch(e) {}
+    }
 
     setContent('');
     setReceiver('');
@@ -1153,6 +1193,7 @@ export default function WriteLetterPage() {
           delayMinutes,
           coverTitle: coverTitle || 'Dear You.',
           coverSubtitle: coverSubtitle || 'A Private Space',
+          replyToId: replyToId || undefined,
         }),
       });
 
@@ -1164,15 +1205,18 @@ export default function WriteLetterPage() {
           autosaveTimeoutRef.current = null;
         }
 
-        sessionStorage.removeItem('writeLetterDraft');
-        try {
-          localStorage.removeItem('postheart_letter_draft');
-          localStorage.removeItem('dear_you_letter_draft');
-          localStorage.removeItem('letter_draft_title');
-          localStorage.removeItem('letter_draft_content');
-          localStorage.setItem('postheart_last_sent_snippet', finalContent.slice(0, 50));
-          localStorage.setItem('postheart_last_sent_time', Date.now().toString());
-        } catch (e) {}
+        const draftStorageKey = replyToId ? `writeLetterDraft_reply_${replyToId}` : 'writeLetterDraft';
+        sessionStorage.removeItem(draftStorageKey);
+        if (!replyToId) {
+          try {
+            localStorage.removeItem('postheart_letter_draft');
+            localStorage.removeItem('dear_you_letter_draft');
+            localStorage.removeItem('letter_draft_title');
+            localStorage.removeItem('letter_draft_content');
+            localStorage.setItem('postheart_last_sent_snippet', finalContent.slice(0, 50));
+            localStorage.setItem('postheart_last_sent_time', Date.now().toString());
+          } catch (e) {}
+        }
 
         setContent('');
         setReceiver('');
@@ -1193,7 +1237,11 @@ export default function WriteLetterPage() {
         // Add slight delay to show success state before redirect
         window.dispatchEvent(new Event('letter-posted'));
         setTimeout(() => {
-          router.push('/');
+          if (replyToId) {
+            router.push(`/letter/${replyToId}`);
+          } else {
+            router.push('/');
+          }
         }, 1500);
       } else {
         await alert('Failed', data.error || 'Failed to post letter');
@@ -1365,6 +1413,37 @@ export default function WriteLetterPage() {
                   </button>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Replying To Parent Letter Banner */}
+          {replyToId && (
+            <div className="mb-8 p-4 px-5 rounded-2xl bg-[#1b1510] border border-amber-500/30 backdrop-blur-md flex items-center justify-between gap-4 shadow-lg shadow-black/20">
+              <div className="flex items-center gap-3.5">
+                <div className="w-9 h-9 rounded-full bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                  <Mail size={16} />
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider font-mono text-amber-400 font-semibold flex items-center gap-1.5">
+                    <span>Penned as Reply</span>
+                    {parentLetter && (
+                      <span className="text-amber-200/60 font-normal">
+                        &bull; to {parentLetter.sender?.name || 'Partner'}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-sm text-[#e6ded3] font-serif italic truncate max-w-md">
+                    {parentLetter?.coverTitle ? `"${parentLetter.coverTitle}"` : 'Parent Correspondence'}
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => router.push(`/letter/${replyToId}`)}
+                className="text-[10px] uppercase font-mono tracking-wider text-amber-300 hover:text-amber-100 bg-amber-500/15 hover:bg-amber-500/25 px-3.5 py-1.5 rounded-full border border-amber-500/30 transition-colors shrink-0 cursor-pointer"
+              >
+                View Original Letter
+              </button>
             </div>
           )}
 
@@ -2583,5 +2662,17 @@ export default function WriteLetterPage() {
       </AnimatePresence>
 
     </div>
+  );
+}
+
+export default function WriteLetterPage() {
+  return (
+    <Suspense fallback={
+      <div className="w-full min-h-screen flex items-center justify-center bg-bg-primary">
+        <BirdLoader message="Preparing your desk..." />
+      </div>
+    }>
+      <WriteLetterContent />
+    </Suspense>
   );
 }
