@@ -85,15 +85,7 @@ export default function Sidebar() {
               }`}>.</span>
             </h1>
           </Link>
-          <div className="flex items-center gap-2 mt-2">
-            <p className="text-[10px] tracking-widest text-text-secondary uppercase font-medium">A Private Space</p>
-            {isNavigatingHome && (
-              <span className="text-[9px] text-[#ea580c] font-mono tracking-wider animate-pulse flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#ea580c] animate-ping" />
-                Mailbox...
-              </span>
-            )}
-          </div>
+          <p className="text-[10px] tracking-widest text-text-secondary mt-2 uppercase font-medium">A Private Space</p>
         </div>
 
         {/* Navigation menu */}
