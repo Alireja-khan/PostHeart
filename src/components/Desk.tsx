@@ -367,25 +367,9 @@ export default function Desk({ initialLetters }: DeskProps) {
                                       animate={{ opacity: 1 }}
                                       exit={{ opacity: 0 }}
                                       transition={{ duration: 0.2 }}
-                                      className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/85 backdrop-blur-[3px] p-4 text-center select-none"
+                                      className="absolute inset-0 z-30 flex items-center justify-center bg-black/80 backdrop-blur-[2px] select-none"
                                     >
-                                      <div className="w-11 h-11 rounded-full bg-[#181512] border border-[#ea580c]/60 flex items-center justify-center shadow-[0_0_25px_rgba(234,88,12,0.45)] mb-2">
-                                        <BirdLoader className="w-6 h-6 text-[#ea580c]" />
-                                      </div>
-                                      <p className="font-serif text-sm font-semibold text-[#fbf8f3] tracking-wide animate-pulse">
-                                        চিঠিটি খোলা হচ্ছে...
-                                      </p>
-                                      <span className="text-[9px] text-[#c5a059] uppercase tracking-widest font-mono mt-0.5">
-                                        Unfolding dispatch
-                                      </span>
-                                      <div className="absolute bottom-0 inset-x-0 h-1 bg-[#25201a] overflow-hidden">
-                                        <motion.div 
-                                          initial={{ x: '-100%' }}
-                                          animate={{ x: '100%' }}
-                                          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-                                          className="w-1/2 h-full bg-gradient-to-r from-transparent via-[#ea580c] to-transparent"
-                                        />
-                                      </div>
+                                      <BirdLoader className="w-10 h-10 text-[#ea580c]" />
                                     </motion.div>
                                   )}
                                 </AnimatePresence>
@@ -600,25 +584,9 @@ export default function Desk({ initialLetters }: DeskProps) {
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
                                 transition={{ duration: 0.2 }}
-                                className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/85 backdrop-blur-[3px] p-4 text-center select-none"
+                                className="absolute inset-0 z-30 flex items-center justify-center bg-black/80 backdrop-blur-[2px] select-none"
                               >
-                                <div className="w-11 h-11 rounded-full bg-[#181512] border border-[#ea580c]/60 flex items-center justify-center shadow-[0_0_25px_rgba(234,88,12,0.45)] mb-2">
-                                  <BirdLoader className="w-6 h-6 text-[#ea580c]" />
-                                </div>
-                                <p className="font-serif text-sm font-semibold text-[#fbf8f3] tracking-wide animate-pulse">
-                                  চিঠিটি খোলা হচ্ছে...
-                                </p>
-                                <span className="text-[9px] text-[#c5a059] uppercase tracking-widest font-mono mt-0.5">
-                                  Unfolding dispatch
-                                </span>
-                                <div className="absolute bottom-0 inset-x-0 h-1 bg-[#25201a] overflow-hidden">
-                                  <motion.div 
-                                    initial={{ x: '-100%' }}
-                                    animate={{ x: '100%' }}
-                                    transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-                                    className="w-1/2 h-full bg-gradient-to-r from-transparent via-[#ea580c] to-transparent"
-                                  />
-                                </div>
+                                <BirdLoader className="w-10 h-10 text-[#ea580c]" />
                               </motion.div>
                             )}
                           </AnimatePresence>
