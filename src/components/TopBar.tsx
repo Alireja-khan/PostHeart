@@ -18,19 +18,22 @@ export default function TopBar() {
   if (!session || pathname === "/login" || pathname === "/register") return null;
 
   return (
-    <div className="fixed top-5 right-5 sm:top-6 sm:right-8 z-50 pointer-events-none flex items-center gap-2.5">
-      <div className="pointer-events-auto">
+    <>
+      {/* Ambience Button placed on the Top Left */}
+      <div className="absolute top-5 left-16 sm:left-6 md:left-8 sm:top-6 z-50 pointer-events-auto">
         <AtmosphereButton variant="badge" label="Ambience" />
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: -10, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        className="pointer-events-auto"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
+      {/* Notifications Button on the Top Right */}
+      <div className="absolute top-5 right-5 sm:top-6 sm:right-8 z-50 pointer-events-none flex items-center gap-2.5">
+        <motion.div
+          initial={{ opacity: 0, y: -10, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          className="pointer-events-auto"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
         <button
           onClick={() => setSidebarOpen(true)}
           className={`group relative flex items-center gap-2.5 px-3.5 py-2.5 rounded-full transition-all duration-300 backdrop-blur-xl cursor-pointer border shadow-[0_8px_32px_rgba(0,0,0,0.5)] ${
@@ -95,5 +98,6 @@ export default function TopBar() {
         </button>
       </motion.div>
     </div>
-  );
+  </>
+);
 }
