@@ -41,7 +41,6 @@ export default function Desk({ initialLetters }: DeskProps) {
   const [viewMode, setViewMode] = useState<'envelope' | 'grid'>('envelope');
   const [flapZIndex, setFlapZIndex] = useState(30);
   const isFirstRender = useRef(true);
-  const [isMounted, setIsMounted] = useState(false);
   const [openingLetterId, setOpeningLetterId] = useState<string | null>(null);
 
   const receivedCount = initialLetters.filter(l => !l.isSentByMe).length;
@@ -71,19 +70,10 @@ export default function Desk({ initialLetters }: DeskProps) {
     if (openingLetterId) return;
     setOpeningLetterId(letterId);
     router.push(`/letter/${letterId}`);
-    // Fallback safety timeout in case navigation is interrupted
     setTimeout(() => {
       setOpeningLetterId(null);
     }, 8000);
   };
-
-  useEffect(() => {
-    // Delay mounting slightly to allow browser to decode base64 textures and Next.js dev server to inject CSS
-    const timer = setTimeout(() => {
-      setIsMounted(true);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     if (isFirstRender.current) {
@@ -147,23 +137,8 @@ export default function Desk({ initialLetters }: DeskProps) {
   };
 
   return (
-    <>
-      <AnimatePresence>
-        {!isMounted && (
-          <motion.div 
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 z-[100] flex items-center justify-center bg-bg-primary"
-            suppressHydrationWarning
-          >
-            <BirdLoader className="w-16 h-16 text-[#c2410c]" />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <div 
         className="w-full min-h-full bg-bg-primary p-4 sm:p-6 md:p-8 lg:p-10 relative overflow-y-auto overflow-x-hidden flex flex-col items-center justify-start sm:justify-center"
-        style={{ opacity: isMounted ? 1 : 0, transition: 'opacity 0.7s ease-in-out' }}
       >
         {/* Global SVG Texture Definition */}
         <svg style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden' }}>
@@ -601,6 +576,5 @@ export default function Desk({ initialLetters }: DeskProps) {
           </div>
 
       </div>
-    </>
   );
 }

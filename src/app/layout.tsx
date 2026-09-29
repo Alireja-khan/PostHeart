@@ -9,6 +9,7 @@ import NotificationSidebar from "@/components/NotificationSidebar";
 import GlobalBirdTracker from "@/components/GlobalBirdTracker";
 import GlobalAudioPlayer from "@/components/GlobalAudioPlayer";
 import { Toaster } from 'react-hot-toast';
+import NavigationProgressBar from "@/components/NavigationProgressBar";
 
 const lora = Lora({
   variable: "--font-lora",
@@ -104,6 +105,7 @@ export default function RootLayout({
         />
       </head>
       <body suppressHydrationWarning className="h-full flex bg-bg-primary text-text-primary overflow-hidden">
+        <NavigationProgressBar />
         <Providers>
             <Toaster 
               position="top-center" 

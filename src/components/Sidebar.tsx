@@ -2,19 +2,29 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import { PenLine, Mailbox, Clock, Vault, Heart, Map, Settings, User, LogIn, UserPlus, LogOut, Users, Bell, Globe, Menu, X } from 'lucide-react';
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
+  const [isNavigatingHome, setIsNavigatingHome] = useState(false);
 
-  // Close the sidebar menu on navigation
+  // Close the sidebar menu and reset navigating states on navigation
   useEffect(() => {
+    setIsNavigatingHome(false);
     setIsOpen(false);
   }, [pathname]);
+
+  // Eagerly prefetch main routes so clicks feel instant
+  useEffect(() => {
+    router.prefetch('/');
+    router.prefetch('/write');
+    router.prefetch('/world');
+  }, [router]);
 
   // Auth pages (/login, /register) utilize the full screen experience
   if (pathname === '/login' || pathname === '/register') {
@@ -54,12 +64,36 @@ export default function Sidebar() {
 
         {/* Brand logo container */}
         <div className="p-8 border-b border-border-primary flex flex-col items-start pt-12">
-          <Link href="/" className="group">
+          <Link 
+            href="/" 
+            onMouseEnter={() => router.prefetch('/')}
+            onClick={(e) => {
+              if (pathname === '/') {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              } else {
+                setIsNavigatingHome(true);
+              }
+            }}
+            className="group cursor-pointer select-none active:scale-[0.97] transition-all duration-150 block"
+            title="Go to Mailbox"
+          >
             <h1 className="font-serif text-3xl font-bold tracking-tight text-text-primary flex items-baseline">
-              Dear You<span className="text-[#c2410c] ml-1">.</span>
+              Dear You
+              <span className={`text-[#c2410c] ml-1 transition-all duration-300 ${
+                isNavigatingHome ? 'animate-ping inline-block scale-125' : 'group-hover:translate-x-0.5 inline-block'
+              }`}>.</span>
             </h1>
           </Link>
-          <p className="text-[10px] tracking-widest text-text-secondary mt-2 uppercase font-medium">A Private Space</p>
+          <div className="flex items-center gap-2 mt-2">
+            <p className="text-[10px] tracking-widest text-text-secondary uppercase font-medium">A Private Space</p>
+            {isNavigatingHome && (
+              <span className="text-[9px] text-[#ea580c] font-mono tracking-wider animate-pulse flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#ea580c] animate-ping" />
+                Mailbox...
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Navigation menu */}
@@ -109,10 +143,12 @@ export default function Sidebar() {
 }
 
 function NavItem({ href, icon, label, active = false }: { href: string; icon: React.ReactNode; label: string; active?: boolean }) {
+  const router = useRouter();
   return (
     <Link 
       href={href} 
-      className={`flex items-center px-8 py-3 transition-all duration-200 font-serif text-sm group ${
+      onMouseEnter={() => router.prefetch(href)}
+      className={`flex items-center px-8 py-3 transition-all duration-200 font-serif text-sm group active:scale-[0.98] ${
         active 
           ? 'bg-[#222] text-text-primary border-l-2 border-[#fff]' 
           : 'text-text-secondary hover:bg-bg-tertiary hover:text-text-primary border-l-2 border-transparent'
