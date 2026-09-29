@@ -353,11 +353,11 @@ export default function LetterPreviewModal({
                       ))}
 
                       {/* Blank page to ensure even text page count */}
-                      {pages.length % 2 !== 0 && (
-                        <BookPage density="soft" className="bg-[#15120e] border border-[#2b2217] flex items-center justify-center">
+                      ...(pages.length % 2 !== 0 ? [
+                        <BookPage key="blank-spacer" density="soft" className="bg-[#15120e] border border-[#2b2217] flex items-center justify-center">
                           <span className="text-[10px] font-serif italic text-[#4a3f33]">End of Manuscript Notes</span>
                         </BookPage>
-                      )}
+                      ] : [])
 
                       {/* Inside Back Cover (Blank) */}
                       <BookPage density="hard" className="bg-[#120f0d] border border-[#2b2217] flex items-center justify-center">

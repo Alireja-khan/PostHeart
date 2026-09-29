@@ -33,6 +33,22 @@ interface Letter {
   replies?: any[];
 }
 
+// React 19 forwardRef wrapper required by react-pageflip to attach DOM nodes reliably
+const BookPage = forwardRef<HTMLDivElement, { children?: React.ReactNode; className?: string; density?: 'hard' | 'soft'; 'data-density'?: 'hard' | 'soft' }>(
+  ({ children, className = '', density = 'soft', 'data-density': dataDensity }, ref) => {
+    return (
+      <div 
+        ref={ref} 
+        data-density={dataDensity || density} 
+        className={`h-full w-full select-none overflow-hidden ${className}`}
+      >
+        {children}
+      </div>
+    );
+  }
+);
+BookPage.displayName = 'BookPage';
+
 const VoiceNoteCard = ({ 
   id, url, title, isTop, hasMultiple, onNext, onPrev
 }: { 
@@ -345,6 +361,150 @@ export default function LetterClientView({ letter, currentUserId }: { letter: Le
     transformStyle = 'translateX(25%)';
   }
 
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const bookPages = useMemo(() => {
+    const list: React.ReactElement[] = [];
+
+    // 1. Front Cover
+    list.push(
+      <BookPage key="cover-front" density="hard" className="bg-[#0a0a0a] border border-text-primary/10 p-8 h-full overflow-hidden flex flex-col justify-center items-center relative text-center">
+        <h1 className={`text-2xl md:text-4xl text-text-primary/90 mb-3 mt-6 px-4 ${activeFontClass}`}>{letter.coverTitle || 'Dear You.'}</h1>
+        <p className={`text-text-primary/40 text-sm md:text-base px-4 ${activeFontClass}`}>{letter.coverSubtitle || 'A Private Space'}</p>
+        <div className="absolute bottom-8 opacity-20">
+          <Feather size={24} />
+        </div>
+      </BookPage>
+    );
+
+    // 2. Inside Front Cover (Blank)
+    list.push(
+      <BookPage key="inside-front" density="hard" className="bg-bg-primary border border-text-primary/5 h-full flex items-center justify-center">
+        <div className="text-center opacity-20 text-text-secondary">
+          <Feather size={20} className="mx-auto mb-1" />
+          <span className="text-[10px] uppercase font-mono tracking-widest">PostHeart Archive</span>
+        </div>
+      </BookPage>
+    );
+
+    // 3. Inner Pages
+    pages.forEach((pageText, index) => {
+      list.push(
+        <BookPage key={`inner-${index}`} density="soft" className="bg-bg-primary border border-text-primary/5 p-6 md:p-8 h-full overflow-hidden flex flex-col justify-center relative text-left">
+          {index === 0 && displayReceiver && (
+            <div className="flex flex-col mb-4">
+              <h2 className={`w-full bg-transparent text-2xl md:text-4xl text-text-primary/90 mb-4 text-left ${activeFontClass}`}>
+                {displayReceiver}
+              </h2>
+            </div>
+          )}
+          <div 
+            className={`w-full text-lg md:text-xl leading-relaxed md:leading-loose whitespace-pre-wrap break-words text-text-primary/90 text-left ${activeFontClass}`}
+          >
+            {renderParsedContent(pageText)}
+          </div>
+          
+          <div className="absolute bottom-4 right-8 text-text-secondary opacity-30 text-xs font-sans">
+            {index + 1}
+          </div>
+        </BookPage>
+      );
+    });
+
+    // 4. Blank page to ensure even text page count if needed (Strict array push, never null/false)
+    if (pages.length % 2 !== 0) {
+      list.push(
+        <BookPage key="blank-even-spacer" density="soft" className="bg-bg-primary border border-text-primary/5 h-full flex items-center justify-center">
+          <span className="text-[10px] font-serif italic text-text-secondary/40">End of Letter</span>
+        </BookPage>
+      );
+    }
+
+    // 5. Inside Back Cover (Epistolary Exchange Sanctuary)
+    list.push(
+      <BookPage key="inside-back" density="hard" className="bg-bg-primary border border-text-primary/5 p-6 md:p-8 h-full flex flex-col justify-between relative overflow-y-auto">
+        <div className="flex flex-col items-center text-center mt-3">
+          <div className="w-10 h-10 rounded-full border border-amber-500/20 bg-amber-500/10 flex items-center justify-center text-amber-400 mb-2 shadow-sm">
+            <Feather size={18} />
+          </div>
+          <h3 className="text-xs uppercase tracking-widest font-mono text-text-secondary mb-1">
+            Epistolary Exchange
+          </h3>
+          <p className="text-xs font-serif italic text-text-primary/80">
+            {letter.replyTo 
+              ? `This letter was penned in reply to an earlier correspondence.`
+              : `Every whispered word waits for an echo.`}
+          </p>
+        </div>
+
+        {/* Middle Section: Replies count or Parent link */}
+        <div className="flex flex-col gap-2.5 my-3">
+          {letter.replyTo && (
+            <button
+              onClick={() => router.push(`/letter/${letter.replyTo.id}`)}
+              className="w-full py-2.5 px-3 rounded-xl border border-text-primary/10 bg-text-primary/5 hover:bg-text-primary/10 transition-colors flex items-center justify-between text-left group"
+            >
+              <div>
+                <div className="text-[9px] uppercase tracking-wider text-text-secondary font-mono">Original Letter</div>
+                <div className="text-xs font-serif text-text-primary truncate max-w-[170px]">{letter.replyTo.coverTitle || 'Dear You'}</div>
+              </div>
+              <ArrowLeft size={13} className="text-text-secondary group-hover:text-text-primary group-hover:translate-x-1 transition-transform rotate-180" />
+            </button>
+          )}
+
+          {letter.replies && letter.replies.length > 0 ? (
+            <div className="border border-amber-500/20 bg-amber-500/5 rounded-xl p-3 flex flex-col gap-2">
+              <div className="flex items-center justify-between text-xs text-amber-300/90 font-medium">
+                <span className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider">
+                  <Mail size={12} /> {letter.replies.length} {letter.replies.length === 1 ? 'Reply Penned' : 'Replies Penned'}
+                </span>
+              </div>
+              <button
+                onClick={() => setIsRepliesModalOpen(true)}
+                className="w-full py-1.5 px-3 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 text-xs font-medium transition-colors flex items-center justify-center gap-1.5"
+              >
+                <span>Read Correspondence ({letter.replies.length})</span>
+              </button>
+            </div>
+          ) : (
+            <div className="text-center py-2 text-text-secondary/60 text-xs font-serif italic">
+              No replies penned to this letter yet.
+            </div>
+          )}
+        </div>
+
+        {/* Bottom CTA to Pen Reply */}
+        <div className="flex flex-col items-center text-center pb-2">
+          <button
+            onClick={() => router.push(`/write?replyTo=${letter.id}`)}
+            className="w-full py-2.5 px-4 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 border border-amber-500/40 text-amber-300 font-medium text-xs tracking-wider uppercase transition-all shadow-md hover:scale-[1.02] flex items-center justify-center gap-2"
+          >
+            <Feather size={13} />
+            <span>Write a Reply</span>
+          </button>
+          <span className="text-[9px] text-text-secondary/50 mt-1.5 font-mono">
+            PostHeart Epistolary Sanctuary
+          </span>
+        </div>
+      </BookPage>
+    );
+
+    // 6. Back Cover
+    list.push(
+      <BookPage key="cover-back" density="hard" className="bg-[#0a0a0a] border border-text-primary/10 p-6 md:p-8 h-full overflow-hidden flex flex-col justify-center items-center relative text-center">
+        <div className="w-12 h-12 rounded-full border border-text-primary/20 flex items-center justify-center opacity-30 mb-4">
+          <Feather size={20} />
+        </div>
+        <p className="text-text-primary/20 text-xs tracking-widest uppercase font-bold">PostHeart</p>
+      </BookPage>
+    );
+
+    return list;
+  }, [activeFontClass, displayReceiver, letter, pages, router]);
+
   return (
     <div className="w-full h-screen overflow-hidden bg-transparent text-text-primary relative flex flex-col items-center pt-32 pb-12 px-6 font-sans">
       
@@ -394,8 +554,6 @@ export default function LetterClientView({ letter, currentUserId }: { letter: Le
         </button>
       </div>
 
-      {/* Removed local background audio element */}
-
       {/* Ultra Minimal Boundless Content Area with Realistic Page Turn */}
       <div className="w-full max-w-5xl flex flex-col items-center justify-start z-10 relative mt-0 pt-0 px-4 h-full max-h-[85vh]">
         
@@ -422,140 +580,30 @@ export default function LetterClientView({ letter, currentUserId }: { letter: Le
           className="relative w-full max-w-4xl shadow-2xl rounded-lg mt-2 transition-transform duration-700 ease-[cubic-bezier(0.25,1,0.5,1)]"
           style={{ transform: transformStyle }}
         >
-          {/* @ts-ignore - react-pageflip types require all optional props in React 18 */}
-          <HTMLFlipBook 
-            width={450} 
-            height={520} 
-            size="stretch"
-            minWidth={300}
-            maxWidth={600}
-            minHeight={400}
-            maxHeight={580}
-            drawShadow={true}
-            flippingTime={1000}
-            usePortrait={true}
-            startPage={0}
-            showCover={true}
-            mobileScrollSupport={true}
-            onFlip={onPage}
-            className="bg-transparent"
-            ref={bookRef}
-            style={{ margin: "0 auto" }}
-          >
-            {/* Front Cover */}
-            <div data-density="hard" className="bg-[#0a0a0a] border border-text-primary/10 p-8 h-full overflow-hidden flex flex-col justify-center items-center relative text-center">
-              <h1 className={`text-2xl md:text-4xl text-text-primary/90 mb-3 mt-6 px-4 ${activeFontClass}`}>{letter.coverTitle || 'Dear You.'}</h1>
-              <p className={`text-text-primary/40 text-sm md:text-base px-4 ${activeFontClass}`}>{letter.coverSubtitle || 'A Private Space'}</p>
-              <div className="absolute bottom-8 opacity-20">
-                <Feather size={24} />
-              </div>
-            </div>
-
-            {/* Inside Front Cover (Blank) */}
-            <div data-density="hard" className="bg-bg-primary border border-text-primary/5 h-full"></div>
-
-            {/* Inner Pages */}
-            {pages.map((pageText, index) => (
-              <div key={`inner-${index}`} className="bg-bg-primary border border-text-primary/5 p-6 md:p-8 h-full overflow-hidden flex flex-col justify-center relative text-left">
-                {index === 0 && displayReceiver && (
-                  <div className="flex flex-col mb-4">
-                    <h2 className={`w-full bg-transparent text-2xl md:text-4xl text-text-primary/90 mb-4 text-left ${activeFontClass}`}>
-                      {displayReceiver}
-                    </h2>
-                  </div>
-                )}
-                <div 
-                  className={`w-full text-lg md:text-xl leading-relaxed md:leading-loose whitespace-pre-wrap break-words text-text-primary/90 text-left ${activeFontClass}`}
-                >
-                  {renderParsedContent(pageText)}
-                </div>
-                
-                <div className="absolute bottom-4 right-8 text-text-secondary opacity-30 text-xs font-sans">
-                  {index + 1}
-                </div>
-              </div>
-            ))}
-
-            {/* Blank page to ensure even text page count if needed */}
-            {pages.length % 2 !== 0 && (
-              <div data-density="soft" className="bg-bg-primary border border-text-primary/5 h-full"></div>
-            )}
-
-            {/* Inside Back Cover (Epistolary Exchange Sanctuary) */}
-            <div data-density="hard" className="bg-bg-primary border border-text-primary/5 p-6 md:p-8 h-full flex flex-col justify-between relative overflow-y-auto">
-              <div className="flex flex-col items-center text-center mt-3">
-                <div className="w-10 h-10 rounded-full border border-amber-500/20 bg-amber-500/10 flex items-center justify-center text-amber-400 mb-2 shadow-sm">
-                  <Feather size={18} />
-                </div>
-                <h3 className="text-xs uppercase tracking-widest font-mono text-text-secondary mb-1">
-                  Epistolary Exchange
-                </h3>
-                <p className="text-xs font-serif italic text-text-primary/80">
-                  {letter.replyTo 
-                    ? `This letter was penned in reply to an earlier correspondence.`
-                    : `Every whispered word waits for an echo.`}
-                </p>
-              </div>
-
-              {/* Middle Section: Replies count or Parent link */}
-              <div className="flex flex-col gap-2.5 my-3">
-                {letter.replyTo && (
-                  <button
-                    onClick={() => router.push(`/letter/${letter.replyTo.id}`)}
-                    className="w-full py-2.5 px-3 rounded-xl border border-text-primary/10 bg-text-primary/5 hover:bg-text-primary/10 transition-colors flex items-center justify-between text-left group"
-                  >
-                    <div>
-                      <div className="text-[9px] uppercase tracking-wider text-text-secondary font-mono">Original Letter</div>
-                      <div className="text-xs font-serif text-text-primary truncate max-w-[170px]">{letter.replyTo.coverTitle || 'Dear You'}</div>
-                    </div>
-                    <ArrowLeft size={13} className="text-text-secondary group-hover:text-text-primary group-hover:translate-x-1 transition-transform rotate-180" />
-                  </button>
-                )}
-
-                {letter.replies && letter.replies.length > 0 ? (
-                  <div className="border border-amber-500/20 bg-amber-500/5 rounded-xl p-3 flex flex-col gap-2">
-                    <div className="flex items-center justify-between text-xs text-amber-300/90 font-medium">
-                      <span className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider">
-                        <Mail size={12} /> {letter.replies.length} {letter.replies.length === 1 ? 'Reply Penned' : 'Replies Penned'}
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => setIsRepliesModalOpen(true)}
-                      className="w-full py-1.5 px-3 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 text-xs font-medium transition-colors flex items-center justify-center gap-1.5"
-                    >
-                      <span>Read Correspondence ({letter.replies.length})</span>
-                    </button>
-                  </div>
-                ) : (
-                  <div className="text-center py-2 text-text-secondary/60 text-xs font-serif italic">
-                    No replies penned to this letter yet.
-                  </div>
-                )}
-              </div>
-
-              {/* Bottom CTA to Pen Reply */}
-              <div className="flex flex-col items-center text-center pb-2">
-                <button
-                  onClick={() => router.push(`/write?replyTo=${letter.id}`)}
-                  className="w-full py-2.5 px-4 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 border border-amber-500/40 text-amber-300 font-medium text-xs tracking-wider uppercase transition-all shadow-md hover:scale-[1.02] flex items-center justify-center gap-2"
-                >
-                  <Feather size={13} />
-                  <span>Write a Reply</span>
-                </button>
-                <span className="text-[9px] text-text-secondary/50 mt-1.5 font-mono">
-                  PostHeart Epistolary Sanctuary
-                </span>
-              </div>
-            </div>
-
-            {/* Back Cover */}
-            <div data-density="hard" className="bg-[#0a0a0a] border border-text-primary/10 p-6 md:p-8 h-full overflow-hidden flex flex-col justify-center items-center relative text-center">
-              <div className="w-12 h-12 rounded-full border border-text-primary/20 flex items-center justify-center opacity-30 mb-4">
-                <Feather size={20} />
-              </div>
-              <p className="text-text-primary/20 text-xs tracking-widest uppercase font-bold">PostHeart</p>
-            </div>
-          </HTMLFlipBook>
+          {isMounted && (
+            /* @ts-ignore - react-pageflip types require all optional props in React 18 */
+            <HTMLFlipBook 
+              width={450} 
+              height={520} 
+              size="stretch"
+              minWidth={300}
+              maxWidth={600}
+              minHeight={400}
+              maxHeight={580}
+              drawShadow={true}
+              flippingTime={1000}
+              usePortrait={true}
+              startPage={0}
+              showCover={true}
+              mobileScrollSupport={true}
+              onFlip={onPage}
+              className="bg-transparent"
+              ref={bookRef}
+              style={{ margin: "0 auto" }}
+            >
+              {bookPages}
+            </HTMLFlipBook>
+          )}
         </div>
       </div>
 
