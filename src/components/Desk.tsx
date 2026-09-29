@@ -42,6 +42,40 @@ export default function Desk({ initialLetters }: DeskProps) {
   const [flapZIndex, setFlapZIndex] = useState(30);
   const isFirstRender = useRef(true);
   const [isMounted, setIsMounted] = useState(false);
+  const [openingLetterId, setOpeningLetterId] = useState<string | null>(null);
+
+  const receivedCount = initialLetters.filter(l => !l.isSentByMe).length;
+  const sentCount = initialLetters.filter(l => l.isSentByMe).length;
+
+  const filteredLetters = initialLetters.filter(letter => 
+    activeTab === 'sent' ? letter.isSentByMe : !letter.isSentByMe
+  );
+
+  // Prefetch letters when envelope is opened for near-instant navigation
+  useEffect(() => {
+    if (isEnvelopeOpen && filteredLetters.length > 0) {
+      filteredLetters.slice(0, 6).forEach((letter) => {
+        router.prefetch(`/letter/${letter.id}`);
+      });
+    }
+  }, [isEnvelopeOpen, filteredLetters, router]);
+
+  // Reset opening state when page is restored from cache or back navigation
+  useEffect(() => {
+    const handlePageShow = () => setOpeningLetterId(null);
+    window.addEventListener('pageshow', handlePageShow);
+    return () => window.removeEventListener('pageshow', handlePageShow);
+  }, []);
+
+  const handleOpenLetter = (letterId: string) => {
+    if (openingLetterId) return;
+    setOpeningLetterId(letterId);
+    router.push(`/letter/${letterId}`);
+    // Fallback safety timeout in case navigation is interrupted
+    setTimeout(() => {
+      setOpeningLetterId(null);
+    }, 8000);
+  };
 
   useEffect(() => {
     // Delay mounting slightly to allow browser to decode base64 textures and Next.js dev server to inject CSS
@@ -72,13 +106,6 @@ export default function Desk({ initialLetters }: DeskProps) {
       return () => clearTimeout(timer);
     }
   }, [isEnvelopeOpen]);
-
-  const receivedCount = initialLetters.filter(l => !l.isSentByMe).length;
-  const sentCount = initialLetters.filter(l => l.isSentByMe).length;
-
-  const filteredLetters = initialLetters.filter(letter => 
-    activeTab === 'sent' ? letter.isSentByMe : !letter.isSentByMe
-  );
 
   const formatTime = (isoString?: string) => {
     if (!isoString) return '';
@@ -264,15 +291,24 @@ export default function Desk({ initialLetters }: DeskProps) {
                           {filteredLetters.map((letter) => {
                             const rawCoverImage = letter.images && letter.images.length > 0 ? letter.images[0] : null;
                             const coverImage = rawCoverImage?.includes('res.cloudinary.com') ? rawCoverImage.replace('/upload/', '/upload/q_auto,f_auto,w_800/') : rawCoverImage;
+                            const isOpening = openingLetterId === letter.id;
+                            const isOtherOpening = openingLetterId !== null && !isOpening;
 
                             return (
                               <div
                                 key={letter.id}
+                                onMouseEnter={() => router.prefetch(`/letter/${letter.id}`)}
                                 onClick={(e) => { 
                                   e.stopPropagation(); 
-                                  router.push(`/letter/${letter.id}`);
+                                  handleOpenLetter(letter.id);
                                 }}
-                                className="w-full max-w-[280px] xs:max-w-[310px] sm:max-w-[340px] shrink-0 h-[175px] sm:h-[195px] rounded-2xl overflow-hidden border border-[#42372a]/70 cursor-pointer group hover:scale-[1.02] transition-transform duration-300 relative shadow-[0_12px_32px_rgba(0,0,0,0.85)]"
+                                className={`w-full max-w-[280px] xs:max-w-[310px] sm:max-w-[340px] shrink-0 h-[175px] sm:h-[195px] rounded-2xl overflow-hidden cursor-pointer group relative transition-all duration-300 active:scale-[0.98] ${
+                                  isOpening
+                                    ? 'border-2 border-[#ea580c] ring-2 ring-[#ea580c]/50 shadow-[0_0_40px_rgba(234,88,12,0.55)] -translate-y-1 scale-[1.02] z-20'
+                                    : isOtherOpening
+                                    ? 'opacity-40 pointer-events-none border border-[#42372a]/70'
+                                    : 'border border-[#42372a]/70 hover:border-[#ea580c]/80 hover:scale-[1.02] shadow-[0_12px_32px_rgba(0,0,0,0.85)] hover:shadow-[0_16px_40px_rgba(234,88,12,0.25)]'
+                                }`}
                                 style={{ 
                                   backgroundColor: '#1c1815',
                                   backgroundImage: coverImage ? `url(${coverImage})` : 'none',
@@ -306,15 +342,53 @@ export default function Desk({ initialLetters }: DeskProps) {
                                     </p>
                                   </div>
 
-                                  <div className="flex items-center gap-2.5 bg-[#120f0d]/80 backdrop-blur-md p-1.5 px-3 rounded-lg border border-[#382d20] w-fit mt-auto">
-                                    {letter.images && letter.images.length > 0 && <ImageIcon size={13} className="text-[#c5a059]" />}
-                                    {letter.music && <Music size={13} className="text-[#c5a059]" />}
-                                    {letter.voices && letter.voices.length > 0 && <Mic size={13} className="text-[#c5a059]" />}
-                                    {!letter.images?.length && !letter.music && !letter.voices?.length && (
-                                      <span className="text-[10px] text-[#9c907e] italic">Letter</span>
-                                    )}
+                                  <div className="flex items-center justify-between mt-auto">
+                                    <div className="flex items-center gap-2.5 bg-[#120f0d]/80 backdrop-blur-md p-1.5 px-3 rounded-lg border border-[#382d20] w-fit">
+                                      {letter.images && letter.images.length > 0 && <ImageIcon size={13} className="text-[#c5a059]" />}
+                                      {letter.music && <Music size={13} className="text-[#c5a059]" />}
+                                      {letter.voices && letter.voices.length > 0 && <Mic size={13} className="text-[#c5a059]" />}
+                                      {!letter.images?.length && !letter.music && !letter.voices?.length && (
+                                        <span className="text-[10px] text-[#9c907e] italic">Letter</span>
+                                      )}
+                                    </div>
+
+                                    <span className="text-[10px] uppercase tracking-widest font-serif font-medium text-[#c5a059] group-hover:text-[#fae1b8] bg-[#120f0d]/80 px-2.5 py-1 rounded-full border border-[#382d20] transition-colors flex items-center gap-1 shadow-sm">
+                                      <span>চিঠি খুলুন</span>
+                                      <span className="text-[#ea580c] group-hover:translate-x-0.5 transition-transform">→</span>
+                                    </span>
                                   </div>
                                 </div>
+
+                                {/* Opening Unfolding Feedback Overlay */}
+                                <AnimatePresence>
+                                  {isOpening && (
+                                    <motion.div 
+                                      initial={{ opacity: 0 }}
+                                      animate={{ opacity: 1 }}
+                                      exit={{ opacity: 0 }}
+                                      transition={{ duration: 0.2 }}
+                                      className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/85 backdrop-blur-[3px] p-4 text-center select-none"
+                                    >
+                                      <div className="w-11 h-11 rounded-full bg-[#181512] border border-[#ea580c]/60 flex items-center justify-center shadow-[0_0_25px_rgba(234,88,12,0.45)] mb-2">
+                                        <BirdLoader className="w-6 h-6 text-[#ea580c]" />
+                                      </div>
+                                      <p className="font-serif text-sm font-semibold text-[#fbf8f3] tracking-wide animate-pulse">
+                                        চিঠিটি খোলা হচ্ছে...
+                                      </p>
+                                      <span className="text-[9px] text-[#c5a059] uppercase tracking-widest font-mono mt-0.5">
+                                        Unfolding dispatch
+                                      </span>
+                                      <div className="absolute bottom-0 inset-x-0 h-1 bg-[#25201a] overflow-hidden">
+                                        <motion.div 
+                                          initial={{ x: '-100%' }}
+                                          animate={{ x: '100%' }}
+                                          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                                          className="w-1/2 h-full bg-gradient-to-r from-transparent via-[#ea580c] to-transparent"
+                                        />
+                                      </div>
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
                               </div>
                             );
                           })}
@@ -460,11 +534,21 @@ export default function Desk({ initialLetters }: DeskProps) {
                     {filteredLetters.map((letter) => {
                        const rawCoverImage = letter.images && letter.images.length > 0 ? letter.images[0] : null;
                        const coverImage = rawCoverImage?.includes('res.cloudinary.com') ? rawCoverImage.replace('/upload/', '/upload/q_auto,f_auto,w_800/') : rawCoverImage;
+                       const isOpening = openingLetterId === letter.id;
+                       const isOtherOpening = openingLetterId !== null && !isOpening;
+
                        return (
                         <div
                           key={letter.id}
-                          onClick={() => router.push(`/letter/${letter.id}`)}
-                          className="w-full h-48 rounded-2xl overflow-hidden shadow-lg border border-[#382f25] relative cursor-pointer group hover:scale-[1.02] transition-transform duration-300"
+                          onMouseEnter={() => router.prefetch(`/letter/${letter.id}`)}
+                          onClick={() => handleOpenLetter(letter.id)}
+                          className={`w-full h-48 rounded-2xl overflow-hidden shadow-lg border relative cursor-pointer group transition-all duration-300 active:scale-[0.98] ${
+                            isOpening
+                              ? 'border-2 border-[#ea580c] ring-2 ring-[#ea580c]/50 shadow-[0_0_35px_rgba(234,88,12,0.5)] scale-[1.02] z-20'
+                              : isOtherOpening
+                              ? 'opacity-40 pointer-events-none border-[#382f25]'
+                              : 'border-[#382f25] hover:border-[#ea580c]/70 hover:scale-[1.02] hover:shadow-[0_12px_36px_rgba(234,88,12,0.25)]'
+                          }`}
                           style={{ 
                             backgroundColor: '#1a1612',
                             backgroundImage: coverImage ? `url(${coverImage})` : 'none',
@@ -491,7 +575,7 @@ export default function Desk({ initialLetters }: DeskProps) {
                               </span>
                             </div>
 
-                            <h3 className="font-serif text-lg font-bold text-[#f5f0e6] mb-1 group-hover:text-[#c2410c] transition-colors line-clamp-2">
+                            <h3 className="font-serif text-lg font-bold text-[#f5f0e6] mb-1 group-hover:text-[#ea580c] transition-colors line-clamp-2">
                               "{cleanContent(letter.content).substring(0, 60)}..."
                             </h3>
 
@@ -501,9 +585,43 @@ export default function Desk({ initialLetters }: DeskProps) {
                                 {letter.music && <Music size={12} />}
                                 {letter.voices && letter.voices.length > 0 && <Mic size={12} />}
                               </div>
-                              <span className="uppercase tracking-widest font-bold text-[#c2410c] group-hover:underline">Read Letter</span>
+                              <span className="uppercase tracking-widest font-bold text-[#ea580c] group-hover:underline flex items-center gap-1">
+                                <span>Read Letter</span>
+                                <span>→</span>
+                              </span>
                             </div>
                           </div>
+
+                          {/* Opening Feedback Overlay in Grid */}
+                          <AnimatePresence>
+                            {isOpening && (
+                              <motion.div 
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/85 backdrop-blur-[3px] p-4 text-center select-none"
+                              >
+                                <div className="w-11 h-11 rounded-full bg-[#181512] border border-[#ea580c]/60 flex items-center justify-center shadow-[0_0_25px_rgba(234,88,12,0.45)] mb-2">
+                                  <BirdLoader className="w-6 h-6 text-[#ea580c]" />
+                                </div>
+                                <p className="font-serif text-sm font-semibold text-[#fbf8f3] tracking-wide animate-pulse">
+                                  চিঠিটি খোলা হচ্ছে...
+                                </p>
+                                <span className="text-[9px] text-[#c5a059] uppercase tracking-widest font-mono mt-0.5">
+                                  Unfolding dispatch
+                                </span>
+                                <div className="absolute bottom-0 inset-x-0 h-1 bg-[#25201a] overflow-hidden">
+                                  <motion.div 
+                                    initial={{ x: '-100%' }}
+                                    animate={{ x: '100%' }}
+                                    transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                                    className="w-1/2 h-full bg-gradient-to-r from-transparent via-[#ea580c] to-transparent"
+                                  />
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </div>
                       )
                     })}
